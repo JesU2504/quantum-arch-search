@@ -1,4 +1,0 @@
-2025-11-25 07:44:52,902 INFO: Starting pipeline with metadata: {'timestamp': '20251125-074452', 'preset': 'quick', 'n_qubits': 3, 'baseline_steps': 1000, 'saboteur_steps': 1000, 'adversarial_gens': 2, 'seed': None}
-2025-11-25 07:44:52,903 INFO: Running baseline architect (noiseless)
-2025-11-25 07:45:14,172 INFO: Running saboteur-only (attacks baseline circuit)
-2025-11-25 07:45:45,645 INFO: Running adversarial co-evolution

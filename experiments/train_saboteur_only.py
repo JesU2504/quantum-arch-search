@@ -139,7 +139,8 @@ def train_saboteur_only(results_dir, n_qubits, saboteur_steps, n_steps, max_erro
 
     action_logger = ActionLoggerCallback(verbose=1, log_interval=1000)
     progress_callback = ProgressCallback()
-    model = PPO("MlpPolicy", env=env, **agent_params)
+    # In experiments/train_saboteur_only.py
+    model = PPO("MultiInputPolicy", env, **config.AGENT_PARAMS)
     model.learn(total_timesteps=saboteur_steps, callback=[progress_callback, action_logger])
 
     print("\n--- Training Finished ---")

@@ -92,7 +92,7 @@ def train_adversarial(
 
     # --- Initialize Agents ---
     architect_agent = PPO('MlpPolicy', initial_arch_env, **config.AGENT_PARAMS)
-    saboteur_agent = PPO('MlpPolicy', saboteur_env, **config.AGENT_PARAMS)
+    saboteur_agent = PPO('MultiInputPolicy', saboteur_env, **config.AGENT_PARAMS)
 
     # Data Storage
     architect_fidelities = []
@@ -148,8 +148,8 @@ def train_adversarial(
         else:
             saboteur_env.set_circuit(dummy_circuit)
 
-        # Re-initialize saboteur_agent if the environment's action space may have changed
-        saboteur_agent = PPO('MlpPolicy', saboteur_env, **config.AGENT_PARAMS)
+        # CRITICAL FIX: Dict observations require MultiInputPolicy
+        saboteur_agent = PPO('MultiInputPolicy', saboteur_env, **config.AGENT_PARAMS)
         
         sab_callback = FidelityLoggerCallback(
             trace_list=saboteur_fidelities,

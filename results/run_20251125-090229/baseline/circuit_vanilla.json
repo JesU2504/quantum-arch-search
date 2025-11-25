@@ -1,0 +1,24 @@
+{
+  "cirq_type": "Circuit",
+  "moments": [
+    {
+      "cirq_type": "Moment",
+      "operations": [
+        {
+          "cirq_type": "GateOperation",
+          "gate": {
+            "cirq_type": "ZPowGate",
+            "exponent": 0.25,
+            "global_shift": 0.0
+          },
+          "qubits": [
+            {
+              "cirq_type": "LineQubit",
+              "x": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
