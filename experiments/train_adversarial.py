@@ -148,10 +148,8 @@ def train_adversarial(
         else:
             saboteur_env.set_circuit(dummy_circuit)
 
-        # AI FIX: Only re-initialize if strictly necessary. 
-        # If the observation space (circuit size) is constant, do NOT re-init.
-        # Assuming observation space MIGHT change here, we re-set env.
-        saboteur_agent.set_env(saboteur_env)
+        # Re-initialize saboteur_agent if the environment's action space may have changed
+        saboteur_agent = PPO('MlpPolicy', saboteur_env, **config.AGENT_PARAMS)
         
         sab_callback = FidelityLoggerCallback(
             trace_list=saboteur_fidelities,

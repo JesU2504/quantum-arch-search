@@ -30,4 +30,3 @@ Notes
 - Circuits are stored as JSON using helper functions in `src/qas_gym/utils.py` (`save_circuit`/`load_circuit`).
 - For reproducibility, we recommend setting RNG seeds (numpy, SB3, Cirq) before running long experiments.
 
-If you want, I can add a GitHub Actions workflow to run the smoke test on pushes/PRs and a small CONTRIBUTING.md describing how to reproduce experiments.

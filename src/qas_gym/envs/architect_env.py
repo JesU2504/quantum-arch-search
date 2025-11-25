@@ -68,15 +68,14 @@ class AdversarialArchitectEnv(ArchitectEnv):
                 return obs, 0.0, terminated, truncated, info
 
             if self.saboteur_agent is not None:
-                from qas_gym.envs.saboteur_env import SaboteurMultiGateEnv
-
-                ops = list(final_circuit.all_operations())
-                sab_obs = SaboteurMultiGateEnv.create_observation_from_circuit(final_circuit, n_qubits=len(self.qubits))
-                try:
-                    sab_action, _ = self.saboteur_agent.predict(sab_obs, deterministic=True)
-                except Exception:
-                    import numpy as _np
-                    sab_action = _np.zeros(len(ops), dtype=int)
+                    # Generate the DICT observation expected by the new Saboteur
+                    # You need to implement the same encoding logic here or make it a static method
+                    sab_obs = {
+                        "state_vector": self._get_state_obs(final_circuit),
+                        "circuit_structure": SaboteurFixedEnv._encode_circuit(final_circuit) 
+                    }
+        
+                sab_action, _ = self.saboteur_agent.predict(sab_obs, deterministic=True)
 
                 # Build noisy circuit by appending depolarizing channels per gate
                 noisy_ops = []
