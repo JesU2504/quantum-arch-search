@@ -17,15 +17,22 @@ class NoisyNQubitEnv(QuantumArchSearchEnv):
         qubits = cirq.LineQubit.range(n_qubits)
         state_observables = get_default_observables(qubits)
         action_gates = get_default_gates(qubits)
-        super(NoisyNQubitEnv, self).__init__(target,
-                                             qubits,
-                                             state_observables,
-                                             action_gates,
-                                             fidelity_threshold,
-                                             reward_penalty,
-                                             max_timesteps,
-                                             error_observables=error_rate,
-                                             error_gates=error_rate)
+        self.error_rate = error_rate
+        super().__init__(target=target,
+                         fidelity_threshold=fidelity_threshold,
+                         reward_penalty=reward_penalty,
+                         max_timesteps=max_timesteps,
+                         qubits=qubits,
+                         state_observables=state_observables,
+                         action_gates=action_gates)
+
+    def _get_obs(self):
+        circuit = self._get_cirq().with_noise(cirq.depolarize(self.error_rate))
+        return super()._get_obs_from_circuit(circuit)
+
+    def get_fidelity(self, circuit):
+        noisy_circuit = circuit.with_noise(cirq.depolarize(self.error_rate))
+        return super().get_fidelity(noisy_circuit)
 
 
 class NoisyTwoQubitEnv(NoisyNQubitEnv):
@@ -38,9 +45,11 @@ class NoisyTwoQubitEnv(NoisyNQubitEnv):
         error_rate: float = 0.001,
     ):
         assert len(target) == 4, 'Target must be of size 4'
-        super(NoisyTwoQubitEnv,
-              self).__init__(target, fidelity_threshold, reward_penalty,
-                             max_timesteps, error_rate)
+        super().__init__(target=target,
+                         fidelity_threshold=fidelity_threshold,
+                         reward_penalty=reward_penalty,
+                         max_timesteps=max_timesteps,
+                         error_rate=error_rate)
 
 
 class NoisyThreeQubitEnv(NoisyNQubitEnv):
@@ -53,6 +62,8 @@ class NoisyThreeQubitEnv(NoisyNQubitEnv):
         error_rate: float = 0.001,
     ):
         assert len(target) == 8, 'Target must be of size 8'
-        super(NoisyThreeQubitEnv,
-              self).__init__(target, fidelity_threshold, reward_penalty,
-                             max_timesteps, error_rate)
+        super().__init__(target=target,
+                         fidelity_threshold=fidelity_threshold,
+                         reward_penalty=reward_penalty,
+                         max_timesteps=max_timesteps,
+                         error_rate=error_rate)

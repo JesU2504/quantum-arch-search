@@ -1,29 +1,35 @@
-from gym.envs.registration import register
+import gymnasium as gym
+from gymnasium.envs.registration import register
 
-register(id='QuantumArchSearch-v0',
-         entry_point='qas_gym.envs:QuantumArchSearch',
-         nondeterministic=True)
+register(
+    id='QuantumArchSearch-v0',
+    entry_point='qas_gym.envs:QuantumArchSearchEnv',
+    max_episode_steps=20,
+)
 
 register(id='BasicTwoQubit-v0',
-         entry_point='qas_gym.envs:BasicTwoQubitEnv',
-         nondeterministic=True)
+         entry_point='qas_gym.envs:BasicTwoQubitEnv')
 
 register(id='BasicThreeQubit-v0',
-         entry_point='qas_gym.envs:BasicThreeQubitEnv',
-         nondeterministic=True)
+         entry_point='qas_gym.envs:BasicThreeQubitEnv')
 
 register(id='BasicNQubit-v0',
-         entry_point='qas_gym.envs:BasicNQubitEnv',
-         nondeterministic=True)
+         entry_point='qas_gym.envs:BasicNQubitEnv')
 
 register(id='NoisyTwoQubit-v0',
-         entry_point='qas_gym.envs:NoisyTwoQubitEnv',
-         nondeterministic=True)
+         entry_point='qas_gym.envs:NoisyTwoQubitEnv')
 
 register(id='NoisyThreeQubit-v0',
-         entry_point='qas_gym.envs:NoisyThreeQubitEnv',
-         nondeterministic=True)
+         entry_point='qas_gym.envs:NoisyThreeQubitEnv')
 
 register(id='NoisyNQubit-v0',
-         entry_point='qas_gym.envs:NoisyNQubitEnv',
-         nondeterministic=True)
+         entry_point='qas_gym.envs:NoisyNQubitEnv')
+
+register(id='Saboteur-v0',
+         entry_point='qas_gym.envs:SaboteurEnv')
+
+register(
+    id='Architect-v0',
+    entry_point='qas_gym.envs:ArchitectEnv',
+    max_episode_steps=20,
+)

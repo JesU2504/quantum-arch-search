@@ -1,131 +1,153 @@
 import sys
 from contextlib import closing
+from qas_gym.utils import get_default_gates, get_default_observables, fidelity_pure_target
 from io import StringIO
-from typing import Dict, List, Optional, Union
+from typing import List, Optional
 
 import cirq
-import gym
+import gymnasium as gym
 import numpy as np
-from gym import spaces
-from gym.utils import seeding
+from gymnasium import spaces
 
 
 class QuantumArchSearchEnv(gym.Env):
-    metadata = {'render.modes': ['ansi', 'human']}
+    metadata = {'render_modes': ['ansi', 'human'], 'render_fps': 4}
 
     def __init__(
-        self,
-        target: np.ndarray,
-        qubits: List[cirq.LineQubit],
-        state_observables: List[cirq.GateOperation],
-        action_gates: List[cirq.GateOperation],
-        fidelity_threshold: float,
-        reward_penalty: float,
-        max_timesteps: int,
-        error_observables: Optional[float] = None,
-        error_gates: Optional[float] = None,
+            self,
+            target: np.ndarray,
+            fidelity_threshold: float,
+            reward_penalty: float,
+            max_timesteps: int,
+            qubits: Optional[List[cirq.LineQubit]] = None,
+            state_observables: Optional[List[cirq.GateOperation]] = None,
+            action_gates: Optional[List[cirq.GateOperation]] = None,
+            complexity_penalty_weight=0.0
     ):
         super(QuantumArchSearchEnv, self).__init__()
 
-        # set parameters
         self.target = target
-        self.qubits = qubits
-        self.state_observables = state_observables
-        self.action_gates = action_gates
         self.fidelity_threshold = fidelity_threshold
         self.reward_penalty = reward_penalty
         self.max_timesteps = max_timesteps
-        self.error_observables = error_observables
-        self.error_gates = error_gates
+        self.complexity_penalty_weight = complexity_penalty_weight
+        self._max_episode_steps = max_timesteps
 
-        # set environment
-        self.target_density = target * np.conj(target).T
-        self.simulator = cirq.Simulator()
+        # --- Initialize Qubits, Observables, and Gates ---
+        # This logic must come before defining the observation and action spaces.
+        if qubits is None:
+            n_qubits = int(np.log2(len(target)))
+            qubits = cirq.LineQubit.range(n_qubits)
+        if state_observables is None:
+            state_observables = get_default_observables(qubits)
+        action_gates = action_gates if action_gates is not None else get_default_gates(qubits)
 
-        # set spaces
+        self.qubits = qubits
+        self.state_observables = state_observables
+        self.champion_circuit = None
+        self.best_fidelity = -1.0
+        self.previous_final_fidelity = 0.0 # For reward shaping
+
+        self.action_gates = action_gates
+        self.target_density = np.outer(target, np.conj(target))
+        self.simulator = cirq.DensityMatrixSimulator()
         self.observation_space = spaces.Box(low=-1.,
                                             high=1.,
-                                            shape=(len(state_observables), ))
+                                            shape=(len(state_observables),),
+                                            dtype=np.float32)
         self.action_space = spaces.Discrete(n=len(action_gates))
-        self.seed()
 
     def __str__(self):
-        desc = 'QuantumArchSearch-v0('
-        desc += '{}={}, '.format('Qubits', len(self.qubits))
-        desc += '{}={}, '.format('Target', self.target)
-        desc += '{}=[{}], '.format(
-            'Gates', ', '.join(gate.__str__() for gate in self.action_gates))
-        desc += '{}=[{}])'.format(
-            'Observables',
-            ', '.join(gate.__str__() for gate in self.state_observables))
-        return desc
+        return f"QuantumArchSearch-v0(Qubits={len(self.qubits)}, Target={self.target}, " \
+               f"Gates={', '.join(gate.__str__() for gate in self.action_gates)}, " \
+               f"Observables={', '.join(gate.__str__() for gate in self.state_observables)})"
 
-    def seed(self, seed=None):
-        self.np_random, seed = seeding.np_random(seed)
-        return [seed]
-
-    def reset(self):
+    def reset(self, seed=None, options=None):
+        super().reset(seed=seed)
         self.circuit_gates = []
-        return self._get_obs()
+        self.previous_final_fidelity = 0.0
+        obs = self._get_obs()
+        info = {}
+        return obs, info
 
-    def _get_cirq(self, maybe_add_noise=False):
-        circuit = cirq.Circuit(cirq.I(qubit) for qubit in self.qubits)
-        for gate in self.circuit_gates:
-            circuit.append(gate)
-            if maybe_add_noise and (self.error_gates is not None):
-                noise_gate = cirq.depolarize(
-                    self.error_gates).on_each(*gate._qubits)
-                circuit.append(noise_gate)
-        if maybe_add_noise and (self.error_observables is not None):
-            noise_observable = cirq.bit_flip(
-                self.error_observables).on_each(*self.qubits)
-            circuit.append(noise_observable)
-        return circuit
+    def _get_cirq(self):
+        return cirq.Circuit(self.circuit_gates)
 
     def _get_obs(self):
-        circuit = self._get_cirq(maybe_add_noise=True)
-        obs = self.simulator.simulate_expectation_values(
-            circuit, observables=self.state_observables)
-        return np.array(obs).real
+        circuit = self._get_cirq()
+        # Add a tiny bit of noise to break symmetries and stabilize training
+        stable_circuit = circuit.with_noise(cirq.depolarize(1e-6))
+        return self._get_obs_from_circuit(stable_circuit)
 
-    def _get_fidelity(self):
-        circuit = self._get_cirq(maybe_add_noise=True)
-        pred = self.simulator.simulate(circuit).final_state_vector
-        inner = np.inner(np.conj(pred), self.target)
-        fidelity = np.conj(inner) * inner
-        return fidelity.real
+    def _get_obs_from_circuit(self, circuit_to_obs):
+        result = self.simulator.simulate(circuit_to_obs, qubit_order=self.qubits)
+        final_density_matrix = 0.5 * (
+                result.final_density_matrix + np.conj(result.final_density_matrix).T)
+        obs = [np.real(np.trace(            
+            cirq.Circuit(ob).unitary(qubit_order=self.qubits) @ final_density_matrix))
+            for ob in self.state_observables]
+        return np.array(obs).astype(np.float32)
+
+    def get_fidelity(self, circuit):
+        """Unified fidelity computation using fidelity_pure_target helper.
+
+        The target is assumed pure throughout this project; use the canonical
+        inner-product form for consistency with saboteur evaluation.
+        """
+        return fidelity_pure_target(circuit, self.target, self.qubits)
+
+    def get_circuit_complexity(self, circuit):
+        return len(circuit)
 
     def step(self, action):
+        # The action from the agent can be a numpy array, so we must convert it to a scalar int for indexing.
+        action_idx = int(action)
+        action_gate = self.action_gates[action_idx]
+        reward_penalty = 0.0
+        last_op_on_qubits = next((gate for gate in reversed(self.circuit_gates)
+                                  if gate.qubits == action_gate.qubits), None)
 
-        # update circuit
-        action_gate = self.action_gates[action]
+        if last_op_on_qubits and action_gate == cirq.inverse(last_op_on_qubits):
+            reward_penalty = -0.1
+
         self.circuit_gates.append(action_gate)
-
-        # compute observation
+        circuit = self._get_cirq()
         observation = self._get_obs()
 
-        # compute fidelity
-        fidelity = self._get_fidelity()
+        # The fidelity is calculated on the clean circuit at each step for reward shaping.
+        # The final, post-sabotage fidelity will be handled in the external training loop.
+        current_fidelity = self.get_fidelity(circuit)
 
-        # compute reward
-        if fidelity > self.fidelity_threshold:
-            reward = fidelity - self.reward_penalty
-        else:
-            reward = -self.reward_penalty
+        terminated = (current_fidelity >= self.fidelity_threshold) or \
+                     (self.get_circuit_complexity(circuit) >= self.max_timesteps)
+        truncated = False
 
-        # check if terminal
-        terminal = (reward > 0.) or (len(self.circuit_gates) >=
-                                     self.max_timesteps)
+        # --- Reward Shaping for Architect ---
+        # This reward encourages building a high-fidelity circuit.
+        # The primary reward for robustness will come from the training loop.
+        fidelity_delta = current_fidelity - self.previous_final_fidelity
+        reward = (0.1 * fidelity_delta) + reward_penalty  # Small shaping reward
+        if terminated:
+            reward -= self.complexity_penalty_weight * self.get_circuit_complexity(circuit)
 
-        # return info
-        info = {'fidelity': fidelity, 'circuit': self._get_cirq()}
+        info = {'fidelity': current_fidelity, 'circuit': circuit}
+        if current_fidelity > self.best_fidelity:
+            self.best_fidelity = current_fidelity
+            self.champion_circuit = circuit
+            info['is_champion'] = True
+            info['champion_fidelity'] = current_fidelity
 
-        return observation, reward, terminal, info
+        # Update the previous final fidelity for the next step's reward shaping
+        self.previous_final_fidelity = current_fidelity
 
-    def render(self, mode='human'):
+        return observation, reward, terminated, truncated, info
+
+    def render(self, mode='human', circuit=None):
         outfile = StringIO() if mode == 'ansi' else sys.stdout
-        outfile.write('\n' + self._get_cirq(False).__str__() + '\n')
+        circuit = circuit or self._get_cirq()
+        outfile.write(f'\n{circuit}\n')
 
         if mode != 'human':
             with closing(outfile):
-                return outfile.getvalue()
+                # Only StringIO (ansi mode) supports getvalue; degrade gracefully.
+                return outfile.getvalue() if isinstance(outfile, StringIO) else ''

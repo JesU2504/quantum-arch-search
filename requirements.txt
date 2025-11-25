@@ -1,2 +1,5 @@
-gym
-cirq
+numpy==1.26.4
+cirq==1.6.1
+gymnasium==1.2.1
+stable-baselines3==2.7.0
+matplotlib==3.8.4

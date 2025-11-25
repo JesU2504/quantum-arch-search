@@ -1,0 +1,9 @@
+{
+  "adversarial_gens": 2,
+  "baseline_steps": 1000,
+  "n_qubits": 3,
+  "preset": "quick",
+  "saboteur_steps": 1000,
+  "seed": null,
+  "timestamp": "20251125-065020"
+}
