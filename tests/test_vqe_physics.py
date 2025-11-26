@@ -164,9 +164,9 @@ def test_vqe_circuit_improves_energy():
     # Compute identity circuit energy
     identity_energy = env.compute_energy(circuit=None)
 
-    # Create an ansatz circuit that can reach the ground state.
-    # For H2, the ground state is (|01> - |10>)/sqrt(2), which requires
-    # specific entangling operations to achieve from the |00> reference.
+    # Create an ansatz circuit that can improve upon the Hartree-Fock energy.
+    # This circuit uses entangling gates to create correlations between qubits,
+    # which is necessary to lower the energy below the uncorrelated HF reference.
     qubits = cirq.LineQubit.range(env.n_qubits)
     ansatz = cirq.Circuit([
         cirq.H(qubits[0]),           # Create superposition on qubit 0
