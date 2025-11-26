@@ -95,6 +95,7 @@ def test_saboteur_respects_attack_budget():
     even if the action requests attacks on more gates.
     """
     n_qubits = 4
+    max_gates = 20
 
     # Step 1: Create a circuit with many gates
     circuit, qubits = ghz_circuit(n_qubits)
@@ -106,13 +107,13 @@ def test_saboteur_respects_attack_budget():
         target_state=ideal_ghz_state(n_qubits),
         qubits=qubits,
         max_concurrent_attacks=attack_budget,
-        max_gates=20,
+        max_gates=max_gates,
     )
 
     # Step 3: Request attacks on ALL gates (more than budget allows)
     num_ops = len(list(circuit.all_operations()))
     # Action: attack all gates with max error level (index 3 = 0.01)
-    action = [3] * num_ops + [0] * (20 - num_ops)
+    action = [3] * num_ops + [0] * (max_gates - num_ops)
 
     # Step 4: Apply noise and verify only budget-limited attacks applied
     noisy_circuit, num_attacks = saboteur.apply_noise(circuit, action)
@@ -136,6 +137,7 @@ def test_saboteur_zero_noise_preserves_fidelity():
     the circuit fidelity should remain unchanged.
     """
     n_qubits = 4
+    max_gates = 20
 
     # Step 1: Create a perfect GHZ circuit
     circuit, qubits = ghz_circuit(n_qubits)
@@ -146,12 +148,11 @@ def test_saboteur_zero_noise_preserves_fidelity():
         target_circuit=circuit,
         target_state=ideal_state,
         qubits=qubits,
-        max_gates=20,
+        max_gates=max_gates,
     )
 
     # Step 3: Apply zero-noise action (all error levels = 0)
-    num_ops = len(list(circuit.all_operations()))
-    action = [0] * 20  # All zeros = no noise
+    action = [0] * max_gates  # All zeros = no noise
 
     noisy_circuit, num_attacks = saboteur.apply_noise(circuit, action)
 

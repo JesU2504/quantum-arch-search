@@ -90,7 +90,7 @@ class Saboteur(gym.Env):
                 dtype=np.float32
             ),
             'gate_structure': spaces.Box(
-                low=0, high=len(self.ERROR_RATES),
+                low=0, high=2,  # 0 = empty, 1 = single-qubit, 2 = two-qubit
                 shape=(self.max_gates,),
                 dtype=np.int32
             )
@@ -273,8 +273,9 @@ class Saboteur(gym.Env):
                             bit = (j >> (len(qubits) - 1 - i)) & 1
                             z_val = 1 - 2 * bit  # 0 -> +1, 1 -> -1
                             z_exp += np.abs(state[j]) ** 2 * z_val
+                        # Store Z expectation value twice for shape compatibility
                         projected.append(np.real(z_exp))
-                        projected.append(np.imag(z_exp))
+                        projected.append(0.0)  # Padding for 2*n_qubits shape
                     else:
                         projected.extend([0.0, 0.0])
                 projected_state = np.array(projected[:2 * n_qubits], dtype=np.float32)
