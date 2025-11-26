@@ -94,12 +94,15 @@ def measure_fps(vec_env, n_steps: int) -> float:
     Returns:
         Frames per second.
     """
+    import numpy as np
+    
     vec_env.reset()
     n_envs = vec_env.num_envs
     
     start_time = time.perf_counter()
     for _ in range(n_steps):
-        actions = [vec_env.action_space.sample() for _ in range(n_envs)]
+        # Sample actions for all environments at once using numpy
+        actions = np.array([vec_env.action_space.sample() for _ in range(n_envs)])
         vec_env.step(actions)
     elapsed = time.perf_counter() - start_time
     
