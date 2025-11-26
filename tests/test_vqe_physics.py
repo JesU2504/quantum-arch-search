@@ -29,13 +29,28 @@ def test_vqe_returns_reasonable_energy():
     For an identity (empty) circuit, the energy should be close to
     the Hartree-Fock energy, not the exact ground state.
     """
-    # TODO: Import VQEArchitectEnv
-    # TODO: Create environment for H2 molecule
-    # TODO: Initialize with empty/identity circuit
-    # TODO: Compute energy
-    # TODO: Assert energy is above FCI (not exact ground state)
-    # TODO: Assert energy is close to Hartree-Fock
-    pass
+    from src.envs import VQEArchitectEnv
+
+    # Create environment for H2 molecule
+    env = VQEArchitectEnv(molecule="H2", bond_distance=0.74)
+
+    # Compute energy with identity circuit (None means |00> state)
+    energy = env.compute_energy(circuit=None)
+
+    # Assert energy is above FCI (not exact ground state)
+    # The |00> state should not achieve the exact ground state energy
+    assert energy > H2_FCI_ENERGY, (
+        f"Energy {energy:.4f} Ha should be above FCI {H2_FCI_ENERGY:.4f} Ha"
+    )
+
+    # Assert energy is reasonably close to Hartree-Fock
+    # The |00> state is close to the HF reference state for H2
+    # Allow tolerance of 0.5 Ha since |00> is not exactly HF state
+    hf_tolerance = 0.5  # Ha
+    assert abs(energy - H2_HARTREE_FOCK_ENERGY) < hf_tolerance, (
+        f"Energy {energy:.4f} Ha should be within {hf_tolerance} Ha "
+        f"of Hartree-Fock {H2_HARTREE_FOCK_ENERGY:.4f} Ha"
+    )
 
 
 def test_vqe_energy_not_exact_ground_state():

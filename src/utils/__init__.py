@@ -9,7 +9,7 @@ See ExpPlan.md, Implementation notes section. This package contains:
 TODO: Expose utility functions as the package develops.
 """
 
-from .metrics import compute_fidelity, count_cnots, evaluate_circuit
+from .metrics import compute_fidelity, count_cnots, evaluate_circuit, state_energy
 from .parallel import create_vec_env, benchmark_parallelism
 from .plotting import plot_training_curve, plot_pareto_frontier
 
@@ -18,6 +18,7 @@ __all__ = [
     "compute_fidelity",
     "count_cnots",
     "evaluate_circuit",
+    "state_energy",
     # Parallelism
     "create_vec_env",
     "benchmark_parallelism",
