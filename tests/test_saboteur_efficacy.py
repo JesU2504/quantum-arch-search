@@ -14,7 +14,22 @@ noise into quantum circuits.
 TODO: Implement full test once Saboteur class is complete.
 """
 
+import sys
+import os
+
+# Add src to path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+
 import numpy as np
+import cirq
+
+from utils.metrics import (
+    ghz_circuit,
+    ideal_ghz_state,
+    state_fidelity,
+    simulate_circuit,
+)
+from envs.saboteur import Saboteur
 
 
 def test_saboteur_drops_ghz_fidelity():
@@ -29,13 +44,47 @@ def test_saboteur_drops_ghz_fidelity():
 
     This ensures the noise injection mechanism is working correctly.
     """
-    # TODO: Import Saboteur and GHZ utilities
-    # TODO: Create perfect GHZ circuit for n_qubits=4
-    # TODO: Compute initial fidelity against target GHZ state
-    # TODO: Create Saboteur environment with max attack budget
-    # TODO: Take one step with maximum error rates
-    # TODO: Assert fidelity dropped below threshold
-    pass
+    n_qubits = 4
+
+    # Step 1: Create a perfect 4-qubit GHZ circuit
+    circuit, qubits = ghz_circuit(n_qubits)
+
+    # Step 2: Compute initial fidelity (should be ~1.0)
+    ideal_state = ideal_ghz_state(n_qubits)
+    output_state = simulate_circuit(circuit, qubits)
+    initial_fidelity = state_fidelity(output_state, ideal_state)
+
+    # Verify initial fidelity is close to 1.0
+    assert initial_fidelity > 0.99, (
+        f"Initial fidelity should be ~1.0, got {initial_fidelity}"
+    )
+
+    # Step 3: Create Saboteur and apply maximum noise attack
+    saboteur = Saboteur(
+        target_circuit=circuit,
+        target_state=ideal_state,
+        qubits=qubits,
+    )
+
+    # Apply max noise for one step
+    noisy_circuit, noisy_qubits = saboteur.apply_max_noise()
+
+    # Step 4: Compute fidelity after noise and verify it dropped
+    # Use density matrix simulator for noisy circuit
+    dm_simulator = cirq.DensityMatrixSimulator()
+    dm_result = dm_simulator.simulate(noisy_circuit, qubit_order=noisy_qubits)
+    noisy_dm = dm_result.final_density_matrix
+
+    # Compute fidelity: F = <ideal|rho|ideal>
+    noisy_fidelity = np.real(
+        np.dot(np.conj(ideal_state), np.dot(noisy_dm, ideal_state))
+    )
+
+    # Verify fidelity dropped significantly (< 0.95)
+    assert noisy_fidelity < 0.95, (
+        f"Noisy fidelity should be < 0.95, got {noisy_fidelity}. "
+        "Noise injection may not be working correctly."
+    )
 
 
 def test_saboteur_respects_attack_budget():

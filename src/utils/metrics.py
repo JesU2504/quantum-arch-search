@@ -18,6 +18,83 @@ TODO: Implement the following:
 """
 
 import numpy as np
+import cirq
+
+
+def ghz_circuit(n_qubits):
+    """
+    Create a perfect GHZ circuit for n qubits.
+
+    Creates the state (|00...0> + |11...1>) / sqrt(2)
+    using a Hadamard on the first qubit followed by CNOTs.
+
+    Args:
+        n_qubits: Number of qubits for the GHZ state.
+
+    Returns:
+        Tuple of (circuit, qubits) where circuit is a Cirq circuit
+        and qubits is the list of qubits used.
+    """
+    qubits = cirq.LineQubit.range(n_qubits)
+    circuit = cirq.Circuit()
+    # Apply Hadamard to first qubit
+    circuit.append(cirq.H(qubits[0]))
+    # Apply CNOTs in chain
+    for i in range(n_qubits - 1):
+        circuit.append(cirq.CNOT(qubits[i], qubits[i + 1]))
+    return circuit, qubits
+
+
+def ideal_ghz_state(n_qubits):
+    """
+    Compute the ideal GHZ state vector.
+
+    Returns (|00...0> + |11...1>) / sqrt(2)
+
+    Args:
+        n_qubits: Number of qubits.
+
+    Returns:
+        State vector as numpy array of shape (2^n_qubits,).
+    """
+    dim = 2 ** n_qubits
+    state = np.zeros(dim, dtype=np.complex128)
+    state[0] = 1.0 / np.sqrt(2)  # |00...0>
+    state[-1] = 1.0 / np.sqrt(2)  # |11...1>
+    return state
+
+
+def state_fidelity(state1, state2):
+    """
+    Compute fidelity between two pure state vectors.
+
+    Uses F = |<state1|state2>|^2
+
+    Args:
+        state1: First state vector (numpy array).
+        state2: Second state vector (numpy array).
+
+    Returns:
+        Fidelity value in [0, 1].
+    """
+    overlap = np.vdot(state1, state2)
+    return np.abs(overlap) ** 2
+
+
+def simulate_circuit(circuit, qubits):
+    """
+    Simulate a circuit and return the final state vector.
+
+    Args:
+        circuit: Cirq circuit to simulate.
+        qubits: Qubits used in the circuit (for ordering).
+
+    Returns:
+        Final state vector as numpy array.
+    """
+    simulator = cirq.Simulator()
+    result = simulator.simulate(circuit, qubit_order=qubits)
+    return result.final_state_vector
 
 
 def compute_fidelity(circuit, target_state, qubits=None):

@@ -19,6 +19,7 @@ TODO: Implement the following:
 """
 
 import gymnasium as gym
+import cirq
 
 
 class Saboteur(gym.Env):
@@ -42,11 +43,13 @@ class Saboteur(gym.Env):
     # Available error rates for noise injection
     # 0.0 = no attack, higher values = stronger noise
     ERROR_RATES = [0.0, 0.001, 0.005, 0.01]
+    MAX_ERROR_RATE = 0.1  # Maximum error rate for depolarizing noise
 
     def __init__(
         self,
         target_circuit=None,
         target_state=None,
+        qubits=None,
         max_gates=20,
         max_concurrent_attacks=2,
         **kwargs
@@ -57,6 +60,7 @@ class Saboteur(gym.Env):
         Args:
             target_circuit: The circuit to attack.
             target_state: Target state for fidelity computation.
+            qubits: Qubits used in the circuit.
             max_gates: Maximum gates in the circuit (for action space).
             max_concurrent_attacks: Attack budget per step.
             **kwargs: Additional arguments for gym.Env.
@@ -64,6 +68,7 @@ class Saboteur(gym.Env):
         super().__init__()
         self.target_circuit = target_circuit
         self.target_state = target_state
+        self.qubits = qubits
         self.max_gates = max_gates
         self.max_concurrent_attacks = max_concurrent_attacks
         # TODO: Define observation_space (Dict with projected_state, gate_structure)
@@ -126,6 +131,41 @@ class Saboteur(gym.Env):
         # TODO: Respect attack budget
         # TODO: Return noisy circuit
         pass
+
+    def apply_max_noise(self, error_rate=None):
+        """
+        Apply maximum depolarizing noise to all qubits after the circuit.
+
+        This is a simplified attack method for testing purposes.
+        Applies depolarizing noise channel to all qubits in the circuit.
+
+        Args:
+            error_rate: Error rate for depolarizing noise.
+                       If None, uses MAX_ERROR_RATE.
+
+        Returns:
+            Tuple of (noisy_circuit, qubits) where noisy_circuit has
+            depolarizing noise applied after all operations.
+        """
+        if self.target_circuit is None:
+            raise ValueError("No target circuit set")
+
+        if error_rate is None:
+            error_rate = self.MAX_ERROR_RATE
+
+        # Create a copy of the circuit with noise
+        noisy_circuit = self.target_circuit.copy()
+
+        # Apply depolarizing noise to all qubits
+        qubits = self.qubits if self.qubits is not None else list(
+            self.target_circuit.all_qubits()
+        )
+
+        # Add depolarizing channel after the circuit
+        noise_ops = [cirq.depolarize(p=error_rate).on(q) for q in qubits]
+        noisy_circuit.append(noise_ops)
+
+        return noisy_circuit, qubits
 
     @staticmethod
     def create_observation_from_circuit(circuit, n_qubits, max_gates=20):
