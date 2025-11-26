@@ -1,6 +1,6 @@
 import sys
 from contextlib import closing
-from qas_gym.utils import get_default_gates, get_default_observables, fidelity_pure_target
+from ..utils import get_default_gates, get_default_observables, fidelity_pure_target
 from io import StringIO
 from typing import List, Optional
 
