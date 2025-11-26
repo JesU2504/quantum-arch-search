@@ -44,9 +44,10 @@ def test_vqe_returns_reasonable_energy():
     )
 
     # Assert energy is reasonably close to Hartree-Fock
-    # The |00> state is close to the HF reference state for H2
-    # Allow tolerance of 0.5 Ha since |00> is not exactly HF state
-    hf_tolerance = 0.5  # Ha
+    # The |00> state represents the HF reference for our H2 Hamiltonian
+    # We use a tolerance of 0.01 Ha (10 mHa) to account for small numerical
+    # differences. This is much tighter than the 0.02 Ha gap between HF and FCI.
+    hf_tolerance = 0.01  # Ha (10 mHa)
     assert abs(energy - H2_HARTREE_FOCK_ENERGY) < hf_tolerance, (
         f"Energy {energy:.4f} Ha should be within {hf_tolerance} Ha "
         f"of Hartree-Fock {H2_HARTREE_FOCK_ENERGY:.4f} Ha"

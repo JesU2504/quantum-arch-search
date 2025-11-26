@@ -124,7 +124,7 @@ class VQEArchitectEnv(gym.Env):
             # Identity circuit: start from |0...0> state
             dim = 2 ** self.n_qubits
             state_vector = np.zeros(dim, dtype=complex)
-            state_vector[0] = 1.0  # |00...0> state
+            state_vector[0] = 1.0  # |0...0> state
         else:
             # Simulate the circuit to get the output state
             simulator = cirq.Simulator()
@@ -173,15 +173,15 @@ class VQEArchitectEnv(gym.Env):
         """
         Build the H2 Hamiltonian matrix in the computational basis.
 
-        Uses coefficients for H2 at equilibrium (~0.74 Å) that give:
-        - Hartree-Fock energy ≈ -1.117 Ha (for |00⟩ state)
-        - FCI ground state energy ≈ -1.137 Ha
+        Uses coefficients for H2 at equilibrium (~0.74 A) that give:
+        - Hartree-Fock energy = -1.117 Ha (for |00> state)
+        - FCI ground state energy = -1.137 Ha
 
         The Hamiltonian has the form:
             H = a*II + b*(ZI + IZ) + c*ZZ + d*(XX + YY)
 
-        The ground state is a correlated state (superposition of |01⟩ and |10⟩),
-        while |00⟩ represents the uncorrelated Hartree-Fock state.
+        The ground state is a correlated state (superposition of |01> and |10>),
+        while |00> represents the uncorrelated Hartree-Fock state.
         """
         # Pauli matrices
         I = np.eye(2, dtype=complex)
@@ -190,12 +190,16 @@ class VQEArchitectEnv(gym.Env):
         Z = np.array([[1, 0], [0, -1]], dtype=complex)
 
         # H2 Hamiltonian coefficients tuned for:
-        # - E(|00⟩) = -1.117 Ha (Hartree-Fock reference)
+        # - E(|00>) = -1.117 Ha (Hartree-Fock reference)
         # - Ground state = -1.137 Ha (FCI)
-        a = -0.917   # constant term
-        b = -0.1     # Z_0 and Z_1 coefficient
-        c = 0.0      # Z_0 Z_1 coefficient
-        d = 0.11     # X_0 X_1 and Y_0 Y_1 coefficient (correlation)
+        # These coefficients are derived from the symmetric 2-qubit H2
+        # Hamiltonian form: H = a*II + b*(ZI + IZ) + c*ZZ + d*(XX + YY)
+        # The values are chosen such that |00> gives HF energy and the
+        # lowest eigenvalue matches the FCI energy.
+        a = -0.917   # constant term (identity)
+        b = -0.1     # single-qubit Z coefficient
+        c = 0.0      # ZZ interaction coefficient
+        d = 0.11     # XX+YY correlation coefficient
 
         # Build the full 4x4 Hamiltonian matrix
         # H = a*I⊗I + b*(Z⊗I + I⊗Z) + c*Z⊗Z + d*(X⊗X + Y⊗Y)
