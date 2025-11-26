@@ -78,7 +78,7 @@ def state_fidelity(state1, state2):
         Fidelity value in [0, 1].
     """
     overlap = np.vdot(state1, state2)
-    return np.abs(overlap) ** 2
+    return float(np.abs(overlap) ** 2)
 
 
 def simulate_circuit(circuit, qubits):
