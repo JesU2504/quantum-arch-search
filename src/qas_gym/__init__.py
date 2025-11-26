@@ -7,24 +7,6 @@ register(
     max_episode_steps=20,
 )
 
-register(id='BasicTwoQubit-v0',
-         entry_point='qas_gym.envs:BasicTwoQubitEnv')
-
-register(id='BasicThreeQubit-v0',
-         entry_point='qas_gym.envs:BasicThreeQubitEnv')
-
-register(id='BasicNQubit-v0',
-         entry_point='qas_gym.envs:BasicNQubitEnv')
-
-register(id='NoisyTwoQubit-v0',
-         entry_point='qas_gym.envs:NoisyTwoQubitEnv')
-
-register(id='NoisyThreeQubit-v0',
-         entry_point='qas_gym.envs:NoisyThreeQubitEnv')
-
-register(id='NoisyNQubit-v0',
-         entry_point='qas_gym.envs:NoisyNQubitEnv')
-
 register(id='Saboteur-v0',
          entry_point='qas_gym.envs:SaboteurEnv')
 
