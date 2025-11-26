@@ -10,15 +10,12 @@ See ExpPlan.md, Part 7.3 (Parallelism overhead check):
   - Verify: Parallel FPS ≈ 3× serial (accounting for overhead)
   - Why: If parallel is slower, env serialization is too heavy
     (common with Cirq objects)
-
-TODO: Implement the following:
-  - Vectorized environment creation utilities
-  - Parallelism benchmarking for overhead analysis
-  - Pickle-safe environment wrappers if needed
 """
 
 import time
-from typing import Callable, List, Optional
+from typing import Callable, Dict, Optional
+
+from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 
 
 def create_vec_env(
@@ -39,17 +36,18 @@ def create_vec_env(
     Returns:
         A vectorized environment (SubprocVecEnv or DummyVecEnv).
     """
-    # TODO: Import from stable_baselines3.common.vec_env
-    # TODO: Create list of env factory functions
-    # TODO: Return appropriate VecEnv type
-    pass
+    env_fns = [env_fn for _ in range(n_envs)]
+    if use_subproc:
+        return SubprocVecEnv(env_fns, **kwargs)
+    else:
+        return DummyVecEnv(env_fns)
 
 
 def benchmark_parallelism(
     env_fn: Callable,
     n_steps: int = 1000,
     n_envs: int = 4,
-):
+) -> Dict[str, float]:
     """
     Benchmark serial vs parallel environment performance.
 
@@ -66,10 +64,23 @@ def benchmark_parallelism(
           - parallel_fps: Frames per second with SubprocVecEnv
           - speedup: parallel_fps / serial_fps
     """
-    # TODO: Create DummyVecEnv and measure FPS
-    # TODO: Create SubprocVecEnv and measure FPS
-    # TODO: Compute and return speedup ratio
-    pass
+    # Benchmark serial (DummyVecEnv)
+    serial_env = create_vec_env(env_fn, n_envs=n_envs, use_subproc=False)
+    serial_fps = measure_fps(serial_env, n_steps)
+    serial_env.close()
+    
+    # Benchmark parallel (SubprocVecEnv)
+    parallel_env = create_vec_env(env_fn, n_envs=n_envs, use_subproc=True)
+    parallel_fps = measure_fps(parallel_env, n_steps)
+    parallel_env.close()
+    
+    speedup = parallel_fps / serial_fps if serial_fps > 0 else 0.0
+    
+    return {
+        "serial_fps": serial_fps,
+        "parallel_fps": parallel_fps,
+        "speedup": speedup,
+    }
 
 
 def measure_fps(vec_env, n_steps: int) -> float:
@@ -83,11 +94,17 @@ def measure_fps(vec_env, n_steps: int) -> float:
     Returns:
         Frames per second.
     """
-    # TODO: Reset environment
-    # TODO: Run random actions for n_steps
-    # TODO: Measure elapsed time
-    # TODO: Return FPS
-    pass
+    vec_env.reset()
+    n_envs = vec_env.num_envs
+    
+    start_time = time.perf_counter()
+    for _ in range(n_steps):
+        actions = [vec_env.action_space.sample() for _ in range(n_envs)]
+        vec_env.step(actions)
+    elapsed = time.perf_counter() - start_time
+    
+    total_frames = n_steps * n_envs
+    return total_frames / elapsed
 
 
 class PickleSafeEnvWrapper:

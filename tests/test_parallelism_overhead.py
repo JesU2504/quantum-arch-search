@@ -10,11 +10,19 @@ See ExpPlan.md, Part 7.3:
 
 This test validates that parallel training is beneficial for the
 quantum architecture search environments.
-
-TODO: Implement full test once parallel utilities are complete.
 """
 
-import time
+import sys
+import os
+
+import gymnasium as gym
+from gymnasium import spaces
+import numpy as np
+
+# Add src to path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+
+from utils.parallel import create_vec_env, benchmark_parallelism
 
 
 # Expected minimum speedup for parallel to be beneficial
@@ -23,19 +31,81 @@ N_STEPS = 1000
 N_ENVS = 4
 
 
+class SlowToyEnv(gym.Env):
+    """
+    A toy environment with simulated computational work per step.
+    
+    This simulates the computational overhead of quantum circuit 
+    simulation (e.g., Cirq operations) to properly test parallelism benefits.
+    Each step performs Python-heavy computation to simulate work that
+    benefits from multiprocessing.
+    """
+    
+    def __init__(self, work_iterations: int = 50000):
+        super().__init__()
+        self.work_iterations = work_iterations
+        self.observation_space = spaces.Box(
+            low=-1.0, high=1.0, shape=(4,), dtype=np.float32
+        )
+        self.action_space = spaces.Discrete(2)
+        self._state = None
+        
+    def reset(self, seed=None, options=None):
+        super().reset(seed=seed)
+        self._state = np.random.randn(4).astype(np.float32)
+        return self._state, {}
+    
+    def step(self, action):
+        # Simulate computational work (Python loops don't release GIL)
+        # This represents the kind of work that benefits from multiprocessing
+        total = 0.0
+        for i in range(self.work_iterations):
+            total += (i * 0.001) ** 0.5
+        
+        self._state = np.random.randn(4).astype(np.float32)
+        reward = float(total % 1.0)  # Use result to prevent optimization
+        terminated = False
+        truncated = False
+        return self._state, reward, terminated, truncated, {}
+
+
+def make_slow_toy_env():
+    """Factory function to create SlowToyEnv."""
+    return SlowToyEnv(work_iterations=50000)
+
+
 def test_parallel_is_faster_than_serial():
     """
     Test that SubprocVecEnv is faster than DummyVecEnv.
 
     Runs 1000 steps with both serial and parallel environments
     and verifies that parallel achieves meaningful speedup.
+    
+    Uses a toy environment with simulated computational work to
+    represent quantum circuit simulation overhead.
     """
-    # TODO: Import create_vec_env and benchmark utilities
-    # TODO: Define environment factory function
-    # TODO: Measure serial (DummyVecEnv) FPS
-    # TODO: Measure parallel (SubprocVecEnv) FPS
-    # TODO: Assert speedup >= MIN_EXPECTED_SPEEDUP
-    pass
+    # Run benchmark using slow toy Gym environment
+    results = benchmark_parallelism(
+        env_fn=make_slow_toy_env,
+        n_steps=N_STEPS,
+        n_envs=N_ENVS,
+    )
+    
+    serial_fps = results["serial_fps"]
+    parallel_fps = results["parallel_fps"]
+    speedup = results["speedup"]
+    
+    # Print results for debugging
+    print(f"\nSerial FPS: {serial_fps:.2f}")
+    print(f"Parallel FPS: {parallel_fps:.2f}")
+    print(f"Speedup: {speedup:.2f}x")
+    
+    # Assert parallel is at least 2x faster than serial
+    assert speedup >= MIN_EXPECTED_SPEEDUP, (
+        f"Parallel speedup ({speedup:.2f}x) is less than expected "
+        f"minimum ({MIN_EXPECTED_SPEEDUP}x). This may indicate "
+        f"environment serialization overhead is too high."
+    )
 
 
 def test_serialization_overhead():
