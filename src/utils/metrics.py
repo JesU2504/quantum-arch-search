@@ -202,3 +202,30 @@ def fidelity_retention_ratio(fidelity_noisy, fidelity_clean):
     if fidelity_clean == 0:
         return 0.0
     return fidelity_noisy / fidelity_clean
+
+
+def state_energy(state_vector, hamiltonian_matrix):
+    """
+    Compute the energy expectation value of a quantum state.
+
+    Computes <psi|H|psi> for a given state vector and Hamiltonian matrix.
+
+    Args:
+        state_vector: Complex numpy array of shape (2^n,) representing the
+            quantum state |psi>.
+        hamiltonian_matrix: Complex numpy array of shape (2^n, 2^n)
+            representing the Hamiltonian operator H.
+
+    Returns:
+        Real energy expectation value in Hartree.
+    """
+    # Normalize the state vector
+    state_vector = np.asarray(state_vector, dtype=complex)
+    norm = np.linalg.norm(state_vector)
+    if norm > 0:
+        state_vector = state_vector / norm
+
+    # Compute <psi|H|psi>
+    h_psi = hamiltonian_matrix @ state_vector
+    energy = np.real(np.vdot(state_vector, h_psi))
+    return float(energy)
