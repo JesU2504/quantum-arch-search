@@ -39,6 +39,9 @@ DEFAULT_N_SHOTS = 1000
 # Number of repetitions for each p value to get mean/std estimates
 DEFAULT_N_REPETITIONS = 10
 
+# Small epsilon to avoid division by zero in variance calculations
+NOISE_VARIANCE_EPSILON = 1e-8
+
 
 def apply_depolarizing_noise_to_circuit(circuit: cirq.Circuit, p: float) -> cirq.Circuit:
     """
@@ -107,7 +110,7 @@ def generate_measurement_samples(circuit: cirq.Circuit, target_state: np.ndarray
     # Model measurement noise as binomial variance in fidelity estimation
     # The variance scales as fid * (1 - fid) / n_shots for a single measurement
     # We add small Gaussian noise to model shot noise
-    std_dev = np.sqrt(expected_fid * (1 - expected_fid) / n_shots + 1e-8)
+    std_dev = np.sqrt(expected_fid * (1 - expected_fid) / n_shots + NOISE_VARIANCE_EPSILON)
     
     # Generate samples centered around expected fidelity
     samples = np.random.normal(expected_fid, std_dev, n_shots)
@@ -301,7 +304,8 @@ def run_parameter_recovery(results_dir: str = None, n_qubits: int = 4,
     
     Args:
         results_dir: Directory to save results. Creates timestamped subdir if None.
-        n_qubits: Number of qubits (default 4).
+        n_qubits: Number of qubits. Default is 4 (per problem statement), but when called
+                  from run_experiments.py, it uses args.n_qubits (default 3 there).
         baseline_circuit_path: Path to baseline circuit JSON. If None, looks in results_dir parent.
         robust_circuit_path: Path to robust circuit JSON. If None, looks in results_dir parent.
         p_values: List of noise parameters to test. Uses default if None.
@@ -345,6 +349,7 @@ def run_parameter_recovery(results_dir: str = None, n_qubits: int = 4,
         baseline_circuit_path = os.path.join(parent_dir, 'baseline', 'circuit_vanilla.json')
     
     if robust_circuit_path is None:
+        import re
         parent_dir = os.path.dirname(results_dir.rstrip('/'))
         robust_circuit_path = os.path.join(parent_dir, 'adversarial', 'circuit_robust.json')
         # Also try adversarial_training_* subdirs
@@ -354,7 +359,8 @@ def run_parameter_recovery(results_dir: str = None, n_qubits: int = 4,
             if os.path.isdir(adv_dir):
                 adv_subdirs = glob(os.path.join(adv_dir, 'adversarial_training_*'))
                 if adv_subdirs:
-                    adv_subdirs.sort()
+                    # Sort by timestamp in folder name (matching run_experiments.py)
+                    adv_subdirs.sort(key=lambda x: re.findall(r'adversarial_training_(\d+)-(\d+)', x)[0] if re.findall(r'adversarial_training_(\d+)-(\d+)', x) else ('', ''))
                     robust_circuit_path = os.path.join(adv_subdirs[-1], 'circuit_robust.json')
     
     # Load baseline circuit

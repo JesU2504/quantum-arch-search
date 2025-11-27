@@ -265,7 +265,10 @@ def run_pipeline(args):
 			import re
 			adv_subdirs = glob(os.path.join(adversarial_dir, 'adversarial_training_*'))
 			if adv_subdirs:
-				adv_subdirs.sort(key=lambda x: re.findall(r'adversarial_training_(\d+)-(\d+)', x)[0] if re.findall(r'adversarial_training_(\d+)-(\d+)', x) else x)
+				def sort_key(x):
+					matches = re.findall(r'adversarial_training_(\d+)-(\d+)', x)
+					return matches[0] if matches else ('', '')
+				adv_subdirs.sort(key=sort_key)
 				robust_candidate = os.path.join(adv_subdirs[-1], 'circuit_robust.json')
 				if os.path.exists(robust_candidate):
 					robust_src = robust_candidate
