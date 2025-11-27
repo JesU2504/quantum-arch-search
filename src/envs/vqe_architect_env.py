@@ -237,7 +237,7 @@ class VQEArchitectEnv(gym.Env):
 
         Reference energies:
         - Hartree-Fock energy ≈ -1.85 Ha (uncorrelated |0000> state)
-        - FCI ground state energy ≈ -2.05 Ha
+        - FCI ground state energy ≈ -2.20 Ha (from exact diagonalization)
 
         The win condition from ExpPlan.md is to achieve chemical accuracy
         (1.6 mHa = 0.0016 Ha) with fewer CNOTs than UCCSD.

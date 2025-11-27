@@ -198,11 +198,8 @@ def build_adversarial_ansatz(
 
 def count_cnots(circuit: cirq.Circuit) -> int:
     """Count CNOT gates in a circuit."""
-    count = 0
-    for op in circuit.all_operations():
-        if isinstance(op.gate, cirq.CNotPowGate):
-            count += 1
-    return count
+    return sum(1 for op in circuit.all_operations()
+               if isinstance(op.gate, cirq.CNotPowGate))
 
 
 def compute_energy_expectation(
