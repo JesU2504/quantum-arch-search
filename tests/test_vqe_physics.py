@@ -9,8 +9,6 @@ See ExpPlan.md, Part 7.2:
 
 This test validates the VQE environment correctly computes molecular
 energies using quantum circuits.
-
-TODO: Implement full test once VQEArchitectEnv class is complete.
 """
 
 import numpy as np
@@ -61,10 +59,20 @@ def test_vqe_energy_not_exact_ground_state():
     An identity circuit should not achieve the FCI ground state energy.
     This verifies the Hamiltonian is non-trivial.
     """
-    # TODO: Create VQEArchitectEnv with dummy circuit
-    # TODO: Compute energy
-    # TODO: Assert |energy - FCI| > CHEMICAL_ACCURACY
-    pass
+    from src.envs import VQEArchitectEnv
+
+    # Create environment for H2 molecule
+    env = VQEArchitectEnv(molecule="H2", bond_distance=0.74)
+
+    # Compute energy with identity circuit (None means |00> state)
+    energy = env.compute_energy(circuit=None)
+
+    # Assert |energy - FCI| > CHEMICAL_ACCURACY
+    # The identity circuit (|00> state) should NOT achieve the FCI ground state
+    assert abs(energy - H2_FCI_ENERGY) > CHEMICAL_ACCURACY, (
+        f"Identity circuit energy {energy:.4f} Ha is too close to FCI "
+        f"{H2_FCI_ENERGY:.4f} Ha (within {CHEMICAL_ACCURACY} Ha chemical accuracy)"
+    )
 
 
 def test_vqe_hamiltonian_construction():
@@ -74,11 +82,33 @@ def test_vqe_hamiltonian_construction():
     The molecular Hamiltonian should be Hermitian and have
     the expected number of terms.
     """
-    # TODO: Create VQEArchitectEnv
-    # TODO: Access the constructed Hamiltonian
-    # TODO: Verify Hermiticity
-    # TODO: Verify term count is reasonable
-    pass
+    from src.envs import VQEArchitectEnv
+
+    # Create environment for H2 molecule
+    env = VQEArchitectEnv(molecule="H2", bond_distance=0.74)
+
+    # Access the constructed Hamiltonian
+    H = env.hamiltonian
+
+    # Verify Hamiltonian is a 2D matrix (4x4 for 2 qubits)
+    assert H.ndim == 2, f"Hamiltonian should be 2D, got {H.ndim}D"
+    expected_dim = 2 ** env.n_qubits
+    assert H.shape == (expected_dim, expected_dim), (
+        f"Hamiltonian shape should be ({expected_dim}, {expected_dim}), "
+        f"got {H.shape}"
+    )
+
+    # Verify Hermiticity: H = H†
+    H_dagger = np.conj(H.T)
+    assert np.allclose(H, H_dagger), (
+        "Hamiltonian must be Hermitian (H = H†)"
+    )
+
+    # Verify the Hamiltonian has real eigenvalues (consequence of Hermiticity)
+    eigenvalues = np.linalg.eigvalsh(H)
+    assert np.all(np.isreal(eigenvalues)), (
+        "Hamiltonian eigenvalues must be real"
+    )
 
 
 def test_vqe_reference_energies():
@@ -88,11 +118,34 @@ def test_vqe_reference_energies():
     The environment should provide both Hartree-Fock and FCI
     reference energies for comparison.
     """
-    # TODO: Create VQEArchitectEnv
-    # TODO: Get reference energies
-    # TODO: Verify both HF and FCI energies are present
-    # TODO: Verify FCI < HF (ground state is lower)
-    pass
+    from src.envs import VQEArchitectEnv
+
+    # Create environment for H2 molecule
+    env = VQEArchitectEnv(molecule="H2", bond_distance=0.74)
+
+    # Get reference energies
+    ref_energies = env.get_reference_energies()
+
+    # Verify both HF and FCI energies are present
+    assert "hartree_fock" in ref_energies, (
+        "Reference energies must include 'hartree_fock'"
+    )
+    assert "fci" in ref_energies, (
+        "Reference energies must include 'fci'"
+    )
+
+    hf_energy = ref_energies["hartree_fock"]
+    fci_energy = ref_energies["fci"]
+
+    # Verify energies are finite numbers
+    assert np.isfinite(hf_energy), "Hartree-Fock energy must be finite"
+    assert np.isfinite(fci_energy), "FCI energy must be finite"
+
+    # Verify FCI < HF (ground state is lower than Hartree-Fock)
+    assert fci_energy < hf_energy, (
+        f"FCI energy {fci_energy:.4f} Ha must be lower than "
+        f"Hartree-Fock {hf_energy:.4f} Ha"
+    )
 
 
 def test_vqe_circuit_improves_energy():
@@ -102,11 +155,35 @@ def test_vqe_circuit_improves_energy():
     A well-chosen circuit should achieve lower energy than
     the identity circuit.
     """
-    # TODO: Create VQEArchitectEnv
-    # TODO: Compute identity circuit energy
-    # TODO: Apply some gates (e.g., parameterized ansatz)
-    # TODO: Verify energy decreased
-    pass
+    import cirq
+    from src.envs import VQEArchitectEnv
+
+    # Create environment for H2 molecule
+    env = VQEArchitectEnv(molecule="H2", bond_distance=0.74)
+
+    # Compute identity circuit energy
+    identity_energy = env.compute_energy(circuit=None)
+
+    # Create an ansatz circuit that can improve upon the Hartree-Fock energy.
+    # This circuit uses entangling gates to create correlations between qubits,
+    # which is necessary to lower the energy below the uncorrelated HF reference.
+    qubits = cirq.LineQubit.range(env.n_qubits)
+    ansatz = cirq.Circuit([
+        cirq.H(qubits[0]),           # Create superposition on qubit 0
+        cirq.X(qubits[1]),           # Flip qubit 1
+        cirq.CZ(qubits[0], qubits[1]),  # Apply controlled-Z for phase
+        cirq.CNOT(qubits[0], qubits[1]),  # Entangle qubits
+    ])
+
+    # Compute energy with the ansatz circuit
+    ansatz_energy = env.compute_energy(circuit=ansatz)
+
+    # Verify energy decreased - the ansatz should achieve lower energy
+    # than the identity circuit (which gives the Hartree-Fock energy)
+    assert ansatz_energy < identity_energy, (
+        f"Ansatz energy {ansatz_energy:.4f} Ha should be lower than "
+        f"identity energy {identity_energy:.4f} Ha"
+    )
 
 
 if __name__ == "__main__":
@@ -117,4 +194,4 @@ if __name__ == "__main__":
     test_vqe_hamiltonian_construction()
     test_vqe_reference_energies()
     test_vqe_circuit_improves_energy()
-    print("All Stage 7.2 tests passed (or skipped with TODO).")
+    print("All Stage 7.2 tests passed.")
