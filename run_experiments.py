@@ -56,6 +56,7 @@ def run_pipeline(args):
 	from experiments.train_adversarial import train_adversarial
 	from experiments.compare_circuits import compare_noise_resilience
 	from experiments.lambda_sweep_ghz import run_lambda_sweep
+	from experiments.parameter_recovery import run_parameter_recovery
 
 	timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
 	base = args.base_dir or f"results/run_{timestamp}"
@@ -245,11 +246,46 @@ def run_pipeline(args):
 	else:
 		logger.info('Skipping compare as requested')
 
+	# 6) Parameter Recovery Experiment
+	# Tests how well we can recover the true noise parameter from measurement statistics
+	# for both baseline and robust circuits
+	param_recovery_dir = os.path.join(base, 'parameter_recovery')
+	os.makedirs(param_recovery_dir, exist_ok=True)
+	if not args.skip_parameter_recovery:
+		logger.info('Running parameter recovery experiment')
+		# Look for circuits in expected locations
+		vanilla_src = os.path.join(baseline_dir, 'circuit_vanilla.json')
+		robust_src = None
+		# Try to find robust circuit
+		if os.path.exists(os.path.join(adversarial_dir, 'circuit_robust.json')):
+			robust_src = os.path.join(adversarial_dir, 'circuit_robust.json')
+		else:
+			# Search in adversarial_training_* subdirs
+			from glob import glob
+			import re
+			adv_subdirs = glob(os.path.join(adversarial_dir, 'adversarial_training_*'))
+			if adv_subdirs:
+				adv_subdirs.sort(key=lambda x: re.findall(r'adversarial_training_(\d+)-(\d+)', x)[0] if re.findall(r'adversarial_training_(\d+)-(\d+)', x) else x)
+				robust_candidate = os.path.join(adv_subdirs[-1], 'circuit_robust.json')
+				if os.path.exists(robust_candidate):
+					robust_src = robust_candidate
+		
+		run_parameter_recovery(
+			results_dir=param_recovery_dir,
+			n_qubits=args.n_qubits,
+			baseline_circuit_path=vanilla_src if os.path.exists(vanilla_src) else None,
+			robust_circuit_path=robust_src,
+			logger=logger
+		)
+		logger.info('Parameter recovery experiment complete. Results saved to %s', param_recovery_dir)
+	else:
+		logger.info('Skipping parameter recovery as requested')
+
 	logger.info('Pipeline finished. Results in %s', base)
 
 
 def parse_args():
-	p = argparse.ArgumentParser(description='Run the experiment pipeline: baseline, lambda-sweep, saboteur-only, adversarial, compare')
+	p = argparse.ArgumentParser(description='Run the experiment pipeline: baseline, lambda-sweep, saboteur-only, adversarial, compare, parameter-recovery')
 	p.add_argument('--preset', choices=['quick', 'full', 'long'], default='quick')
 	p.add_argument('--n-qubits', type=int, default=3)
 	p.add_argument('--base-dir', type=str, default=None, help='Base results directory (default: results/run_<timestamp>)')
@@ -258,6 +294,7 @@ def parse_args():
 	p.add_argument('--skip-saboteur', action='store_true')
 	p.add_argument('--skip-adversarial', action='store_true')
 	p.add_argument('--skip-compare', action='store_true')
+	p.add_argument('--skip-parameter-recovery', action='store_true', help='Skip parameter recovery experiment')
 	p.add_argument('--baseline-steps', type=int, default=None)
 	p.add_argument('--saboteur-steps', type=int, default=None)
 	p.add_argument('--max-circuit-gates', type=int, default=8)
