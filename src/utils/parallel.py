@@ -134,6 +134,6 @@ class PickleSafeEnvWrapper:
 
     def __call__(self):
         """Create and return the environment."""
-        # TODO: Create environment on first call
-        # TODO: Return the environment
-        pass
+        if self.env is None:
+            self.env = self.env_fn()
+        return self.env
