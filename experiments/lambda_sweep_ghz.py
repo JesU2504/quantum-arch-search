@@ -39,8 +39,9 @@ N_SEEDS = 5
 N_QUBITS = 4
 FIDELITY_THRESHOLD = 0.99  # Success threshold per ExpPlan.md
 MAX_CIRCUIT_TIMESTEPS = config.MAX_CIRCUIT_TIMESTEPS
-# Training steps per run - use quick preset for lambda sweep
-TRAINING_STEPS = 50000  # Enough for convergence but manageable runtime
+# Default training steps for PPO when not specified by the pipeline
+# This value is used for standalone CLI invocations
+DEFAULT_TRAINING_STEPS = 50000  # Enough for convergence but manageable runtime
 N_STEPS_PER_UPDATE = 1024
 
 
@@ -87,7 +88,7 @@ def _count_cnots(circuit) -> int:
     return count
 
 
-def run_single_trial(lambda_penalty: float, seed: int, target_state: np.ndarray) -> dict:
+def run_single_trial(lambda_penalty: float, seed: int, target_state: np.ndarray, training_steps: int) -> dict:
     """
     Run a single training trial with given lambda penalty and seed.
     
@@ -95,6 +96,8 @@ def run_single_trial(lambda_penalty: float, seed: int, target_state: np.ndarray)
         lambda_penalty: The complexity penalty weight (λ) for R = F - λC.
         seed: Random seed for reproducibility.
         target_state: The target quantum state (4-qubit GHZ).
+        training_steps: Total number of timesteps for PPO training.
+                        Controlled by the main experiment pipeline.
         
     Returns:
         Dict with 'final_fidelity', 'best_fidelity', 'cnot_count', 'success'.
@@ -127,8 +130,9 @@ def run_single_trial(lambda_penalty: float, seed: int, target_state: np.ndarray)
     model = PPO("MlpPolicy", env=env, **agent_params)
     
     # Train with callback to track metrics
+    # Use the training_steps parameter passed from the pipeline (or default)
     callback = LambdaSweepCallback()
-    model.learn(total_timesteps=TRAINING_STEPS, callback=callback)
+    model.learn(total_timesteps=training_steps, callback=callback)
     
     # Determine success: best fidelity > 0.99
     success = callback.best_fidelity > FIDELITY_THRESHOLD
@@ -141,7 +145,7 @@ def run_single_trial(lambda_penalty: float, seed: int, target_state: np.ndarray)
     }
 
 
-def run_lambda_sweep(results_dir: str = None, logger=None) -> dict:
+def run_lambda_sweep(results_dir: str = None, logger=None, training_steps: int = None) -> dict:
     """
     Run the full lambda sweep experiment.
     
@@ -151,10 +155,17 @@ def run_lambda_sweep(results_dir: str = None, logger=None) -> dict:
     Args:
         results_dir: Directory to save results. If None, creates a timestamped dir.
         logger: Optional logger for output. If None, uses print.
+        training_steps: Total timesteps for PPO training per trial. 
+                        If None, defaults to DEFAULT_TRAINING_STEPS (50000).
+                        When called from run_experiments.py, this is typically set
+                        to baseline_steps (or architect_steps) to match the preset.
         
     Returns:
         Dict with per-lambda and aggregate metrics.
     """
+    # Use default training steps if not specified (for standalone CLI usage)
+    effective_training_steps = training_steps if training_steps is not None else DEFAULT_TRAINING_STEPS
+    
     def log(msg):
         if logger:
             logger.info(msg)
@@ -171,6 +182,7 @@ def run_lambda_sweep(results_dir: str = None, logger=None) -> dict:
     log(f"Lambda values: {LAMBDA_VALUES}")
     log(f"Seeds per lambda: {N_SEEDS}")
     log(f"Qubits: {N_QUBITS}")
+    log(f"Training steps per trial: {effective_training_steps}")
     log(f"Results directory: {results_dir}")
     
     # Get target state (4-qubit GHZ)
@@ -185,7 +197,8 @@ def run_lambda_sweep(results_dir: str = None, logger=None) -> dict:
         
         for seed in range(N_SEEDS):
             log(f"  Seed {seed + 1}/{N_SEEDS}...")
-            trial_result = run_single_trial(lambda_val, seed, target_state)
+            # Pass effective_training_steps to each trial for PPO training
+            trial_result = run_single_trial(lambda_val, seed, target_state, effective_training_steps)
             lambda_results.append(trial_result)
             log(f"    Best fidelity: {trial_result['best_fidelity']:.4f}, "
                 f"CNOT count: {trial_result['cnot_count']}, "
@@ -230,6 +243,7 @@ def run_lambda_sweep(results_dir: str = None, logger=None) -> dict:
         f.write(f"Lambda values: {LAMBDA_VALUES}\n")
         f.write(f"Seeds per lambda: {N_SEEDS}\n")
         f.write(f"Qubits: {N_QUBITS}\n")
+        f.write(f"Training steps per trial: {effective_training_steps}\n")
         f.write(f"Fidelity threshold: {FIDELITY_THRESHOLD}\n\n")
         f.write("Per-Lambda Results:\n")
         f.write("-" * 50 + "\n")

@@ -132,12 +132,13 @@ def run_pipeline(args):
 	# - Tests hyperparameter sensitivity by sweeping λ ∈ [0.001, 0.005, 0.01, 0.05, 0.1]
 	# - Runs 5 seeds per lambda value for statistical significance
 	# - Logs success rate (fidelity > 0.99) and CNOT count variance
-	# - Hard-coded config per ExpPlan.md (no CLI needed)
+	# - Uses baseline_steps (from preset or CLI) as training_steps for PPO consistency
 	lambda_sweep_dir = os.path.join(base, 'lambda_sweep')
 	os.makedirs(lambda_sweep_dir, exist_ok=True)
 	if not args.skip_lambda_sweep:
 		logger.info('Running lambda sweep experiment (ExpPlan Part 1, Exp 1.1)')
-		run_lambda_sweep(results_dir=lambda_sweep_dir, logger=logger)
+		# Pass baseline_steps as training_steps so PPO training is controlled by the pipeline preset
+		run_lambda_sweep(results_dir=lambda_sweep_dir, logger=logger, training_steps=baseline_steps)
 		logger.info('Lambda sweep complete. Results saved to %s', lambda_sweep_dir)
 	else:
 		logger.info('Skipping lambda sweep as requested')
