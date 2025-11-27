@@ -55,6 +55,7 @@ def run_pipeline(args):
 	from experiments.train_saboteur_only import train_saboteur_only
 	from experiments.train_adversarial import train_adversarial
 	from experiments.compare_circuits import compare_noise_resilience
+	from experiments.lambda_sweep_ghz import run_lambda_sweep
 
 	timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
 	base = args.base_dir or f"results/run_{timestamp}"
@@ -125,6 +126,21 @@ def run_pipeline(args):
 		train_baseline_architect(results_dir=baseline_dir, n_qubits=args.n_qubits, architect_steps=baseline_steps, n_steps=baseline_n_steps)
 	else:
 		logger.info('Skipping baseline as requested')
+
+	# 1.5) Lambda Sweep (ExpPlan Part 1 - Brittleness Experiment)
+	# This step implements Experiment 1.1 from ExpPlan.md:
+	# - Tests hyperparameter sensitivity by sweeping λ ∈ [0.001, 0.005, 0.01, 0.05, 0.1]
+	# - Runs 5 seeds per lambda value for statistical significance
+	# - Logs success rate (fidelity > 0.99) and CNOT count variance
+	# - Hard-coded config per ExpPlan.md (no CLI needed)
+	lambda_sweep_dir = os.path.join(base, 'lambda_sweep')
+	os.makedirs(lambda_sweep_dir, exist_ok=True)
+	if not args.skip_lambda_sweep:
+		logger.info('Running lambda sweep experiment (ExpPlan Part 1, Exp 1.1)')
+		run_lambda_sweep(results_dir=lambda_sweep_dir, logger=logger)
+		logger.info('Lambda sweep complete. Results saved to %s', lambda_sweep_dir)
+	else:
+		logger.info('Skipping lambda sweep as requested')
 
 	# 2) Saboteur-only
 	saboteur_dir = os.path.join(base, 'saboteur')
@@ -232,11 +248,12 @@ def run_pipeline(args):
 
 
 def parse_args():
-	p = argparse.ArgumentParser(description='Run the experiment pipeline: baseline, saboteur-only, adversarial, compare')
+	p = argparse.ArgumentParser(description='Run the experiment pipeline: baseline, lambda-sweep, saboteur-only, adversarial, compare')
 	p.add_argument('--preset', choices=['quick', 'full', 'long'], default='quick')
 	p.add_argument('--n-qubits', type=int, default=3)
 	p.add_argument('--base-dir', type=str, default=None, help='Base results directory (default: results/run_<timestamp>)')
 	p.add_argument('--skip-baseline', action='store_true')
+	p.add_argument('--skip-lambda-sweep', action='store_true', help='Skip lambda sweep experiment (ExpPlan Part 1)')
 	p.add_argument('--skip-saboteur', action='store_true')
 	p.add_argument('--skip-adversarial', action='store_true')
 	p.add_argument('--skip-compare', action='store_true')
