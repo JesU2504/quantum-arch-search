@@ -33,10 +33,10 @@ from qas_gym.utils import get_ghz_state, fidelity_pure_target, load_circuit
 
 def apply_over_rotation(circuit: cirq.Circuit, epsilon: float) -> cirq.Circuit:
     """
-    Apply coherent over-rotation error to all RX gates in the circuit.
+    Apply coherent over-rotation error to all single-qubit gates in the circuit.
     
-    For every gate in the circuit, if it's a rotation gate (Rx, Ry, Rz, etc.),
-    we add an additional Rx(epsilon) after each single-qubit gate.
+    For every single-qubit gate in the circuit (H, X, Y, Z, S, T, rotations, etc.),
+    we add an additional Rx(epsilon) after the gate to simulate coherent control errors.
     
     Args:
         circuit: The original circuit.
