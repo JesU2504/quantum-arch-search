@@ -20,6 +20,8 @@ Results are saved to results/lambda_sweep_<timestamp>/.
 
 import os
 import json
+import random
+import cirq
 import numpy as np
 from datetime import datetime
 from stable_baselines3 import PPO
@@ -78,7 +80,6 @@ class LambdaSweepCallback(BaseCallback):
 
 def _count_cnots(circuit) -> int:
     """Count the number of CNOT gates in a circuit."""
-    import cirq
     count = 0
     for op in circuit.all_operations():
         if isinstance(op.gate, cirq.CNotPowGate):
@@ -91,16 +92,13 @@ def run_single_trial(lambda_penalty: float, seed: int, target_state: np.ndarray)
     Run a single training trial with given lambda penalty and seed.
     
     Args:
-        lambda_penalty: The complexity penalty weight (λ).
+        lambda_penalty: The complexity penalty weight (λ) for R = F - λC.
         seed: Random seed for reproducibility.
         target_state: The target quantum state (4-qubit GHZ).
         
     Returns:
         Dict with 'final_fidelity', 'best_fidelity', 'cnot_count', 'success'.
     """
-    import random
-    import numpy as np
-    
     # Set seeds for reproducibility
     random.seed(seed)
     np.random.seed(seed)
@@ -111,13 +109,14 @@ def run_single_trial(lambda_penalty: float, seed: int, target_state: np.ndarray)
         pass
     
     # Create environment with the specified lambda penalty
-    # The lambda_penalty in ArchitectEnv is used as complexity_penalty_weight
+    # The complexity_penalty_weight is the λ in R = F - λC (per ExpPlan.md)
+    # reward_penalty is kept at baseline value (0.01) for consistency
     env = ArchitectEnv(
         target=target_state,
         fidelity_threshold=1.1,  # > 1.0 to ensure episodes run to max_timesteps
-        reward_penalty=lambda_penalty,  # This is the λ for complexity penalty
+        reward_penalty=0.01,  # Fixed penalty for reward shaping (same as baseline)
         max_timesteps=MAX_CIRCUIT_TIMESTEPS,
-        complexity_penalty_weight=lambda_penalty,
+        complexity_penalty_weight=lambda_penalty,  # The λ parameter we're sweeping
     )
     
     # Create agent with fixed hyperparameters
