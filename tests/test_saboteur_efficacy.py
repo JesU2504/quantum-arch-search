@@ -94,11 +94,39 @@ def test_saboteur_respects_attack_budget():
     The Saboteur should only attack a limited number of gates per step,
     even if the action requests attacks on more gates.
     """
-    # TODO: Create circuit with many gates
-    # TODO: Create Saboteur with small attack budget
-    # TODO: Request attacks on all gates
-    # TODO: Verify only budget-limited attacks applied
-    pass
+    n_qubits = 4
+    max_gates = 20
+
+    # Step 1: Create a circuit with many gates
+    circuit, qubits = ghz_circuit(n_qubits)
+
+    # Step 2: Create Saboteur with small attack budget (2)
+    attack_budget = 2
+    saboteur = Saboteur(
+        target_circuit=circuit,
+        target_state=ideal_ghz_state(n_qubits),
+        qubits=qubits,
+        max_concurrent_attacks=attack_budget,
+        max_gates=max_gates,
+    )
+
+    # Step 3: Request attacks on ALL gates (more than budget allows)
+    num_ops = len(list(circuit.all_operations()))
+    # Action: attack all gates with max error level (index 3 = 0.01)
+    action = [3] * num_ops + [0] * (max_gates - num_ops)
+
+    # Step 4: Apply noise and verify only budget-limited attacks applied
+    noisy_circuit, num_attacks = saboteur.apply_noise(circuit, action)
+
+    # Verify budget was respected
+    assert num_attacks <= attack_budget, (
+        f"Number of attacks ({num_attacks}) should not exceed budget "
+        f"({attack_budget})"
+    )
+    assert num_attacks == attack_budget, (
+        f"Expected exactly {attack_budget} attacks when {num_ops} were "
+        f"requested, got {num_attacks}"
+    )
 
 
 def test_saboteur_zero_noise_preserves_fidelity():
@@ -108,10 +136,37 @@ def test_saboteur_zero_noise_preserves_fidelity():
     When the Saboteur chooses error_rate=0.0 for all gates,
     the circuit fidelity should remain unchanged.
     """
-    # TODO: Create perfect GHZ circuit
-    # TODO: Apply Saboteur action with all zeros (no noise)
-    # TODO: Verify fidelity remains ~1.0
-    pass
+    n_qubits = 4
+    max_gates = 20
+
+    # Step 1: Create a perfect GHZ circuit
+    circuit, qubits = ghz_circuit(n_qubits)
+    ideal_state = ideal_ghz_state(n_qubits)
+
+    # Step 2: Create Saboteur
+    saboteur = Saboteur(
+        target_circuit=circuit,
+        target_state=ideal_state,
+        qubits=qubits,
+        max_gates=max_gates,
+    )
+
+    # Step 3: Apply zero-noise action (all error levels = 0)
+    action = [0] * max_gates  # All zeros = no noise
+
+    noisy_circuit, num_attacks = saboteur.apply_noise(circuit, action)
+
+    # Step 4: Verify fidelity remains ~1.0
+    # Since we didn't add noise, we can use pure state simulation
+    output_state = simulate_circuit(noisy_circuit, qubits)
+    fidelity = state_fidelity(output_state, ideal_state)
+
+    assert fidelity > 0.99, (
+        f"Zero-noise fidelity should be ~1.0, got {fidelity}"
+    )
+    assert num_attacks == 0, (
+        f"Zero-noise action should result in 0 attacks, got {num_attacks}"
+    )
 
 
 def test_saboteur_observation_shape():
@@ -122,10 +177,47 @@ def test_saboteur_observation_shape():
       - 'projected_state': shape (2 * n_qubits,)
       - 'gate_structure': shape (max_gates,)
     """
-    # TODO: Create Saboteur environment
-    # TODO: Reset and get observation
-    # TODO: Verify observation structure and shapes
-    pass
+    n_qubits = 4
+    max_gates = 20
+
+    # Step 1: Create a GHZ circuit
+    circuit, qubits = ghz_circuit(n_qubits)
+    ideal_state = ideal_ghz_state(n_qubits)
+
+    # Step 2: Create Saboteur environment
+    saboteur = Saboteur(
+        target_circuit=circuit,
+        target_state=ideal_state,
+        qubits=qubits,
+        max_gates=max_gates,
+    )
+
+    # Step 3: Reset and get observation
+    observation, info = saboteur.reset()
+
+    # Step 4: Verify observation structure and shapes
+    assert isinstance(observation, dict), (
+        f"Observation should be a dict, got {type(observation)}"
+    )
+    assert 'projected_state' in observation, (
+        "Observation should contain 'projected_state'"
+    )
+    assert 'gate_structure' in observation, (
+        "Observation should contain 'gate_structure'"
+    )
+
+    # Verify shapes
+    expected_projected_shape = (2 * n_qubits,)
+    expected_gate_shape = (max_gates,)
+
+    assert observation['projected_state'].shape == expected_projected_shape, (
+        f"projected_state shape should be {expected_projected_shape}, "
+        f"got {observation['projected_state'].shape}"
+    )
+    assert observation['gate_structure'].shape == expected_gate_shape, (
+        f"gate_structure shape should be {expected_gate_shape}, "
+        f"got {observation['gate_structure'].shape}"
+    )
 
 
 if __name__ == "__main__":
