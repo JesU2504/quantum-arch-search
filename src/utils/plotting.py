@@ -6,14 +6,17 @@ See ExpPlan.md for visualization requirements:
   - Experiment 3.1: Pareto scatter (CNOT count vs fidelity)
   - Experiment 6.1: Bar chart (Qubit overhead comparison)
 
-TODO: Implement the following:
-  - Training curve plots with confidence intervals
+This module provides standardized plotting functions for:
+  - Training curves with confidence intervals
   - Pareto frontier visualization
   - Lambda sweep dual-axis plots
   - Qubit overhead bar charts
+  - Noise resilience curves
 """
 
 from typing import Dict, List, Optional
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 def plot_training_curve(
@@ -33,12 +36,24 @@ def plot_training_curve(
         xlabel: X-axis label.
         ylabel: Y-axis label.
     """
-    # TODO: Import matplotlib
-    # TODO: Create figure and axes
-    # TODO: Plot each metric series
-    # TODO: Add legend, labels, title
-    # TODO: Save or display
-    pass
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    for metric_name, values in metrics.items():
+        x = np.arange(len(values))
+        ax.plot(x, values, label=metric_name)
+
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_title(title)
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    if save_path:
+        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        plt.close()
+    else:
+        plt.show()
 
 
 def plot_pareto_frontier(
@@ -61,11 +76,84 @@ def plot_pareto_frontier(
         save_path: Path to save the figure.
         title: Plot title.
     """
-    # TODO: Create scatter plot
-    # TODO: Identify and highlight Pareto-optimal points
-    # TODO: Add labels for different methods
-    # TODO: Save or display
-    pass
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    # Convert to arrays
+    cnots = np.array(cnot_counts)
+    fidels = np.array(fidelities)
+
+    # Identify Pareto-optimal points
+    pareto_mask = _compute_pareto_mask(cnots, fidels)
+
+    if labels is not None:
+        # Group by labels and plot with different colors
+        unique_labels = list(set(labels))
+        colors = plt.cm.tab10(np.linspace(0, 1, len(unique_labels)))
+        for i, label in enumerate(unique_labels):
+            mask = np.array([l == label for l in labels])
+            ax.scatter(
+                cnots[mask], fidels[mask],
+                c=[colors[i]], label=label, alpha=0.7, s=100
+            )
+    else:
+        # Single color scatter
+        ax.scatter(cnots, fidels, c="blue", alpha=0.7, s=100)
+
+    # Highlight Pareto-optimal points
+    pareto_cnots = cnots[pareto_mask]
+    pareto_fidels = fidels[pareto_mask]
+    # Sort for line plot
+    sort_idx = np.argsort(pareto_cnots)
+    ax.plot(
+        pareto_cnots[sort_idx], pareto_fidels[sort_idx],
+        "r--", linewidth=2, label="Pareto Frontier"
+    )
+    ax.scatter(
+        pareto_cnots, pareto_fidels,
+        c="red", marker="*", s=200, zorder=5, label="Pareto Optimal"
+    )
+
+    ax.set_xlabel("CNOT Count")
+    ax.set_ylabel("Fidelity")
+    ax.set_title(title)
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    if save_path:
+        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        plt.close()
+    else:
+        plt.show()
+
+
+def _compute_pareto_mask(cnots: np.ndarray, fidelities: np.ndarray) -> np.ndarray:
+    """
+    Compute mask for Pareto-optimal points.
+
+    A point is Pareto-optimal if no other point has both lower CNOT count
+    AND higher fidelity.
+
+    Args:
+        cnots: Array of CNOT counts.
+        fidelities: Array of fidelities.
+
+    Returns:
+        Boolean mask array indicating Pareto-optimal points.
+    """
+    n = len(cnots)
+    pareto_mask = np.ones(n, dtype=bool)
+
+    for i in range(n):
+        for j in range(n):
+            if i != j:
+                # Check if j dominates i (lower CNOTs AND higher fidelity)
+                if cnots[j] <= cnots[i] and fidelities[j] >= fidelities[i]:
+                    if cnots[j] < cnots[i] or fidelities[j] > fidelities[i]:
+                        pareto_mask[i] = False
+                        break
+
+    return pareto_mask
 
 
 def plot_lambda_sweep(
@@ -93,12 +181,48 @@ def plot_lambda_sweep(
         adversarial_depth: Adversarial method average depth.
         save_path: Path to save the figure.
     """
-    # TODO: Create figure with dual y-axes
-    # TODO: Plot success rate on left axis
-    # TODO: Plot depth on right axis
-    # TODO: Add horizontal lines for adversarial baseline
-    # TODO: Save or display
-    pass
+    fig, ax1 = plt.subplots(figsize=(10, 6))
+
+    # Plot success rate on left Y-axis
+    color1 = "tab:blue"
+    ax1.set_xlabel("Lambda (λ)")
+    ax1.set_ylabel("Success Rate (%)", color=color1)
+    ax1.plot(lambdas, success_rates, "o-", color=color1, linewidth=2, markersize=8)
+    ax1.axhline(
+        y=adversarial_success, color=color1, linestyle="--",
+        linewidth=2, label=f"Adversarial Success: {adversarial_success:.1f}%"
+    )
+    ax1.tick_params(axis="y", labelcolor=color1)
+    ax1.set_ylim([0, 105])
+
+    # Create second Y-axis for depth
+    ax2 = ax1.twinx()
+    color2 = "tab:orange"
+    ax2.set_ylabel("Average Depth", color=color2)
+    ax2.plot(lambdas, avg_depths, "s-", color=color2, linewidth=2, markersize=8)
+    ax2.axhline(
+        y=adversarial_depth, color=color2, linestyle="--",
+        linewidth=2, label=f"Adversarial Depth: {adversarial_depth:.1f}"
+    )
+    ax2.tick_params(axis="y", labelcolor=color2)
+
+    # Set x-axis to log scale for lambda
+    ax1.set_xscale("log")
+
+    # Title and legend
+    fig.suptitle("Lambda Sweep: Success Rate vs Circuit Depth", fontsize=14)
+    lines1, labels1 = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines1 + lines2, labels1 + labels2, loc="center right")
+
+    ax1.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    if save_path:
+        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        plt.close()
+    else:
+        plt.show()
 
 
 def plot_qubit_overhead(
@@ -120,10 +244,38 @@ def plot_qubit_overhead(
         save_path: Path to save the figure.
         title: Plot title.
     """
-    # TODO: Create bar chart
-    # TODO: Add value labels on bars
-    # TODO: Save or display
-    pass
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    x = np.arange(len(method_names))
+    colors = plt.cm.viridis(np.linspace(0.3, 0.8, len(method_names)))
+
+    bars = ax.bar(x, qubit_counts, color=colors, edgecolor="black", linewidth=1.5)
+
+    # Add value labels on bars
+    for bar, count in zip(bars, qubit_counts):
+        height = bar.get_height()
+        ax.annotate(
+            f"{count}",
+            xy=(bar.get_x() + bar.get_width() / 2, height),
+            xytext=(0, 5),
+            textcoords="offset points",
+            ha="center", va="bottom",
+            fontsize=14, fontweight="bold"
+        )
+
+    ax.set_xlabel("Method")
+    ax.set_ylabel("Number of Qubits")
+    ax.set_title(title)
+    ax.set_xticks(x)
+    ax.set_xticklabels(method_names)
+    ax.set_ylim([0, max(qubit_counts) * 1.2])
+
+    plt.tight_layout()
+    if save_path:
+        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        plt.close()
+    else:
+        plt.show()
 
 
 def plot_noise_resilience(
@@ -145,8 +297,27 @@ def plot_noise_resilience(
         save_path: Path to save the figure.
         title: Plot title.
     """
-    # TODO: Create line plot
-    # TODO: Add markers for each method
-    # TODO: Add legend
-    # TODO: Save or display
-    pass
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    ax.plot(
+        noise_levels, baseline_fidelities, "o-",
+        color="tab:red", linewidth=2, markersize=8, label="Baseline (Static Penalty)"
+    )
+    ax.plot(
+        noise_levels, robust_fidelities, "s-",
+        color="tab:green", linewidth=2, markersize=8, label="Robust (Adversarial)"
+    )
+
+    ax.set_xlabel("Noise Level (Error Probability)")
+    ax.set_ylabel("Fidelity")
+    ax.set_title(title)
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    ax.set_ylim([0, 1.05])
+
+    plt.tight_layout()
+    if save_path:
+        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        plt.close()
+    else:
+        plt.show()

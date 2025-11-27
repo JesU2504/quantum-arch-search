@@ -111,10 +111,10 @@ def compute_fidelity(circuit, target_state, qubits=None):
     Returns:
         Fidelity value in [0, 1].
     """
-    # TODO: Simulate circuit to get output state
-    # TODO: Compute overlap with target state
-    # TODO: Return fidelity
-    pass
+    if qubits is None:
+        qubits = sorted(circuit.all_qubits())
+    output_state = simulate_circuit(circuit, qubits)
+    return state_fidelity(output_state, target_state)
 
 
 def count_cnots(circuit):
@@ -130,10 +130,15 @@ def count_cnots(circuit):
     Returns:
         Number of CNOT gates.
     """
-    # TODO: Iterate through circuit operations
-    # TODO: Count CNotPowGate instances
-    # TODO: Return count
-    pass
+    count = 0
+    for op in circuit.all_operations():
+        if isinstance(op.gate, (cirq.CNotPowGate, cirq.CXPowGate)):
+            count += 1
+        elif isinstance(op.gate, cirq.ControlledGate):
+            # Check if it's a controlled X (CNOT)
+            if isinstance(op.gate.sub_gate, cirq.XPowGate):
+                count += 1
+    return count
 
 
 def count_gates(circuit):
@@ -146,8 +151,7 @@ def count_gates(circuit):
     Returns:
         Total gate count.
     """
-    # TODO: Return len(list(circuit.all_operations()))
-    pass
+    return len(list(circuit.all_operations()))
 
 
 def get_circuit_depth(circuit):
@@ -160,8 +164,7 @@ def get_circuit_depth(circuit):
     Returns:
         Circuit depth.
     """
-    # TODO: Return len(circuit)
-    pass
+    return len(circuit)
 
 
 def evaluate_circuit(circuit, target_state, qubits=None):
@@ -180,9 +183,14 @@ def evaluate_circuit(circuit, target_state, qubits=None):
           - total_gates: Total gate count
           - depth: Circuit depth
     """
-    # TODO: Compute all metrics
-    # TODO: Return as dictionary
-    pass
+    if qubits is None:
+        qubits = sorted(circuit.all_qubits())
+    return {
+        "fidelity": compute_fidelity(circuit, target_state, qubits),
+        "cnot_count": count_cnots(circuit),
+        "total_gates": count_gates(circuit),
+        "depth": get_circuit_depth(circuit),
+    }
 
 
 def fidelity_retention_ratio(fidelity_noisy, fidelity_clean):
