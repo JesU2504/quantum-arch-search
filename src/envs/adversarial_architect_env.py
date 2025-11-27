@@ -15,6 +15,7 @@ import numpy as np
 import cirq
 
 from src.utils.metrics import compute_fidelity, count_cnots, count_gates
+from src.envs.saboteur import Saboteur
 
 
 class AdversarialArchitectEnv(gym.Env):
@@ -48,6 +49,7 @@ class AdversarialArchitectEnv(gym.Env):
         target_state=None,
         max_timesteps=20,
         n_qubits=4,
+        default_noise_rate=0.01,
         **kwargs
     ):
         """
@@ -58,6 +60,7 @@ class AdversarialArchitectEnv(gym.Env):
             target_state: Target quantum state vector.
             max_timesteps: Maximum gates per episode (default: 20).
             n_qubits: Number of qubits (default: 4).
+            default_noise_rate: Default depolarizing noise rate when no saboteur (default: 0.01).
             **kwargs: Additional arguments for gym.Env.
         """
         super().__init__()
@@ -65,6 +68,7 @@ class AdversarialArchitectEnv(gym.Env):
         self.target_state = target_state
         self.max_timesteps = max_timesteps
         self.n_qubits = n_qubits
+        self.default_noise_rate = default_noise_rate
 
         # Initialize qubits
         self.qubits = cirq.LineQubit.range(n_qubits)
@@ -207,7 +211,6 @@ class AdversarialArchitectEnv(gym.Env):
             return self._compute_fidelity_with_default_noise(circuit)
 
         # Generate Saboteur observation from circuit
-        from src.envs.saboteur import Saboteur
         obs = Saboteur.create_observation_from_circuit(
             circuit, self.n_qubits, max_gates=self.max_timesteps
         )
@@ -246,9 +249,8 @@ class AdversarialArchitectEnv(gym.Env):
         """
         # Apply depolarizing noise to all qubits
         noisy_circuit = circuit.copy()
-        default_error_rate = 0.01  # 1% depolarizing noise
         for q in self.qubits:
-            noisy_circuit.append(cirq.depolarize(p=default_error_rate).on(q))
+            noisy_circuit.append(cirq.depolarize(p=self.default_noise_rate).on(q))
 
         # Compute fidelity with density matrix simulator
         dm_result = self.dm_simulator.simulate(noisy_circuit, qubit_order=self.qubits)

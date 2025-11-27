@@ -47,6 +47,7 @@ class ArchitectEnv(gym.Env):
         lambda_penalty=0.01,
         max_timesteps=20,
         n_qubits=4,
+        rz_angle=None,
         **kwargs
     ):
         """
@@ -57,6 +58,7 @@ class ArchitectEnv(gym.Env):
             lambda_penalty: Complexity penalty weight (default: 0.01).
             max_timesteps: Maximum gates per episode (default: 20).
             n_qubits: Number of qubits (default: 4).
+            rz_angle: Fixed rotation angle for RZ gates (default: π/4).
             **kwargs: Additional arguments for gym.Env.
         """
         super().__init__()
@@ -64,6 +66,7 @@ class ArchitectEnv(gym.Env):
         self.target_state = target_state
         self.lambda_penalty = lambda_penalty
         self.max_timesteps = max_timesteps
+        self.rz_angle = rz_angle if rz_angle is not None else np.pi / 4
 
         # Initialize qubits
         self.qubits = cirq.LineQubit.range(n_qubits)
@@ -136,8 +139,8 @@ class ArchitectEnv(gym.Env):
         elif gate_type == "X":
             self.circuit.append(cirq.X(self.qubits[qubit1_idx]))
         elif gate_type == "RZ":
-            # Use a fixed rotation angle (pi/4) for simplicity
-            self.circuit.append(cirq.rz(np.pi / 4)(self.qubits[qubit1_idx]))
+            # Use configurable rotation angle
+            self.circuit.append(cirq.rz(self.rz_angle)(self.qubits[qubit1_idx]))
         elif gate_type == "CNOT":
             # Ensure control and target are different
             if qubit1_idx != qubit2_idx:
