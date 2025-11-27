@@ -56,6 +56,7 @@ def run_pipeline(args):
 	from experiments.train_adversarial import train_adversarial
 	from experiments.compare_circuits import compare_noise_resilience
 	from experiments.lambda_sweep_ghz import run_lambda_sweep
+	from experiments.cross_noise_robustness import run_cross_noise_robustness
 
 	timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
 	base = args.base_dir or f"results/run_{timestamp}"
@@ -245,11 +246,42 @@ def run_pipeline(args):
 	else:
 		logger.info('Skipping compare as requested')
 
+	# 6) Cross-Noise Robustness (ExpPlan Part 2, Exp 2.1)
+	# This step evaluates both baseline and robust circuits under:
+	# - Coherent over-rotation (unseen by Saboteur)
+	# - Asymmetric Pauli noise (Saboteur typically uses symmetric)
+	cross_noise_dir = os.path.join(base, 'cross_noise')
+	os.makedirs(cross_noise_dir, exist_ok=True)
+	if not args.skip_cross_noise:
+		# Find circuit paths from compare folder (which already collected them)
+		vanilla_circuit_path = os.path.join(run0, 'circuit_vanilla.json')
+		robust_circuit_path = os.path.join(run0, 'circuit_robust.json')
+
+		if os.path.exists(vanilla_circuit_path) and os.path.exists(robust_circuit_path):
+			logger.info('Running cross-noise robustness experiment (ExpPlan Part 2, Exp 2.1)')
+			run_cross_noise_robustness(
+				baseline_circuit_path=vanilla_circuit_path,
+				robust_circuit_path=robust_circuit_path,
+				output_dir=cross_noise_dir,
+				n_qubits=args.n_qubits,
+				logger=logger
+			)
+			logger.info('Cross-noise robustness complete. Results saved to %s', cross_noise_dir)
+		else:
+			missing = []
+			if not os.path.exists(vanilla_circuit_path):
+				missing.append('vanilla')
+			if not os.path.exists(robust_circuit_path):
+				missing.append('robust')
+			logger.warning(f'Skipping cross-noise robustness: missing {", ".join(missing)} circuit(s)')
+	else:
+		logger.info('Skipping cross-noise robustness as requested')
+
 	logger.info('Pipeline finished. Results in %s', base)
 
 
 def parse_args():
-	p = argparse.ArgumentParser(description='Run the experiment pipeline: baseline, lambda-sweep, saboteur-only, adversarial, compare')
+	p = argparse.ArgumentParser(description='Run the experiment pipeline: baseline, lambda-sweep, saboteur-only, adversarial, compare, cross-noise')
 	p.add_argument('--preset', choices=['quick', 'full', 'long'], default='quick')
 	p.add_argument('--n-qubits', type=int, default=3)
 	p.add_argument('--base-dir', type=str, default=None, help='Base results directory (default: results/run_<timestamp>)')
@@ -258,6 +290,7 @@ def parse_args():
 	p.add_argument('--skip-saboteur', action='store_true')
 	p.add_argument('--skip-adversarial', action='store_true')
 	p.add_argument('--skip-compare', action='store_true')
+	p.add_argument('--skip-cross-noise', action='store_true', help='Skip cross-noise robustness experiment (ExpPlan Part 2)')
 	p.add_argument('--baseline-steps', type=int, default=None)
 	p.add_argument('--saboteur-steps', type=int, default=None)
 	p.add_argument('--max-circuit-gates', type=int, default=8)
