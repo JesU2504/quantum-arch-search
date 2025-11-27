@@ -186,6 +186,66 @@ def test_vqe_circuit_improves_energy():
     )
 
 
+def test_h4_hamiltonian_construction():
+    """
+    Test that H4 Hamiltonian is correctly constructed.
+
+    This test validates the H4 Hamiltonian for Part 4 of ExpPlan.md
+    (VQE on stretched H4).
+    """
+    from src.envs import VQEArchitectEnv
+
+    # Create environment for H4 molecule at stretched bond distance
+    env = VQEArchitectEnv(molecule="H4", bond_distance=1.5)
+
+    # Verify H4 has 4 qubits
+    assert env.n_qubits == 4, f"H4 should have 4 qubits, got {env.n_qubits}"
+
+    # Verify Hamiltonian is 16x16 (2^4)
+    H = env.hamiltonian
+    assert H.shape == (16, 16), f"H4 Hamiltonian should be 16x16, got {H.shape}"
+
+    # Verify Hermiticity: H = H†
+    H_dagger = np.conj(H.T)
+    assert np.allclose(H, H_dagger), "H4 Hamiltonian must be Hermitian"
+
+    # Verify FCI energy is lower than HF energy (correlation lowers energy)
+    eigenvalues = np.linalg.eigvalsh(H)
+    ground_state = eigenvalues[0]
+    hf_energy = env.compute_energy(circuit=None)  # |0000> state
+
+    assert ground_state < hf_energy, (
+        f"FCI energy {ground_state:.4f} Ha should be lower than "
+        f"HF energy {hf_energy:.4f} Ha"
+    )
+
+
+def test_h4_correlation_energy():
+    """
+    Test that H4 has meaningful correlation energy.
+
+    At stretched geometry (1.5 Å), H4 should exhibit strong correlation,
+    meaning there's a significant gap between HF and FCI energies.
+    """
+    from src.envs import VQEArchitectEnv
+
+    env = VQEArchitectEnv(molecule="H4", bond_distance=1.5)
+
+    # Compute energies
+    hf_energy = env.compute_energy(circuit=None)
+    eigenvalues = np.linalg.eigvalsh(env.hamiltonian)
+    fci_energy = eigenvalues[0]
+
+    # Correlation energy should be significant (> 10 mHa)
+    correlation_energy = hf_energy - fci_energy
+    min_correlation = 0.01  # 10 mHa minimum
+
+    assert correlation_energy > min_correlation, (
+        f"H4 correlation energy {correlation_energy*1000:.2f} mHa should be "
+        f"greater than {min_correlation*1000:.1f} mHa for stretched geometry"
+    )
+
+
 if __name__ == "__main__":
     # Run tests manually for quick verification
     print("Running Stage 7.2 tests...")
@@ -194,4 +254,7 @@ if __name__ == "__main__":
     test_vqe_hamiltonian_construction()
     test_vqe_reference_energies()
     test_vqe_circuit_improves_energy()
-    print("All Stage 7.2 tests passed.")
+    print("Running H4 tests (Part 4)...")
+    test_h4_hamiltonian_construction()
+    test_h4_correlation_energy()
+    print("All tests passed.")
