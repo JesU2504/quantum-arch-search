@@ -191,6 +191,78 @@ def count_cnots(circuit):
     return count
 
 
+def count_rotation_gates(circuit):
+    """
+    Count parameterized rotation gates (Rx, Ry, Rz) in a circuit.
+    
+    Rotation gates are key for expressiveness in VQE and other
+    variational quantum algorithms.
+    
+    Args:
+        circuit: Cirq circuit to analyze.
+    
+    Returns:
+        Dictionary with counts:
+          - rx_count: Number of Rx gates
+          - ry_count: Number of Ry gates  
+          - rz_count: Number of Rz gates
+          - total_rotations: Total rotation gate count
+    """
+    counts = {'rx_count': 0, 'ry_count': 0, 'rz_count': 0, 'total_rotations': 0}
+    for op in circuit.all_operations():
+        if isinstance(op.gate, cirq.Rx):
+            counts['rx_count'] += 1
+            counts['total_rotations'] += 1
+        elif isinstance(op.gate, cirq.Ry):
+            counts['ry_count'] += 1
+            counts['total_rotations'] += 1
+        elif isinstance(op.gate, cirq.Rz):
+            counts['rz_count'] += 1
+            counts['total_rotations'] += 1
+    return counts
+
+
+def get_rotation_angles(circuit):
+    """
+    Extract rotation angles from all rotation gates in a circuit.
+    
+    Args:
+        circuit: Cirq circuit to analyze.
+    
+    Returns:
+        List of dictionaries with gate info:
+          - gate_type: 'Rx', 'Ry', or 'Rz'
+          - qubit: The qubit the gate acts on
+          - angle: The rotation angle in radians
+          - index: Position in the circuit
+    """
+    angles = []
+    for i, op in enumerate(circuit.all_operations()):
+        gate = op.gate
+        if isinstance(gate, cirq.Rx):
+            angles.append({
+                'gate_type': 'Rx',
+                'qubit': str(op.qubits[0]),
+                'angle': float(gate.exponent * np.pi),
+                'index': i
+            })
+        elif isinstance(gate, cirq.Ry):
+            angles.append({
+                'gate_type': 'Ry',
+                'qubit': str(op.qubits[0]),
+                'angle': float(gate.exponent * np.pi),
+                'index': i
+            })
+        elif isinstance(gate, cirq.Rz):
+            angles.append({
+                'gate_type': 'Rz',
+                'qubit': str(op.qubits[0]),
+                'angle': float(gate.exponent * np.pi),
+                'index': i
+            })
+    return angles
+
+
 def count_gates(circuit):
     """
     Count total number of gates in a circuit.
@@ -219,7 +291,7 @@ def get_circuit_depth(circuit):
 
 def evaluate_circuit(circuit, target_state, qubits=None):
     """
-    Comprehensive circuit evaluation.
+    Comprehensive circuit evaluation including rotation gate metrics.
 
     Args:
         circuit: Cirq circuit to evaluate.
@@ -232,14 +304,21 @@ def evaluate_circuit(circuit, target_state, qubits=None):
           - cnot_count: Number of CNOTs
           - total_gates: Total gate count
           - depth: Circuit depth
+          - rotation_counts: Dict with rx_count, ry_count, rz_count, total_rotations
+          - rotation_angles: List of rotation angle info dicts
     """
     if qubits is None:
         qubits = sorted(circuit.all_qubits())
+    
+    rotation_counts = count_rotation_gates(circuit)
+    
     return {
         "fidelity": compute_fidelity(circuit, target_state, qubits),
         "cnot_count": count_cnots(circuit),
         "total_gates": count_gates(circuit),
         "depth": get_circuit_depth(circuit),
+        "rotation_counts": rotation_counts,
+        "rotation_angles": get_rotation_angles(circuit),
     }
 
 

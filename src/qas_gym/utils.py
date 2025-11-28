@@ -1,9 +1,26 @@
 import cirq
 import numpy as np
-from typing import Sequence
+from typing import Sequence, List, Dict, Any, Optional, Tuple
 
 
-def get_gates_by_name(qubits, gate_names):
+# Gate type constants for rotation gates
+ROTATION_GATE_TYPES = ['Rx', 'Ry', 'Rz']
+
+
+def get_gates_by_name(qubits, gate_names, include_rotations=False, default_rotation_angle=np.pi/4):
+    """
+    Get a list of gate operations for the given qubits and gate names.
+    
+    Args:
+        qubits: List of qubits to apply gates to.
+        gate_names: List of gate names (e.g., ['X', 'Y', 'H', 'T', 'S']).
+        include_rotations: If True, include parameterized rotation gates (Rx, Ry, Rz).
+        default_rotation_angle: Default angle for rotation gates (used for initial
+            gate operations, can be modified later).
+    
+    Returns:
+        List of gate operations.
+    """
     gates = {
         'X': cirq.X,
         'Y': cirq.Y,
@@ -20,12 +37,150 @@ def get_gates_by_name(qubits, gate_names):
                 if gate_name in gates:
                     action_gates.append(gates[gate_name](q))
 
+    # Add parameterized rotation gates if requested
+    if include_rotations:
+        for q in qubits:
+            # Add Rx, Ry, Rz gates with default angle
+            action_gates.append(cirq.rx(default_rotation_angle).on(q))
+            action_gates.append(cirq.ry(default_rotation_angle).on(q))
+            action_gates.append(cirq.rz(default_rotation_angle).on(q))
+
     # Add two-qubit CNOT gates for all ordered pairs
     for q1 in qubits:
         for q2 in qubits:
             if q1 != q2:
                 action_gates.append(cirq.CNOT(q1, q2))
     return action_gates
+
+
+def create_rotation_gate(gate_type: str, qubit: cirq.Qid, angle: float) -> cirq.GateOperation:
+    """
+    Create a parameterized rotation gate.
+    
+    Args:
+        gate_type: Type of rotation gate ('Rx', 'Ry', or 'Rz').
+        qubit: Qubit to apply the gate to.
+        angle: Rotation angle in radians.
+    
+    Returns:
+        A cirq gate operation.
+    
+    Raises:
+        ValueError: If gate_type is not a valid rotation gate type.
+    """
+    if gate_type == 'Rx':
+        return cirq.rx(angle).on(qubit)
+    elif gate_type == 'Ry':
+        return cirq.ry(angle).on(qubit)
+    elif gate_type == 'Rz':
+        return cirq.rz(angle).on(qubit)
+    else:
+        raise ValueError(f"Invalid rotation gate type: {gate_type}. Must be one of {ROTATION_GATE_TYPES}")
+
+
+def is_rotation_gate(gate: cirq.Gate) -> bool:
+    """
+    Check if a gate is a parameterized rotation gate.
+    
+    Args:
+        gate: The gate to check.
+    
+    Returns:
+        True if the gate is Rx, Ry, or Rz.
+    """
+    return isinstance(gate, (cirq.Rx, cirq.Ry, cirq.Rz))
+
+
+def get_rotation_gate_info(op: cirq.GateOperation) -> Optional[Dict[str, Any]]:
+    """
+    Extract information about a rotation gate operation.
+    
+    Args:
+        op: A gate operation.
+    
+    Returns:
+        Dictionary with 'type', 'qubit', and 'angle' if it's a rotation gate,
+        None otherwise.
+    """
+    gate = op.gate
+    if isinstance(gate, cirq.Rx):
+        return {
+            'type': 'Rx',
+            'qubit': op.qubits[0],
+            'angle': float(gate.exponent * np.pi)
+        }
+    elif isinstance(gate, cirq.Ry):
+        return {
+            'type': 'Ry',
+            'qubit': op.qubits[0],
+            'angle': float(gate.exponent * np.pi)
+        }
+    elif isinstance(gate, cirq.Rz):
+        return {
+            'type': 'Rz',
+            'qubit': op.qubits[0],
+            'angle': float(gate.exponent * np.pi)
+        }
+    return None
+
+
+def serialize_circuit_with_rotations(circuit: cirq.Circuit) -> List[Dict[str, Any]]:
+    """
+    Serialize a circuit including rotation gate parameters.
+    
+    Args:
+        circuit: The cirq circuit to serialize.
+    
+    Returns:
+        List of dictionaries representing each gate operation, including
+        rotation angles for parameterized gates.
+    """
+    serialized = []
+    for op in circuit.all_operations():
+        gate_info = get_rotation_gate_info(op)
+        if gate_info is not None:
+            serialized.append({
+                'gate_type': gate_info['type'],
+                'qubit': str(gate_info['qubit']),
+                'angle': gate_info['angle']
+            })
+        elif isinstance(op.gate, cirq.CNotPowGate):
+            serialized.append({
+                'gate_type': 'CNOT',
+                'control': str(op.qubits[0]),
+                'target': str(op.qubits[1])
+            })
+        else:
+            # Other gates
+            serialized.append({
+                'gate_type': type(op.gate).__name__,
+                'qubits': [str(q) for q in op.qubits]
+            })
+    return serialized
+
+
+def count_rotation_gates(circuit: cirq.Circuit) -> Dict[str, int]:
+    """
+    Count rotation gates by type in a circuit.
+    
+    Args:
+        circuit: The cirq circuit to analyze.
+    
+    Returns:
+        Dictionary with counts for 'Rx', 'Ry', 'Rz', and 'total_rotations'.
+    """
+    counts = {'Rx': 0, 'Ry': 0, 'Rz': 0, 'total_rotations': 0}
+    for op in circuit.all_operations():
+        if isinstance(op.gate, cirq.Rx):
+            counts['Rx'] += 1
+            counts['total_rotations'] += 1
+        elif isinstance(op.gate, cirq.Ry):
+            counts['Ry'] += 1
+            counts['total_rotations'] += 1
+        elif isinstance(op.gate, cirq.Rz):
+            counts['Rz'] += 1
+            counts['total_rotations'] += 1
+    return counts
 
 
 def get_observables_by_name(qubits, observable_names):
@@ -99,8 +254,21 @@ def get_default_observables(qubits):
     return get_observables_by_name(qubits, ['X', 'Y'])
 
 
-def get_default_gates(qubits):
-    return get_gates_by_name(qubits, ['X', 'Y', 'Z', 'H', 'T', 'S'])
+def get_default_gates(qubits, include_rotations=False):
+    """
+    Get the default set of action gates for quantum architecture search.
+    
+    Args:
+        qubits: List of qubits.
+        include_rotations: If True, include parameterized rotation gates (Rx, Ry, Rz).
+            This increases circuit expressiveness but also increases action space
+            complexity.
+    
+    Returns:
+        List of gate operations including Clifford gates, T gate, and optionally
+        rotation gates.
+    """
+    return get_gates_by_name(qubits, ['X', 'Y', 'Z', 'H', 'T', 'S'], include_rotations=include_rotations)
 
 
 def create_ghz_circuit_and_qubits(n_qubits: int) -> tuple[cirq.Circuit, list[cirq.LineQubit]]:

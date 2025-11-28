@@ -202,8 +202,87 @@ If you use this code, please cite the corresponding talk/paper. For questions or
 
 ## Changelog
 
+- **Parameterized Rotation Gates Support**: Enhanced `QuantumArchSearchEnv`, `ArchitectEnv`, and `AdversarialArchitectEnv` to support parameterized rotation gates (Rx, Ry, Rz) in addition to Clifford, T, and CNOT gates. Set `include_rotations=True` when creating environments to enable this feature. This provides greater circuit expressiveness and parity with VQE approaches. Added utility functions for rotation gate creation, serialization, and metrics. Updated Saboteur environment to recognize rotation gates. Backward compatible - rotation gates are disabled by default.
 - **VQE Architecture Search (Part 4)**: Fully implemented `VQEArchitectEnv` for molecular ground state optimization. Includes parameterized rotation gates (Rx, Ry, Rz), CNOT gates, classical optimization of rotation angles at episode end, comprehensive logging, and support for H2 and H4 molecules. Added example script and integration tests.
 - **Environment Consolidation**: All environments and agents (ArchitectEnv, AdversarialArchitectEnv, Saboteur, VQEArchitectEnv) are now unified under `src/qas_gym/envs/`; duplicate definitions in `src/envs/` have been removed. Import from `src.qas_gym.envs` for all environment classes.
+
+
+## Parameterized Rotation Gates
+
+The `QuantumArchSearchEnv` and derived environments now support optional parameterized rotation gates (Rx, Ry, Rz) in addition to the standard Clifford and T gate set.
+
+### Benefits
+
+- **Greater Expressiveness**: Rotation gates allow for continuous parameterization, enabling circuits that can exactly prepare arbitrary quantum states.
+- **VQE Parity**: Aligns the adversarial architecture search with VQE-style variational circuits, allowing comparison of discovered circuits with standard ansatzes.
+- **Flexibility**: Rotation gates can be enabled/disabled based on the specific task requirements.
+
+### Usage
+
+```python
+from src.qas_gym.envs import QuantumArchSearchEnv, ArchitectEnv
+from src.qas_gym.utils import get_ghz_state
+import numpy as np
+
+# Create environment with rotation gates enabled
+target = get_ghz_state(3)
+env = QuantumArchSearchEnv(
+    target=target,
+    fidelity_threshold=0.99,
+    reward_penalty=0.01,
+    max_timesteps=20,
+    include_rotations=True,  # Enable Rx, Ry, Rz gates
+    default_rotation_angle=np.pi/4  # Optional: set default angle
+)
+
+# Standard usage
+obs, info = env.reset()
+obs, reward, terminated, truncated, info = env.step(action)
+
+# Get rotation gate information
+circuit_info = env.get_circuit_info()
+print(f"Rotation counts: {circuit_info['rotation_counts']}")
+print(f"Rotation angles: {circuit_info['rotation_angles']}")
+
+# Modify rotation angle for a specific gate
+env.set_rotation_angle(gate_index=0, angle=np.pi/2)
+```
+
+### Action Space with Rotations
+
+When `include_rotations=True`, the action space is expanded to include:
+- All original Clifford/T gates (X, Y, Z, H, T, S on each qubit)
+- Rx, Ry, Rz rotation gates on each qubit (with default angle)
+- CNOT gates for all qubit pairs
+
+The action space remains discrete; rotation gates are added with a configurable default angle. For full continuous angle optimization at episode end, consider using `VQEArchitectEnv`.
+
+### Metrics and Logging
+
+Circuit metrics now include rotation gate information:
+
+```python
+from src.utils.metrics import evaluate_circuit, count_rotation_gates, get_rotation_angles
+
+# Evaluate circuit including rotation metrics
+metrics = evaluate_circuit(circuit, target_state, qubits)
+# Returns: fidelity, cnot_count, total_gates, depth, rotation_counts, rotation_angles
+
+# Count rotation gates
+counts = count_rotation_gates(circuit)
+# Returns: {'rx_count': N, 'ry_count': N, 'rz_count': N, 'total_rotations': N}
+
+# Get detailed angle information
+angles = get_rotation_angles(circuit)
+# Returns: [{'gate_type': 'Rx', 'qubit': 'q(0)', 'angle': 0.785, 'index': 0}, ...]
+```
+
+### Caveats
+
+- **Increased Complexity**: Adding rotation gates increases the action space, which may require longer training times.
+- **Reproducibility**: Results with rotation gates may differ from Clifford-only experiments. Keep `include_rotations=False` (default) to maintain backward compatibility.
+- **Continuous vs Discrete**: Currently uses a fixed default angle for rotation gates. For continuous angle optimization, use `VQEArchitectEnv` instead.
+
 
 ## Statistical Reporting Protocol
 
