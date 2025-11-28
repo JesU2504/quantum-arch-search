@@ -1,0 +1,36 @@
+Lambda Sweep Experiment Summary
+==================================================
+
+Lambda values: [0.01, 0.005, 0.01, 0.05, 0.1]
+Seeds per lambda: 1
+Qubits: 4
+Training steps per trial: 200000
+Fidelity threshold: 0.99
+
+Per-Lambda Results:
+--------------------------------------------------
+
+λ = 0.01:
+  Success rate: 100.00%
+  CNOT count - mean: 3.00, median: 3.00, std: 0.00
+  Fidelity - mean: 1.0000, std: 0.0000
+
+λ = 0.005:
+  Success rate: 100.00%
+  CNOT count - mean: 5.00, median: 5.00, std: 0.00
+  Fidelity - mean: 1.0000, std: 0.0000
+
+λ = 0.01:
+  Success rate: 100.00%
+  CNOT count - mean: 3.00, median: 3.00, std: 0.00
+  Fidelity - mean: 1.0000, std: 0.0000
+
+λ = 0.05:
+  Success rate: 100.00%
+  CNOT count - mean: 6.00, median: 6.00, std: 0.00
+  Fidelity - mean: 1.0000, std: 0.0000
+
+λ = 0.1:
+  Success rate: 100.00%
+  CNOT count - mean: 3.00, median: 3.00, std: 0.00
+  Fidelity - mean: 1.0000, std: 0.0000

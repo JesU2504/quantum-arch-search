@@ -1,0 +1,66 @@
+{
+  "0.01": {
+    "trials": [
+      {
+        "final_fidelity": 0.4999999403953552,
+        "best_fidelity": 0.4999999403953552,
+        "cnot_count": 16,
+        "success": false
+      }
+    ],
+    "success_rate": 0.0,
+    "cnot_mean": 16.0,
+    "cnot_median": 16.0,
+    "cnot_std": 0.0,
+    "fidelity_mean": 0.4999999403953552,
+    "fidelity_std": 0.0
+  },
+  "0.005": {
+    "trials": [
+      {
+        "final_fidelity": 0.4999999403953552,
+        "best_fidelity": 0.9999996423721313,
+        "cnot_count": 7,
+        "success": true
+      }
+    ],
+    "success_rate": 1.0,
+    "cnot_mean": 7.0,
+    "cnot_median": 7.0,
+    "cnot_std": 0.0,
+    "fidelity_mean": 0.9999996423721313,
+    "fidelity_std": 0.0
+  },
+  "0.05": {
+    "trials": [
+      {
+        "final_fidelity": 0.4999999403953552,
+        "best_fidelity": 0.9999998807907104,
+        "cnot_count": 13,
+        "success": true
+      }
+    ],
+    "success_rate": 1.0,
+    "cnot_mean": 13.0,
+    "cnot_median": 13.0,
+    "cnot_std": 0.0,
+    "fidelity_mean": 0.9999998807907104,
+    "fidelity_std": 0.0
+  },
+  "0.1": {
+    "trials": [
+      {
+        "final_fidelity": 0.2499999701976776,
+        "best_fidelity": 0.9999998807907104,
+        "cnot_count": 5,
+        "success": true
+      }
+    ],
+    "success_rate": 1.0,
+    "cnot_mean": 5.0,
+    "cnot_median": 5.0,
+    "cnot_std": 0.0,
+    "fidelity_mean": 0.9999998807907104,
+    "fidelity_std": 0.0
+  }
+}

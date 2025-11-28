@@ -1,0 +1,19 @@
+Cross-Noise Robustness Experiment Summary
+==================================================
+
+Timestamp: 20251128-002601
+Number of qubits: 4
+Baseline circuit: results/run_20251127-130748/compare/run_0/circuit_vanilla.json
+Robust circuit: results/run_20251127-130748/compare/run_0/circuit_robust.json
+
+Over-rotation Test (ε ∈ [0, 0.1]):
+----------------------------------------
+  Baseline avg retention: 0.9929
+  Robust avg retention: 0.9991
+  Improvement: 0.0062
+
+Asymmetric Pauli Noise (p_x=0.05):
+----------------------------------------
+  Baseline retention: 0.3398
+  Robust retention: 0.6400
+  Improvement: 0.3001
