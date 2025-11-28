@@ -108,3 +108,50 @@ If you use this code, please cite the corresponding talk/paper. For questions or
 ## Changelog
 
 - **Environment Consolidation**: All environments and agents (ArchitectEnv, AdversarialArchitectEnv, Saboteur, VQEArchitectEnv) are now unified under `src/qas_gym/envs/`; duplicate definitions in `src/envs/` have been removed. Import from `src.qas_gym.envs` for all environment classes.
+
+## Statistical Reporting Protocol
+
+This repository follows best-practice statistical reporting for quantum architecture search experiments. All major experiments support multi-seed runs for statistical validity.
+
+### Configuration
+
+- **Number of seeds**: Configurable via `--n-seeds <int>` (default: 5, recommended: 10 for publication).
+- **Seed control**: Use `--seed <int>` to set the base random seed for reproducibility.
+
+### Running Multi-Seed Experiments
+
+```bash
+# Run full pipeline with 10 seeds per setting
+python run_experiments.py --preset full --n-seeds 10 --seed 42
+
+# Run specific experiment with custom seeds
+python experiments/lambda_sweep_ghz.py --n-seeds 10 --n-qubits 4
+
+# Parameter recovery with configurable repetitions
+python experiments/parameter_recovery.py --n-repetitions 10 --baseline-circuit path/to/circuit.json
+```
+
+### Output Structure
+
+Each experiment produces:
+- **Per-seed results**: Individual JSON files for each seed (e.g., `lambda_0.001/seed_0_results.json`)
+- **Aggregated results**: Combined statistics with mean +/- std
+- **Summary files**:
+  - `experiment_summary.json`: Machine-readable summary with all parameters
+  - `experiment_summary.txt`: Human-readable summary
+- **Plots with error bars**: All plots show mean +/- std with sample size annotation (n=...)
+
+### Statistical Metrics
+
+- **Aggregation method**: Mean +/- std (sample standard deviation with ddof=1)
+- **Confidence intervals**: 95% CI using t-distribution
+- **Success rate**: Wilson score interval for binomial proportions
+- **Plots**: Error bars (mean +/- std), faint individual curves overlay, sample size annotation
+
+### Checklist for Multi-Seed Experiments
+
+1. Set `--n-seeds` to at least 5 (ideally 10)
+2. Set `--seed` for reproducibility
+3. Verify per-seed results are saved in experiment subdirectories
+4. Check summary files contain all seeds used and hyperparameters
+5. Confirm plots show error bars and sample size annotations

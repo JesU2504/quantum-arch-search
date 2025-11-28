@@ -117,6 +117,10 @@ def run_pipeline(args):
 	if args.saboteur_steps is not None:
 		saboteur_steps = args.saboteur_steps
 
+	# Get effective n_seeds (from CLI or config default)
+	from experiments import config as exp_config
+	effective_n_seeds = args.n_seeds if args.n_seeds is not None else exp_config.N_SEEDS
+	
 	metadata = {
 		'timestamp': timestamp,
 		'preset': args.preset,
@@ -125,6 +129,12 @@ def run_pipeline(args):
 		'saboteur_steps': saboteur_steps,
 		'adversarial_gens': adversarial_gens,
 		'seed': args.seed,
+		'n_seeds': effective_n_seeds,
+		'statistical_protocol': {
+			'n_seeds_per_setting': effective_n_seeds,
+			'aggregation_method': 'mean ± std',
+			'error_bars': True,
+		},
 	}
 	save_metadata(os.path.join(base, 'metadata.json'), metadata)
 	logger.info('Starting pipeline with metadata: %s', metadata)
@@ -141,15 +151,16 @@ def run_pipeline(args):
 	# 1.5) Lambda Sweep (ExpPlan Part 1 - Brittleness Experiment)
 	# This step implements Experiment 1.1 from ExpPlan.md:
 	# - Tests hyperparameter sensitivity by sweeping λ ∈ [0.001, 0.005, 0.01, 0.05, 0.1]
-	# - Runs 5 seeds per lambda value for statistical significance
+	# - Runs n_seeds per lambda value for statistical significance
 	# - Logs success rate (fidelity > 0.99) and CNOT count variance
 	# - Uses baseline_steps (from preset or CLI) as training_steps for PPO consistency
 	lambda_sweep_dir = os.path.join(base, 'lambda_sweep')
 	os.makedirs(lambda_sweep_dir, exist_ok=True)
 	if not args.skip_lambda_sweep:
-		logger.info('Running lambda sweep experiment (ExpPlan Part 1, Exp 1.1)')
+		logger.info('Running lambda sweep experiment (ExpPlan Part 1, Exp 1.1) with n_seeds=%d', effective_n_seeds)
 		# Pass baseline_steps as training_steps so PPO training is controlled by the pipeline preset
-		run_lambda_sweep(results_dir=lambda_sweep_dir, logger=logger, training_steps=baseline_steps)
+		run_lambda_sweep(results_dir=lambda_sweep_dir, logger=logger, training_steps=baseline_steps, 
+		                 n_seeds=effective_n_seeds, n_qubits=args.n_qubits)
 		logger.info('Lambda sweep complete. Results saved to %s', lambda_sweep_dir)
 	else:
 		logger.info('Skipping lambda sweep as requested')
@@ -262,7 +273,7 @@ def run_pipeline(args):
 	param_recovery_dir = os.path.join(base, 'parameter_recovery')
 	os.makedirs(param_recovery_dir, exist_ok=True)
 	if not args.skip_parameter_recovery:
-		logger.info('Running parameter recovery experiment')
+		logger.info('Running parameter recovery experiment with n_seeds=%d', effective_n_seeds)
 		# Look for circuits in expected locations
 		vanilla_src = os.path.join(baseline_dir, 'circuit_vanilla.json')
 		robust_src = None
@@ -288,6 +299,8 @@ def run_pipeline(args):
 			n_qubits=args.n_qubits,
 			baseline_circuit_path=vanilla_src if os.path.exists(vanilla_src) else None,
 			robust_circuit_path=robust_src,
+			n_repetitions=effective_n_seeds,
+			base_seed=args.seed if args.seed is not None else 42,
 			logger=logger
 		)
 		logger.info('Parameter recovery experiment complete. Results saved to %s', param_recovery_dir)
@@ -344,6 +357,10 @@ def parse_args():
 	p.add_argument('--max-circuit-gates', type=int, default=8)
 	p.add_argument('--fidelity-threshold', type=float, default=0.9)
 	p.add_argument('--seed', type=int, default=None)
+	# Statistical reporting arguments
+	p.add_argument('--n-seeds', type=int, default=None, 
+		help=f'Number of random seeds per experiment setting for statistical reporting. '
+		     f'Recommended: at least 5, ideally 10. Default uses config.N_SEEDS.')
 	return p.parse_args()
 
 

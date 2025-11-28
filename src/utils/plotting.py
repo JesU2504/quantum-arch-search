@@ -6,15 +6,20 @@ See ExpPlan.md for visualization requirements:
   - Experiment 3.1: Pareto scatter (CNOT count vs fidelity)
   - Experiment 6.1: Bar chart (Qubit overhead comparison)
 
+Statistical Protocol:
+  - All plots should show error bars (mean ± std) where applicable
+  - Sample size (n=...) should be annotated on plots
+  - Individual data points can be shown as faint overlay
+
 This module provides standardized plotting functions for:
   - Training curves with confidence intervals
   - Pareto frontier visualization
   - Lambda sweep dual-axis plots
   - Qubit overhead bar charts
-  - Noise resilience curves
+  - Noise resilience curves with error bars
 """
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple, Union
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -25,26 +30,44 @@ def plot_training_curve(
     title: str = "Training Progress",
     xlabel: str = "Timestep",
     ylabel: str = "Metric Value",
+    error_metrics: Optional[Dict[str, List[float]]] = None,
+    n_samples: Optional[int] = None,
 ):
     """
-    Plot training curves with optional confidence intervals.
+    Plot training curves with optional confidence intervals and error bars.
 
     Args:
-        metrics: Dict mapping metric names to lists of values.
+        metrics: Dict mapping metric names to lists of mean values.
         save_path: Path to save the figure (displays if None).
         title: Plot title.
         xlabel: X-axis label.
         ylabel: Y-axis label.
+        error_metrics: Optional dict mapping metric names to lists of std values.
+        n_samples: Optional sample size to annotate on title.
     """
     fig, ax = plt.subplots(figsize=(10, 6))
 
     for metric_name, values in metrics.items():
         x = np.arange(len(values))
-        ax.plot(x, values, label=metric_name)
+        
+        if error_metrics and metric_name in error_metrics:
+            errors = error_metrics[metric_name]
+            ax.errorbar(x, values, yerr=errors, label=metric_name, 
+                       capsize=3, alpha=0.8, errorevery=max(1, len(values)//20))
+            # Add faint fill for confidence interval
+            ax.fill_between(x, np.array(values) - np.array(errors), 
+                          np.array(values) + np.array(errors), alpha=0.2)
+        else:
+            ax.plot(x, values, label=metric_name)
 
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
-    ax.set_title(title)
+    
+    if n_samples:
+        ax.set_title(f"{title} (n={n_samples})")
+    else:
+        ax.set_title(title)
+    
     ax.legend()
     ax.grid(True, alpha=0.3)
 
@@ -284,36 +307,88 @@ def plot_noise_resilience(
     robust_fidelities: List[float],
     save_path: Optional[str] = None,
     title: str = "Noise Resilience Comparison",
+    baseline_errors: Optional[List[float]] = None,
+    robust_errors: Optional[List[float]] = None,
+    n_samples: Optional[int] = None,
+    show_individual_points: bool = False,
+    baseline_all_points: Optional[List[List[float]]] = None,
+    robust_all_points: Optional[List[List[float]]] = None,
 ):
     """
-    Plot fidelity degradation under increasing noise.
+    Plot fidelity degradation under increasing noise with error bars.
 
     See ExpPlan.md, Part 2 (Cross-noise evaluation).
 
+    Statistical Protocol:
+        - Shows mean ± std error bars when error values provided
+        - Annotates sample size (n=...) on title
+        - Can overlay faint individual seed results
+
     Args:
         noise_levels: List of noise levels (e.g., error probabilities).
-        baseline_fidelities: Fidelities for baseline circuit.
-        robust_fidelities: Fidelities for robust (adversarial) circuit.
+        baseline_fidelities: Mean fidelities for baseline circuit.
+        robust_fidelities: Mean fidelities for robust (adversarial) circuit.
         save_path: Path to save the figure.
         title: Plot title.
+        baseline_errors: Optional std errors for baseline.
+        robust_errors: Optional std errors for robust.
+        n_samples: Optional sample size (n) to annotate.
+        show_individual_points: Whether to show individual seed results.
+        baseline_all_points: Per-noise-level list of all seed fidelities for baseline.
+        robust_all_points: Per-noise-level list of all seed fidelities for robust.
     """
     fig, ax = plt.subplots(figsize=(10, 6))
 
-    ax.plot(
-        noise_levels, baseline_fidelities, "o-",
-        color="tab:red", linewidth=2, markersize=8, label="Baseline (Static Penalty)"
-    )
-    ax.plot(
-        noise_levels, robust_fidelities, "s-",
-        color="tab:green", linewidth=2, markersize=8, label="Robust (Adversarial)"
-    )
+    # Plot individual points as faint scatter if provided
+    if show_individual_points and baseline_all_points:
+        for i, (nl, points) in enumerate(zip(noise_levels, baseline_all_points)):
+            ax.scatter([nl] * len(points), points, alpha=0.2, s=20, color="tab:red")
+    
+    if show_individual_points and robust_all_points:
+        for i, (nl, points) in enumerate(zip(noise_levels, robust_all_points)):
+            ax.scatter([nl] * len(points), points, alpha=0.2, s=20, color="tab:green")
+
+    # Plot with error bars if provided
+    if baseline_errors:
+        ax.errorbar(
+            noise_levels, baseline_fidelities, yerr=baseline_errors,
+            fmt="o-", color="tab:red", linewidth=2, markersize=8, 
+            capsize=5, capthick=2, label="Baseline (Static Penalty)"
+        )
+    else:
+        ax.plot(
+            noise_levels, baseline_fidelities, "o-",
+            color="tab:red", linewidth=2, markersize=8, label="Baseline (Static Penalty)"
+        )
+    
+    if robust_errors:
+        ax.errorbar(
+            noise_levels, robust_fidelities, yerr=robust_errors,
+            fmt="s-", color="tab:green", linewidth=2, markersize=8,
+            capsize=5, capthick=2, label="Robust (Adversarial)"
+        )
+    else:
+        ax.plot(
+            noise_levels, robust_fidelities, "s-",
+            color="tab:green", linewidth=2, markersize=8, label="Robust (Adversarial)"
+        )
 
     ax.set_xlabel("Noise Level (Error Probability)")
     ax.set_ylabel("Fidelity")
-    ax.set_title(title)
+    
+    if n_samples:
+        ax.set_title(f"{title} (n={n_samples})")
+    else:
+        ax.set_title(title)
+    
     ax.legend()
     ax.grid(True, alpha=0.3)
     ax.set_ylim([0, 1.05])
+    
+    # Add annotation about error bars
+    if baseline_errors or robust_errors:
+        ax.text(0.02, 0.02, 'Error bars: mean ± std', transform=ax.transAxes,
+                fontsize=9, verticalalignment='bottom', alpha=0.7)
 
     plt.tight_layout()
     if save_path:
