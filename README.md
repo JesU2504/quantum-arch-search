@@ -202,11 +202,25 @@ If you use this code, please cite the corresponding talk/paper. For questions or
 
 ## Changelog
 
+- **Toffoli Gate Verification Harness**: Added full basis-sweep fidelity evaluation for Toffoli (n-controlled NOT) gate synthesis verification. This ensures candidate circuits are evaluated on all 2^n computational basis inputs, not just |000...0>. Key functions: `full_basis_fidelity()`, `full_basis_fidelity_toffoli()`, `toffoli_truth_table()`. Added comprehensive regression tests.
 - **Parameterized Rotation Gates Support**: Enhanced `QuantumArchSearchEnv`, `ArchitectEnv`, and `AdversarialArchitectEnv` to support parameterized rotation gates (Rx, Ry, Rz) in addition to Clifford, T, and CNOT gates. Set `include_rotations=True` when creating environments to enable this feature. This provides greater circuit expressiveness and parity with VQE approaches. Added utility functions for rotation gate creation, serialization, and metrics. Updated Saboteur environment to recognize rotation gates. Backward compatible - rotation gates are disabled by default.
 - **VQE Architecture Search (Part 4)**: Fully implemented `VQEArchitectEnv` for molecular ground state optimization. Includes parameterized rotation gates (Rx, Ry, Rz), CNOT gates, classical optimization of rotation angles at episode end, comprehensive logging, and support for H2 and H4 molecules. Added example script and integration tests.
 - **Environment Consolidation**: All environments and agents (ArchitectEnv, AdversarialArchitectEnv, Saboteur, VQEArchitectEnv) are now unified under `src/qas_gym/envs/`; duplicate definitions in `src/envs/` have been removed. Import from `src.qas_gym.envs` for all environment classes.
 
 
+## Toffoli Gate Verification Harness
+
+This repository includes a full verification harness for evaluating Toffoli (and n-controlled NOT) gate synthesis experiments using full basis-sweep fidelity.
+
+### Overview
+
+The verification harness computes average fidelity over all 2^n computational basis inputs by:
+1. Enumerating all computational basis input states
+2. For each input: preparing the state, simulating the candidate circuit (with optional noise)
+3. Computing fidelity between output density matrix and expected output state (based on gate's truth table)
+4. Averaging fidelities over all inputs
+
+This ensures circuits are validated against the full gate behavior, not just a single input like |000...0>.
 ## Parameterized Rotation Gates
 
 The `QuantumArchSearchEnv` and derived environments now support optional parameterized rotation gates (Rx, Ry, Rz) in addition to the standard Clifford and T gate set.
@@ -220,6 +234,52 @@ The `QuantumArchSearchEnv` and derived environments now support optional paramet
 ### Usage
 
 ```python
+from src.utils.metrics import (
+    full_basis_fidelity_toffoli,
+    full_basis_fidelity,
+    toffoli_truth_table,
+)
+import cirq
+
+# Evaluate a circuit for Toffoli (CCNOT, 2 controls)
+qubits = cirq.LineQubit.range(3)
+circuit = cirq.Circuit(cirq.TOFFOLI(*qubits))
+fidelity = full_basis_fidelity_toffoli(circuit, qubits, n_controls=2)
+print(f"Toffoli fidelity: {fidelity:.4f}")  # Should be 1.0 for perfect gate
+
+# Evaluate with noise
+noise_model = cirq.ConstantQubitNoiseModel(cirq.depolarize(0.01))
+fidelity_noisy = full_basis_fidelity_toffoli(circuit, qubits, n_controls=2, noise_model=noise_model)
+print(f"Noisy fidelity: {fidelity_noisy:.4f}")
+
+# For 3-controlled NOT (CCCNOT)
+qubits_4 = cirq.LineQubit.range(4)
+cccnot_gate = cirq.X.controlled(num_controls=3)
+circuit_4 = cirq.Circuit(cccnot_gate(*qubits_4))
+fidelity_cccnot = full_basis_fidelity_toffoli(circuit_4, qubits_4, n_controls=3)
+print(f"CCCNOT fidelity: {fidelity_cccnot:.4f}")
+
+# For custom gates, use full_basis_fidelity with a custom truth table
+single_qubit = cirq.LineQubit.range(1)
+not_circuit = cirq.Circuit(cirq.X(single_qubit[0]))  # NOT gate
+not_truth_fn = lambda x: x ^ 1  # NOT gate truth table: |0> -> |1>, |1> -> |0>
+not_fidelity = full_basis_fidelity(not_circuit, single_qubit, not_truth_fn)
+print(f"NOT gate fidelity: {not_fidelity:.4f}")  # Should be 1.0
+```
+
+### Available Functions
+
+- `full_basis_fidelity(circuit, qubits, truth_table_fn, noise_model=None)`: General function for any gate with a given truth table
+- `full_basis_fidelity_toffoli(circuit, qubits, n_controls, noise_model=None)`: Convenience wrapper for Toffoli family gates
+- `toffoli_truth_table(n_controls)`: Generates truth table for n-controlled NOT gates
+- `computational_basis_state(index, n_qubits)`: Creates computational basis state vectors
+
+### Key Properties
+
+- **Perfect gates** yield fidelity = 1.0
+- **Identity/wrong circuits** yield fidelity < 1.0 (typically 0.75 for Toffoli because 6/8 states match)
+- **Noisy circuits** yield reduced fidelity depending on noise level
+- **Full basis sweep** ensures circuits that only work on |000...0> are correctly rejected
 from src.qas_gym.envs import QuantumArchSearchEnv, ArchitectEnv
 from src.qas_gym.utils import get_ghz_state
 import numpy as np

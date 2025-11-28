@@ -21,6 +21,11 @@ from .metrics import (
     state_fidelity,
     simulate_circuit,
     fidelity_retention_ratio,
+    # Full basis-sweep fidelity for gate synthesis verification
+    computational_basis_state,
+    toffoli_truth_table,
+    full_basis_fidelity,
+    full_basis_fidelity_toffoli,
 )
 from .parallel import create_vec_env, benchmark_parallelism
 from .plotting import (
@@ -54,6 +59,11 @@ __all__ = [
     "state_fidelity",
     "simulate_circuit",
     "fidelity_retention_ratio",
+    # Full basis-sweep fidelity for gate synthesis
+    "computational_basis_state",
+    "toffoli_truth_table",
+    "full_basis_fidelity",
+    "full_basis_fidelity_toffoli",
     # Parallelism
     "create_vec_env",
     "benchmark_parallelism",

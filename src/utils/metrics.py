@@ -9,6 +9,7 @@ This module provides standardized metric computation for:
   - Fidelity: State overlap with target
   - Gate counts: Total gates, CNOT count
   - Evaluation: Combined circuit quality metrics
+  - Full basis-sweep fidelity for gate synthesis verification
 
 TODO: Implement the following:
   - CNOT gate counting
@@ -17,10 +18,12 @@ TODO: Implement the following:
 
 DONE:
   - Fidelity computation using density matrix simulation (mixed_state_fidelity)
+  - Full basis-sweep fidelity for Toffoli/n-controlled-NOT gate synthesis
 """
 
 import numpy as np
 import cirq
+from typing import Callable, Optional, Sequence
 
 
 def ghz_circuit(n_qubits):
@@ -366,3 +369,193 @@ def state_energy(state_vector, hamiltonian_matrix):
     h_psi = hamiltonian_matrix @ state_vector
     energy = np.real(np.vdot(state_vector, h_psi))
     return float(energy)
+
+
+# =============================================================================
+# Full Basis-Sweep Fidelity for Gate Synthesis Verification
+# =============================================================================
+
+def computational_basis_state(index: int, n_qubits: int) -> np.ndarray:
+    """
+    Create a computational basis state |index> for n qubits.
+
+    Args:
+        index: Integer index representing the basis state (0 to 2^n - 1).
+        n_qubits: Number of qubits.
+
+    Returns:
+        State vector as numpy array of shape (2^n_qubits,).
+
+    Example:
+        >>> computational_basis_state(0, 2)  # |00>
+        array([1.+0.j, 0.+0.j, 0.+0.j, 0.+0.j])
+        >>> computational_basis_state(3, 2)  # |11>
+        array([0.+0.j, 0.+0.j, 0.+0.j, 1.+0.j])
+    """
+    dim = 2 ** n_qubits
+    state = np.zeros(dim, dtype=np.complex128)
+    state[index] = 1.0
+    return state
+
+
+def toffoli_truth_table(n_controls: int) -> Callable[[int], int]:
+    """
+    Generate the truth table function for an n-controlled NOT gate (Toffoli generalization).
+
+    The n-controlled NOT gate flips the target qubit if and only if all control
+    qubits are in state |1>. Qubit ordering: control qubits first, target qubit last.
+
+    For example, a 2-controlled NOT (Toffoli/CCNOT) with 3 qubits:
+        |000> -> |000>  (controls 00, no flip)
+        |001> -> |001>  (controls 00, no flip)
+        |010> -> |010>  (controls 01, no flip)
+        |011> -> |011>  (controls 01, no flip)
+        |100> -> |100>  (controls 10, no flip)
+        |101> -> |101>  (controls 10, no flip)
+        |110> -> |111>  (controls 11, flip!)
+        |111> -> |110>  (controls 11, flip!)
+
+    Args:
+        n_controls: Number of control qubits. Total qubits = n_controls + 1.
+
+    Returns:
+        A function that maps input basis state index to output basis state index.
+    """
+    def truth_fn(input_index: int) -> int:
+        # Check if all control bits are 1 (ignore target bit which is LSB)
+        controls_value = input_index >> 1
+        if controls_value == (1 << n_controls) - 1:
+            # All controls are on, flip the target (LSB)
+            return input_index ^ 1
+        return input_index
+
+    return truth_fn
+
+
+def full_basis_fidelity(
+    circuit: cirq.Circuit,
+    qubits: Sequence[cirq.Qid],
+    truth_table_fn: Callable[[int], int],
+    noise_model: Optional[cirq.NoiseModel] = None,
+) -> float:
+    """
+    Compute average fidelity over all computational basis inputs.
+
+    This function evaluates a candidate circuit for gate synthesis by:
+    1. Enumerating all 2^n computational basis input states
+    2. For each input: preparing the input state, simulating the circuit
+    3. Computing fidelity between simulated output and expected output
+    4. Averaging fidelities over all inputs
+
+    Args:
+        circuit: The candidate circuit to evaluate.
+        qubits: Qubit ordering for simulation.
+        truth_table_fn: Function mapping input basis state index to expected
+            output basis state index (encodes the gate's classical truth table).
+        noise_model: Optional noise model to apply during simulation.
+
+    Returns:
+        Average fidelity over all basis inputs, in range [0, 1].
+
+    Example:
+        >>> # Evaluate a circuit meant to implement Toffoli
+        >>> from src.utils.metrics import full_basis_fidelity, toffoli_truth_table
+        >>> qubits = cirq.LineQubit.range(3)
+        >>> circuit = cirq.Circuit(cirq.TOFFOLI(*qubits))
+        >>> truth_fn = toffoli_truth_table(n_controls=2)
+        >>> fidelity = full_basis_fidelity(circuit, qubits, truth_fn)
+        >>> print(f"Fidelity: {fidelity:.4f}")  # Should be 1.0
+    """
+    n_qubits = len(qubits)
+    dim = 2 ** n_qubits
+    simulator = cirq.DensityMatrixSimulator()
+
+    fidelities = []
+    for input_idx in range(dim):
+        # Create input basis state
+        input_state = computational_basis_state(input_idx, n_qubits)
+
+        # Create preparation circuit for input state
+        prep_circuit = _prepare_basis_state_circuit(input_idx, qubits)
+
+        # Combine preparation + candidate circuit
+        full_circuit = prep_circuit + circuit
+
+        # Apply noise if specified
+        if noise_model is not None:
+            full_circuit = full_circuit.with_noise(noise_model)
+
+        # Simulate to get output density matrix
+        result = simulator.simulate(full_circuit, qubit_order=qubits)
+        output_rho = result.final_density_matrix
+        # Ensure Hermiticity
+        output_rho = 0.5 * (output_rho + np.conj(output_rho).T)
+
+        # Get expected output state from truth table
+        expected_output_idx = truth_table_fn(input_idx)
+        expected_output_state = computational_basis_state(expected_output_idx, n_qubits)
+
+        # Compute fidelity F = <psi|rho|psi>
+        fidelity = float(np.real(np.vdot(
+            expected_output_state, output_rho @ expected_output_state
+        )))
+        fidelities.append(fidelity)
+
+    return float(np.mean(fidelities))
+
+
+def _prepare_basis_state_circuit(
+    index: int, qubits: Sequence[cirq.Qid]
+) -> cirq.Circuit:
+    """
+    Create a circuit to prepare computational basis state |index>.
+
+    Applies X gates to qubits that should be |1> in the basis state.
+    Uses Cirq's convention where qubits[0] is the MSB of the state index.
+
+    Args:
+        index: Integer index representing the desired basis state.
+        qubits: List of qubits to prepare.
+
+    Returns:
+        Cirq circuit that prepares |index> from |0...0>.
+    """
+    n_qubits = len(qubits)
+    ops = []
+    for i in range(n_qubits):
+        # In Cirq, qubits[i] corresponds to bit (n_qubits - 1 - i) of the index
+        # i.e., qubits[0] is the MSB of the state index
+        bit_position = n_qubits - 1 - i
+        if (index >> bit_position) & 1:
+            ops.append(cirq.X(qubits[i]))
+    return cirq.Circuit(ops)
+
+
+def full_basis_fidelity_toffoli(
+    circuit: cirq.Circuit,
+    qubits: Sequence[cirq.Qid],
+    n_controls: int,
+    noise_model: Optional[cirq.NoiseModel] = None,
+) -> float:
+    """
+    Compute average fidelity for an n-controlled NOT (Toffoli) gate synthesis.
+
+    Convenience wrapper around full_basis_fidelity for Toffoli-family gates.
+
+    Args:
+        circuit: The candidate circuit to evaluate.
+        qubits: Qubit ordering for simulation (controls first, target last).
+        n_controls: Number of control qubits (2 for standard Toffoli/CCNOT).
+        noise_model: Optional noise model to apply during simulation.
+
+    Returns:
+        Average fidelity over all basis inputs, in range [0, 1].
+
+    Example:
+        >>> qubits = cirq.LineQubit.range(3)
+        >>> circuit = cirq.Circuit(cirq.TOFFOLI(*qubits))
+        >>> fidelity = full_basis_fidelity_toffoli(circuit, qubits, n_controls=2)
+        >>> print(f"Fidelity: {fidelity:.4f}")  # Should be 1.0
+    """
+    truth_fn = toffoli_truth_table(n_controls)
+    return full_basis_fidelity(circuit, qubits, truth_fn, noise_model)
