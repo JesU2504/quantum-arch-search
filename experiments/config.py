@@ -359,6 +359,34 @@ N_PREDICTIONS = 100
 
 from qas_gym.utils import get_gates_by_name
 
-def get_action_gates(qubits: list[cirq.LineQubit]) -> list[cirq.Operation]:
+# --- Rotation Gate Configuration ---
+# Default setting for including parameterized rotation gates (Rx, Ry, Rz) in experiments.
+# Set to True to enable VQE-style variational circuits with more expressive action space.
+# Set to False (default) for backward compatibility with Clifford+T gate set.
+INCLUDE_ROTATIONS = False
+
+
+def get_action_gates(
+    qubits: list[cirq.LineQubit],
+    include_rotations: bool = INCLUDE_ROTATIONS
+) -> list[cirq.Operation]:
+    """
+    Get the action gates for quantum architecture search experiments.
+    
+    Args:
+        qubits: List of qubits to apply gates to.
+        include_rotations: If True, include parameterized rotation gates (Rx, Ry, Rz)
+            in addition to the Clifford+T gates. When True, the action space becomes
+            more expressive (suitable for VQE-style variational circuits).
+            Defaults to INCLUDE_ROTATIONS config value.
+    
+    Returns:
+        List of gate operations including single-qubit gates, optionally rotation
+        gates, and two-qubit CNOT gates for all ordered qubit pairs.
+    
+    Note:
+        The default gate set is Clifford+T: X, Y, Z, H, T, S (plus CNOT).
+        When include_rotations=True, Rx, Ry, Rz gates are added for each qubit.
+    """
     single_qubit_gate_names = ['X', 'Y', 'Z', 'H', 'T', 'S']
-    return get_gates_by_name(qubits, single_qubit_gate_names)
+    return get_gates_by_name(qubits, single_qubit_gate_names, include_rotations=include_rotations)
