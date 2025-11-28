@@ -34,8 +34,8 @@ from qas_gym.utils import get_ghz_state
 # ============================================================================
 # Hard-coded Configuration (per ExpPlan.md - Part 1, Experiment 1.1)
 # ============================================================================
-LAMBDA_VALUES = [0.001, 0.005, 0.01, 0.05, 0.1]
-N_SEEDS = 5
+LAMBDA_VALUES = [0.01, 0.005, 0.01, 0.05, 0.1]
+N_SEEDS = 1
 N_QUBITS = 4
 FIDELITY_THRESHOLD = 0.99  # Success threshold per ExpPlan.md
 MAX_CIRCUIT_TIMESTEPS = config.MAX_CIRCUIT_TIMESTEPS
