@@ -107,16 +107,5 @@ venv.bak/
 *.swo
 *~
 
-# Results and outputs
-<<<<<<< HEAD
-results/
-*.json.bak
-*.log
-*.zip
-=======
-#results/
-#*.json.bak
->>>>>>> 367c9cb (Allow tracking of results folder)
-
 # Cirq circuit outputs (keep actual saved circuits)
 # circuit_*.json
