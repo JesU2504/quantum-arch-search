@@ -23,13 +23,13 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 import numpy as np
 import cirq
 
-from utils.metrics import (
+from src.utils.metrics import (
     ghz_circuit,
     ideal_ghz_state,
     state_fidelity,
     simulate_circuit,
 )
-from envs.saboteur import Saboteur
+from src.qas_gym.envs import Saboteur
 
 
 def test_saboteur_drops_ghz_fidelity():

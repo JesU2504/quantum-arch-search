@@ -1,19 +1,26 @@
 """
 Environments package for Quantum Architecture Search.
 
-See ExpPlan.md for the full experimental plan. This package contains:
-- ArchitectEnv: Base environment for the architect agent.
-- AdversarialArchitectEnv: Architect environment with adversarial evaluation.
-- Saboteur: Noise injection agent for robustness testing.
-- VQEArchitectEnv: Environment for VQE-based architecture search.
+DEPRECATED: This module is deprecated. All environments have been unified under
+src.qas_gym.envs. Please update your imports to use:
 
-TODO: Expose all environment classes via this __init__.py as the package develops.
+    from src.qas_gym.envs import (
+        ArchitectEnv,
+        AdversarialArchitectEnv,
+        Saboteur,
+        VQEArchitectEnv,
+    )
+
+This module re-exports from src.qas_gym.envs for backward compatibility.
 """
 
-from .architect_env import ArchitectEnv
-from .adversarial_architect_env import AdversarialArchitectEnv
-from .saboteur import Saboteur
-from .vqe_architect_env import VQEArchitectEnv
+# Re-export from canonical location for backward compatibility
+from src.qas_gym.envs import (
+    ArchitectEnv,
+    AdversarialArchitectEnv,
+    Saboteur,
+    VQEArchitectEnv,
+)
 
 __all__ = [
     "ArchitectEnv",

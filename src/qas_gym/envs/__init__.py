@@ -1,6 +1,11 @@
 from .qas_env import QuantumArchSearchEnv
-from .saboteur_env import SaboteurMultiGateEnv
+from .saboteur_env import SaboteurMultiGateEnv, Saboteur
 from .architect_env import ArchitectEnv, AdversarialArchitectEnv
+from .vqe_architect_env import VQEArchitectEnv
+
+# Aliases for backward compatibility
+SaboteurEnv = SaboteurMultiGateEnv
+
 # NOTE: Basic* and Noisy* environments are deprecated/unused and intentionally
 # not re-exported to avoid accidental imports during conference packaging.
 # If needed in the future, restore these imports:
@@ -14,3 +19,13 @@ from .architect_env import ArchitectEnv, AdversarialArchitectEnv
 #     NoisyTwoQubitEnv,
 #     NoisyThreeQubitEnv,
 # )
+
+__all__ = [
+    "QuantumArchSearchEnv",
+    "SaboteurMultiGateEnv",
+    "SaboteurEnv",
+    "Saboteur",
+    "ArchitectEnv",
+    "AdversarialArchitectEnv",
+    "VQEArchitectEnv",
+]

@@ -27,7 +27,7 @@ def test_vqe_returns_reasonable_energy():
     For an identity (empty) circuit, the energy should be close to
     the Hartree-Fock energy, not the exact ground state.
     """
-    from src.envs import VQEArchitectEnv
+    from src.qas_gym.envs import VQEArchitectEnv
 
     # Create environment for H2 molecule
     env = VQEArchitectEnv(molecule="H2", bond_distance=0.74)
@@ -59,7 +59,7 @@ def test_vqe_energy_not_exact_ground_state():
     An identity circuit should not achieve the FCI ground state energy.
     This verifies the Hamiltonian is non-trivial.
     """
-    from src.envs import VQEArchitectEnv
+    from src.qas_gym.envs import VQEArchitectEnv
 
     # Create environment for H2 molecule
     env = VQEArchitectEnv(molecule="H2", bond_distance=0.74)
@@ -82,7 +82,7 @@ def test_vqe_hamiltonian_construction():
     The molecular Hamiltonian should be Hermitian and have
     the expected number of terms.
     """
-    from src.envs import VQEArchitectEnv
+    from src.qas_gym.envs import VQEArchitectEnv
 
     # Create environment for H2 molecule
     env = VQEArchitectEnv(molecule="H2", bond_distance=0.74)
@@ -118,7 +118,7 @@ def test_vqe_reference_energies():
     The environment should provide both Hartree-Fock and FCI
     reference energies for comparison.
     """
-    from src.envs import VQEArchitectEnv
+    from src.qas_gym.envs import VQEArchitectEnv
 
     # Create environment for H2 molecule
     env = VQEArchitectEnv(molecule="H2", bond_distance=0.74)
@@ -156,7 +156,7 @@ def test_vqe_circuit_improves_energy():
     the identity circuit.
     """
     import cirq
-    from src.envs import VQEArchitectEnv
+    from src.qas_gym.envs import VQEArchitectEnv
 
     # Create environment for H2 molecule
     env = VQEArchitectEnv(molecule="H2", bond_distance=0.74)
@@ -193,7 +193,7 @@ def test_h4_hamiltonian_construction():
     This test validates the H4 Hamiltonian for Part 4 of ExpPlan.md
     (VQE on stretched H4).
     """
-    from src.envs import VQEArchitectEnv
+    from src.qas_gym.envs import VQEArchitectEnv
 
     # Create environment for H4 molecule at stretched bond distance
     env = VQEArchitectEnv(molecule="H4", bond_distance=1.5)
@@ -227,7 +227,7 @@ def test_h4_correlation_energy():
     At stretched geometry (1.5 Å), H4 should exhibit strong correlation,
     meaning there's a significant gap between HF and FCI energies.
     """
-    from src.envs import VQEArchitectEnv
+    from src.qas_gym.envs import VQEArchitectEnv
 
     env = VQEArchitectEnv(molecule="H4", bond_distance=1.5)
 
