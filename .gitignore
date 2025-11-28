@@ -35,12 +35,14 @@ pip-delete-this-directory.txt
 # Unit test / coverage reports
 htmlcov/
 .tox/
+.nox/
 .coverage
 .coverage.*
 .cache
 nosetests.xml
 coverage.xml
 *.cover
+*.py,cover
 .hypothesis/
 .pytest_cache/
 
@@ -49,7 +51,6 @@ coverage.xml
 *.pot
 
 # Django stuff:
-*.log
 local_settings.py
 
 # Flask stuff:
@@ -109,6 +110,8 @@ venv.bak/
 # Results and outputs
 results/
 *.json.bak
+*.log
+*.zip
 
 # Cirq circuit outputs (keep actual saved circuits)
 # circuit_*.json

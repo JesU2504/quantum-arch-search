@@ -1,4 +1,14 @@
 import os
+import sys
+
+# Add repository root to sys.path for standalone execution
+_repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if _repo_root not in sys.path:
+    sys.path.insert(0, _repo_root)
+_src_root = os.path.join(_repo_root, 'src')
+if _src_root not in sys.path:
+    sys.path.insert(0, _src_root)
+
 import cirq
 import numpy as np
 import matplotlib.pyplot as plt

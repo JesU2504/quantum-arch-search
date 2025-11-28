@@ -12,8 +12,17 @@ Examples:
 import argparse
 import json
 import os
+import sys
 from datetime import datetime
 import shutil
+
+# Add repository root and src to sys.path for standalone execution
+_repo_root = os.path.abspath(os.path.dirname(__file__))
+if _repo_root not in sys.path:
+    sys.path.insert(0, _repo_root)
+_src_root = os.path.join(_repo_root, 'src')
+if _src_root not in sys.path:
+    sys.path.insert(0, _src_root)
 
 
 def setup_logger(log_path):
