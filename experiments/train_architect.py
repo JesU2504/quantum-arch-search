@@ -1,3 +1,16 @@
+"""
+Baseline Architect Training Script.
+
+This script trains a baseline architect agent to learn a quantum circuit that
+prepares a target state or implements a target gate.
+
+Target type and task mode are configured centrally via experiments/config.py:
+- TARGET_TYPE: 'toffoli' (default) or 'ghz'
+- TASK_MODE: 'state_preparation' (default) or 'unitary_preparation'
+
+See experiments/config.py for detailed documentation on configuration options.
+"""
+
 import os
 import sys
 
@@ -18,10 +31,7 @@ import matplotlib.pyplot as plt
 
 from experiments import config
 from qas_gym.envs import ArchitectEnv  # Import ArchitectEnv
-from qas_gym.utils import (
-    get_ghz_state, get_toffoli_state, create_ghz_circuit_and_qubits, 
-    create_toffoli_circuit_and_qubits, save_circuit
-)
+from qas_gym.utils import save_circuit
 
 class ChampionCircuitCallback(BaseCallback):
     """
