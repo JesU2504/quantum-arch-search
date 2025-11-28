@@ -1,3 +1,16 @@
+"""
+Baseline Architect Training Script.
+
+This script trains a baseline architect agent to learn a quantum circuit that
+prepares a target state or implements a target gate.
+
+Target type and task mode are configured centrally via experiments/config.py:
+- TARGET_TYPE: 'toffoli' (default) or 'ghz'
+- TASK_MODE: 'state_preparation' (default) or 'unitary_preparation'
+
+See experiments/config.py for detailed documentation on configuration options.
+"""
+
 import os
 import sys
 
@@ -18,10 +31,7 @@ import matplotlib.pyplot as plt
 
 from experiments import config
 from qas_gym.envs import ArchitectEnv  # Import ArchitectEnv
-from qas_gym.utils import (
-    get_ghz_state, get_toffoli_state, create_ghz_circuit_and_qubits, 
-    create_toffoli_circuit_and_qubits, save_circuit
-)
+from qas_gym.utils import save_circuit
 
 class ChampionCircuitCallback(BaseCallback):
     """
@@ -94,15 +104,10 @@ class ChampionCircuitCallback(BaseCallback):
 def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps, include_rotations=False):
     """
     Trains a baseline architect in a noise-free environment to find a circuit
-    for the n-controlled Toffoli gate (default target).
+    for the configured target (default: n-controlled Toffoli gate).
 
-    The target is an n-controlled NOT gate:
-    - 2 qubits: CNOT
-    - 3 qubits: Toffoli (CCNOT)
-    - 4 qubits: CCCNOT
-    - etc.
-    
-    Note: GHZ state preparation remains available as a legacy option via get_ghz_state().
+    Target type and task mode can be overridden via arguments, otherwise uses
+    the central configuration from experiments/config.py.
 
     Args:
         results_dir (str): The directory to save models, plots, and circuits.
@@ -114,22 +119,40 @@ def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps, in
             suitable for VQE-style variational circuits. Default is False for
             backward compatibility with Clifford+T gate set.
     """
+    # Use central config with optional overrides
+    effective_target = target_type if target_type is not None else config.TARGET_TYPE
+    effective_mode = task_mode if task_mode is not None else config.TASK_MODE
+    experiment_label = config.get_experiment_label(effective_target, effective_mode)
+    
     print(f"Training baseline for {n_qubits} qubits.")
     rotation_status = "with rotation gates" if include_rotations else "with Clifford+T gates only"
     print(f"--- Phase 1: Training Baseline Architect for {n_qubits}-qubit Toffoli Gate ({rotation_status}) ---")
     os.makedirs(results_dir, exist_ok=True)
 
-    # Define file paths based on the results_dir
+    # Define file paths based on the results_dir (include experiment label)
     circuit_filename = os.path.join(results_dir, "circuit_vanilla.json")
     plot_filename = os.path.join(results_dir, "architect_training_progress.png")
     fidelities_filename = os.path.join(results_dir, "architect_fidelities.txt")
     steps_filename = os.path.join(results_dir, "architect_steps.txt")
     
-    # Use n-controlled Toffoli as default target
-    target_state = get_toffoli_state(n_qubits)
-    target_circuit, _ = create_toffoli_circuit_and_qubits(n_qubits)
-    print("\n--- Target Circuit (for reference) ---")
-    print(target_circuit)
+    # Get target state using central config
+    target_state = config.get_target_state(n_qubits, effective_target)
+    
+    # Show the gate being learned (without input preparation X gates)
+    # This makes it clearer what the agent is trying to learn
+    if effective_target == 'toffoli':
+        gate_circuit, _ = config.get_target_circuit(n_qubits, effective_target, include_input_prep=False)
+        print("\n--- Target Gate (what the agent learns to implement) ---")
+        print(gate_circuit)
+        print("\nNote: In state_preparation mode, we train to output the state |11...10⟩")
+        print("      which is the result of applying this gate to input |11...1⟩.")
+        if effective_mode == 'unitary_preparation':
+            print("      In unitary_preparation mode, we test on ALL 2^n input states.")
+    else:
+        # For GHZ, show the full preparation circuit
+        target_circuit, _ = config.get_target_circuit(n_qubits, effective_target)
+        print("\n--- Target Circuit (for reference) ---")
+        print(target_circuit)
 
     # Use ArchitectEnv for a fair comparison with the adversarial setup
     # The environment will handle creation of qubits, observables, and gates internally.

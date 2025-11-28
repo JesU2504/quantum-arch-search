@@ -4,6 +4,10 @@ Circuit comparison and robustness analysis for quantum architecture search.
 This module evaluates and compares the robustness of vanilla (baseline) and robust 
 (adversarially-trained) circuits under multi-gate saboteur attacks.
 
+Target type and task mode are configured centrally via experiments/config.py:
+- TARGET_TYPE: 'toffoli' (default) or 'ghz'
+- TASK_MODE: 'state_preparation' (default) or 'unitary_preparation'
+
 Statistical Protocol:
     - Multiple attack samples per circuit for robust statistics
     - Results include mean ± std for attacked fidelities
@@ -30,7 +34,7 @@ import json
 from datetime import datetime
 
 from experiments import config
-from qas_gym.utils import get_ghz_state, get_toffoli_state, apply_noise, fidelity_pure_target
+from qas_gym.utils import apply_noise, fidelity_pure_target
 
 # Import statistical utilities
 from utils.stats import (
@@ -128,8 +132,8 @@ def compare_noise_resilience(base_results_dir, num_runs, n_qubits, samples=32, l
     log("--- Aggregating and Comparing Circuit Robustness (Multi-Gate Attacks) ---")
     summary_json = os.path.join(base_results_dir, "robust_eval.json")
     samples_csv = os.path.join(base_results_dir, "attacked_fidelity_samples.csv")
-    # Use n-controlled Toffoli as default target for circuit robustness evaluation
-    target_state = get_toffoli_state(n_qubits)
+    # Use central config to get target state for circuit robustness evaluation
+    target_state = config.get_target_state(n_qubits)
 
     all_metrics_vanilla = []
     all_metrics_robust = []
