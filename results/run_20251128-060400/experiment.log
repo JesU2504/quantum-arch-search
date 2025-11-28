@@ -1,0 +1,50 @@
+2025-11-28 06:04:00,227 INFO: Starting pipeline with metadata: {'timestamp': '20251128-060400', 'preset': 'quick', 'n_qubits': 4, 'baseline_steps': 1000, 'saboteur_steps': 1000, 'adversarial_gens': 2, 'seed': None, 'n_seeds': 5, 'statistical_protocol': {'n_seeds_per_setting': 5, 'aggregation_method': 'mean ± std', 'error_bars': True}}
+2025-11-28 06:04:00,228 INFO: Running baseline architect (noiseless)
+2025-11-28 06:04:27,153 INFO: Running lambda sweep experiment (ExpPlan Part 1, Exp 1.1) with n_seeds=5
+2025-11-28 06:04:27,155 INFO: === Lambda Sweep Experiment (ExpPlan Part 1, Exp 1.1) ===
+2025-11-28 06:04:27,155 INFO: Lambda values: [0.001, 0.005, 0.01, 0.05, 0.1]
+2025-11-28 06:04:27,155 INFO: Seeds per lambda: 5
+2025-11-28 06:04:27,155 INFO: Qubits: 4
+2025-11-28 06:04:27,155 INFO: Training steps per trial: 1000
+2025-11-28 06:04:27,155 INFO: Results directory: results/run_20251128-060400/lambda_sweep
+2025-11-28 06:04:27,157 INFO: 
+--- Lambda = 0.001 ---
+2025-11-28 06:04:27,157 INFO:   Seed 1/5...
+2025-11-28 06:04:53,655 INFO:     Best fidelity: 0.2500, CNOT count: 12, Success: False
+2025-11-28 06:04:53,655 INFO:   Seed 2/5...
+2025-11-28 06:05:19,635 INFO:     Best fidelity: 0.5000, CNOT count: 13, Success: False
+2025-11-28 06:05:19,635 INFO:   Seed 3/5...
+2025-11-28 06:05:45,401 INFO:     Best fidelity: 0.1250, CNOT count: 8, Success: False
+2025-11-28 06:05:45,401 INFO:   Seed 4/5...
+2025-11-28 06:06:11,298 INFO:     Best fidelity: 0.2500, CNOT count: 12, Success: False
+2025-11-28 06:06:11,298 INFO:   Seed 5/5...
+2025-11-28 06:06:37,437 INFO:     Best fidelity: 0.5000, CNOT count: 16, Success: False
+2025-11-28 06:06:37,438 INFO:   Summary for λ=0.001:
+2025-11-28 06:06:37,438 INFO:     Success rate: 0.00% (n=5)
+2025-11-28 06:06:37,438 INFO:     Fidelity: 0.3250 ± 0.1677 (n=5)
+2025-11-28 06:06:37,438 INFO:     CNOT count: 12.2000 ± 2.8636 (n=5)
+2025-11-28 06:06:37,438 INFO: 
+--- Lambda = 0.005 ---
+2025-11-28 06:06:37,439 INFO:   Seed 1/5...
+2025-11-28 06:07:03,999 INFO:     Best fidelity: 0.2500, CNOT count: 12, Success: False
+2025-11-28 06:07:04,000 INFO:   Seed 2/5...
+2025-11-28 06:07:30,232 INFO:     Best fidelity: 0.5000, CNOT count: 13, Success: False
+2025-11-28 06:07:30,232 INFO:   Seed 3/5...
+2025-11-28 06:07:56,050 INFO:     Best fidelity: 0.1250, CNOT count: 8, Success: False
+2025-11-28 06:07:56,050 INFO:   Seed 4/5...
+2025-11-28 06:08:21,989 INFO:     Best fidelity: 0.2500, CNOT count: 12, Success: False
+2025-11-28 06:08:21,990 INFO:   Seed 5/5...
+2025-11-28 06:08:48,261 INFO:     Best fidelity: 0.5000, CNOT count: 16, Success: False
+2025-11-28 06:08:48,262 INFO:   Summary for λ=0.005:
+2025-11-28 06:08:48,262 INFO:     Success rate: 0.00% (n=5)
+2025-11-28 06:08:48,262 INFO:     Fidelity: 0.3250 ± 0.1677 (n=5)
+2025-11-28 06:08:48,263 INFO:     CNOT count: 12.2000 ± 2.8636 (n=5)
+2025-11-28 06:08:48,263 INFO: 
+--- Lambda = 0.01 ---
+2025-11-28 06:08:48,263 INFO:   Seed 1/5...
+2025-11-28 06:09:16,887 INFO:     Best fidelity: 0.2500, CNOT count: 12, Success: False
+2025-11-28 06:09:16,887 INFO:   Seed 2/5...
+2025-11-28 06:09:51,570 INFO:     Best fidelity: 0.5000, CNOT count: 13, Success: False
+2025-11-28 06:09:51,570 INFO:   Seed 3/5...
+2025-11-28 06:10:23,242 INFO:     Best fidelity: 0.1250, CNOT count: 8, Success: False
+2025-11-28 06:10:23,242 INFO:   Seed 4/5...

@@ -1,0 +1,62 @@
+============================================================
+Experiment Summary: Lambda Sweep (ExpPlan Part 1, Exp 1.1)
+============================================================
+
+Timestamp: 2025-11-28T05:05:57.117112
+
+Statistical Protocol:
+----------------------------------------
+  Number of seeds (n): 5
+  Seeds used: [0, 1, 2, 3, 4]
+  Aggregation: mean ± std (sample std, ddof=1)
+  Confidence level: 95%
+
+
+Hyperparameters:
+----------------------------------------
+  lambda_values: [0.001, 0.005, 0.01, 0.05, 0.1]
+  n_qubits: 4
+  training_steps: 1000
+  fidelity_threshold: 0.99
+  max_circuit_timesteps: 20
+  n_steps_per_update: 1024
+
+Aggregated Results:
+----------------------------------------
+
+  lambda_0.001:
+    Mean ± Std: 0.325000 ± 0.167705
+    Median: 0.250000
+    Range: [0.125000, 0.500000]
+    n = 5
+    95% CI: [0.116767, 0.533233]
+
+  lambda_0.005:
+    Mean ± Std: 0.325000 ± 0.167705
+    Median: 0.250000
+    Range: [0.125000, 0.500000]
+    n = 5
+    95% CI: [0.116767, 0.533233]
+
+  lambda_0.01:
+    Mean ± Std: 0.325000 ± 0.167705
+    Median: 0.250000
+    Range: [0.125000, 0.500000]
+    n = 5
+    95% CI: [0.116767, 0.533233]
+
+  lambda_0.05:
+    Mean ± Std: 0.325000 ± 0.167705
+    Median: 0.250000
+    Range: [0.125000, 0.500000]
+    n = 5
+    95% CI: [0.116767, 0.533233]
+
+  lambda_0.1:
+    Mean ± Std: 0.325000 ± 0.167705
+    Median: 0.250000
+    Range: [0.125000, 0.500000]
+    n = 5
+    95% CI: [0.116767, 0.533233]
+
+============================================================

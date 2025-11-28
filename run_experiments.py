@@ -60,11 +60,11 @@ def run_pipeline(args):
 		except Exception:
 			pass
 
-	from experiments.train_architect_ghz import train_baseline_architect
+	from experiments.train_architect import train_baseline_architect
 	from experiments.train_saboteur_only import train_saboteur_only
 	from experiments.train_adversarial import train_adversarial
 	from experiments.compare_circuits import compare_noise_resilience
-	from experiments.lambda_sweep_ghz import run_lambda_sweep
+	from experiments.lambda_sweep import run_lambda_sweep
 	from experiments.parameter_recovery import run_parameter_recovery
 	from experiments.cross_noise_robustness import run_cross_noise_robustness
 
