@@ -68,6 +68,7 @@ def train_adversarial(
     fidelity_threshold: float = 0.99,
     lambda_penalty: float = 0.5,
     include_rotations: bool = False,
+    task_mode: str = None,
 ):
     rotation_status = "with rotation gates" if include_rotations else "with Clifford+T gates only"
     print(f"--- Starting Adversarial Co-evolutionary Training ({rotation_status}) ---")
@@ -75,12 +76,13 @@ def train_adversarial(
     log_dir = os.path.join(results_dir, f"adversarial_training_{datetime.now().strftime('%Y%m%d-%H%M%S')}")
     os.makedirs(log_dir, exist_ok=True)
 
-    # --- Target State using central config ---
+    # --- Target State using central config and task_mode ---
     # For 2 qubits, use Bell state (legacy behavior for backward compatibility)
+    effective_task_mode = task_mode if task_mode is not None else config.TASK_MODE
     if n_qubits == 2:
         target_state = get_bell_state()
     else:
-        # Use central config to get target state
+        # Use central config to get target state, passing task_mode if needed in the future
         target_state = config.get_target_state(n_qubits, config.TARGET_TYPE)
 
     # --- Initialize Environments ---
@@ -217,6 +219,8 @@ if __name__ == "__main__":
     parser.add_argument('--lambda-penalty', type=float, default=0.5, help='Penalty coefficient for mean error rate')
     parser.add_argument('--include-rotations', action='store_true',
                         help='Include parameterized rotation gates (Rx, Ry, Rz) in action space')
+    parser.add_argument('--task-mode', type=str, default=None, choices=['state_preparation', 'unitary_preparation'],
+        help='Task mode for training: state_preparation or unitary_preparation. Overrides config.TASK_MODE if set.')
     args = parser.parse_args()
 
     architect_agent, saboteur_agent, arch_env, log_dir, start_time = train_adversarial(
@@ -229,6 +233,7 @@ if __name__ == "__main__":
         fidelity_threshold=args.fidelity_threshold,
         lambda_penalty=args.lambda_penalty,
         include_rotations=args.include_rotations,
+        task_mode=args.task_mode,
     )
 
     # Final Save

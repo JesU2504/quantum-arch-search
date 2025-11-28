@@ -150,7 +150,8 @@ def run_pipeline(args):
 			n_qubits=args.n_qubits,
 			architect_steps=baseline_steps,
 			n_steps=baseline_n_steps,
-			include_rotations=exp_config.INCLUDE_ROTATIONS
+			include_rotations=exp_config.INCLUDE_ROTATIONS,
+			task_mode=args.task_mode
 		)
 	else:
 		logger.info('Skipping baseline as requested')
@@ -213,7 +214,8 @@ def run_pipeline(args):
 			saboteur_steps_per_generation=adversarial_sab_steps,
 			max_circuit_gates=args.max_circuit_gates,
 			fidelity_threshold=args.fidelity_threshold,
-			include_rotations=exp_config.INCLUDE_ROTATIONS
+			include_rotations=exp_config.INCLUDE_ROTATIONS,
+			task_mode=args.task_mode
 		)
 		# Find the latest adversarial training subdir for plotting
 		from glob import glob
@@ -378,6 +380,8 @@ def parse_args():
 	p.add_argument('--n-seeds', type=int, default=None, 
 		help=f'Number of random seeds per experiment setting for statistical reporting. '
 		     f'Recommended: at least 5, ideally 10. Default uses config.N_SEEDS.')
+	p.add_argument('--task-mode', type=str, default=None, choices=['state_preparation', 'unitary_preparation'],
+    help='Task mode for training: state_preparation or unitary_preparation. Overrides config.TASK_MODE if set.')
 	return p.parse_args()
 
 

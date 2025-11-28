@@ -295,15 +295,18 @@ from src.qas_gym.envs import QuantumArchSearchEnv, ArchitectEnv
 from src.qas_gym.utils import get_ghz_state
 import numpy as np
 
+
 # Create environment with rotation gates enabled
 target = get_ghz_state(3)
+# To use multiple allowed rotation angles for Rx, Ry, Rz gates, pass a list of angles:
+allowed_angles = [0, 0.25 * np.pi, 0.5 * np.pi, 0.75 * np.pi, np.pi]
 env = QuantumArchSearchEnv(
-    target=target,
-    fidelity_threshold=0.99,
-    reward_penalty=0.01,
-    max_timesteps=20,
-    include_rotations=True,  # Enable Rx, Ry, Rz gates
-    default_rotation_angle=np.pi/4  # Optional: set default angle
+	target=target,
+	fidelity_threshold=0.99,
+	reward_penalty=0.01,
+	max_timesteps=20,
+	include_rotations=True,  # Enable Rx, Ry, Rz gates
+	default_rotation_angle=allowed_angles  # Pass a list for multiple angles
 )
 
 # Standard usage
@@ -321,12 +324,13 @@ env.set_rotation_angle(gate_index=0, angle=np.pi/2)
 
 ### Action Space with Rotations
 
+
 When `include_rotations=True`, the action space is expanded to include:
 - All original Clifford/T gates (X, Y, Z, H, T, S on each qubit)
-- Rx, Ry, Rz rotation gates on each qubit (with default angle)
+- Rx, Ry, Rz rotation gates on each qubit, for each angle in the list provided to `default_rotation_angle` (e.g., [0, 0.25π, 0.5π, 0.75π, π])
 - CNOT gates for all qubit pairs
 
-The action space remains discrete; rotation gates are added with a configurable default angle. For full continuous angle optimization at episode end, consider using `VQEArchitectEnv`.
+The action space remains discrete; each rotation gate action corresponds to a specific angle from the allowed list. For full continuous angle optimization at episode end, consider using `VQEArchitectEnv`.
 
 ### Metrics and Logging
 

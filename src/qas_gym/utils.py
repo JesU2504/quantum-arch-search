@@ -7,7 +7,15 @@ from typing import Sequence, List, Dict, Any, Optional, Tuple
 ROTATION_GATE_TYPES = ['Rx', 'Ry', 'Rz']
 
 
-def get_gates_by_name(qubits, gate_names, include_rotations=False, default_rotation_angle=np.pi/4):
+from typing import Sequence, Union
+
+def get_gates_by_name(
+    qubits,
+    gate_names,
+    include_rotations=False,
+    default_rotation_angle: Union[float, Sequence[float]] = np.pi/4
+):
+
     """
     Get a list of gate operations for the given qubits and gate names.
     
@@ -16,8 +24,9 @@ def get_gates_by_name(qubits, gate_names, include_rotations=False, default_rotat
         gate_names: List of gate names (e.g., ['X', 'Y', 'H', 'T', 'S']).
         include_rotations: If True, include parameterized rotation gates (Rx, Ry, Rz)
             with angles specified in radians.
-        default_rotation_angle: Default angle for rotation gates in radians (used for
-            initial gate operations, can be modified later). Default is π/4.
+        default_rotation_angle: (float or list/tuple/np.ndarray of floats) Angle(s) for rotation gates in radians.
+            If a sequence is provided, all angles will be included for each rotation type/qubit.
+            Default is π/4.
     
     Returns:
         List of gate operations.
@@ -40,11 +49,17 @@ def get_gates_by_name(qubits, gate_names, include_rotations=False, default_rotat
 
     # Add parameterized rotation gates if requested
     if include_rotations:
+        # Support a list of angles
+        if isinstance(default_rotation_angle, (list, tuple, np.ndarray)):
+            angles = default_rotation_angle
+        else:
+            angles = [default_rotation_angle]
         for q in qubits:
-            # Add Rx, Ry, Rz gates with default angle
-            action_gates.append(cirq.rx(default_rotation_angle).on(q))
-            action_gates.append(cirq.ry(default_rotation_angle).on(q))
-            action_gates.append(cirq.rz(default_rotation_angle).on(q))
+            for angle in angles:
+                a = float(angle)  # type: ignore
+                action_gates.append(cirq.rx(a).on(q))
+                action_gates.append(cirq.ry(a).on(q))
+                action_gates.append(cirq.rz(a).on(q))
 
     # Add two-qubit CNOT gates for all ordered pairs
     for q1 in qubits:
@@ -274,7 +289,8 @@ def get_toffoli_unitary(n_qubits: int) -> np.ndarray:
     return unitary
 
 
-def get_toffoli_target_state(n_qubits: int, input_state: str = None) -> np.ndarray:
+from typing import Optional
+def get_toffoli_target_state(n_qubits: int, input_state: Optional[str] = None) -> np.ndarray:
     """
     Generate the output state of an n-controlled Toffoli gate for a given input.
     

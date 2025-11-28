@@ -14,13 +14,9 @@ def get_target_state(n_qubits, target_type=None):
         state[-1] = 1/np.sqrt(2)
         return state
     elif target_type.lower() == "toffoli":
-        # Toffoli state: |110> (for 3 qubits), generalize as needed
-        state = np.zeros(2**n_qubits, dtype=complex)
-        if n_qubits == 3:
-            state[6] = 1.0  # |110>
-        else:
-            state[0] = 1.0  # fallback to |0...0>
-        return state
+        # Use utility to get correct Toffoli target state for any n_qubits
+        from qas_gym.utils import get_toffoli_target_state
+        return get_toffoli_target_state(n_qubits)
     else:
         raise ValueError(f"Unknown target_type: {target_type}")
 
@@ -41,15 +37,9 @@ def get_target_circuit(n_qubits, target_type=None, include_input_prep=True):
             circuit.append(cirq.CNOT(qubits[i], qubits[i+1]))
         return circuit, qubits
     elif target_type.lower() == "toffoli":
-        # Prepare Toffoli state: for 3 qubits, |110>
-        if n_qubits == 3:
-            if include_input_prep:
-                circuit.append([cirq.X(qubits[0]), cirq.X(qubits[1])])  # |110>
-            return circuit, qubits
-        else:
-            if include_input_prep:
-                circuit.append([cirq.X(qubits[0])])  # fallback: |100...0>
-            return circuit, qubits
+        # Use utility to get correct Toffoli preparation circuit for any n_qubits
+        from qas_gym.utils import create_toffoli_circuit_and_qubits
+        return create_toffoli_circuit_and_qubits(n_qubits)
     else:
         raise ValueError(f"Unknown target_type: {target_type}")
 # --- Utility: Experiment Label Helper ---
@@ -88,10 +78,10 @@ RESULTS_DIR = "results"
 MAX_CIRCUIT_TIMESTEPS = 20 
 
 # --- Default Target Type for Experiments ---
-TARGET_TYPE = "ghz"  # or "toffoli" as needed
+TARGET_TYPE = "toffoli"  # or "toffoli" as needed
 
 # --- Default Task Mode for Experiments ---
-TASK_MODE = "state_preparation"  # or "unitary_preparation" as needed
+TASK_MODE = "unitary_preparation"  # or "unitary_preparation" as needed
 
 # --- Per-Qubit Hyperparameter Configurations ---
 EXPERIMENT_PARAMS = {
@@ -176,4 +166,11 @@ def get_action_gates(
         When include_rotations=True, Rx, Ry, Rz gates are added for each qubit.
     """
     single_qubit_gate_names = ['H'] #['X', 'Y', 'Z', 'H', 'T', 'S']
-    return get_gates_by_name(qubits, single_qubit_gate_names, include_rotations=include_rotations)
+    # Define allowed rotation angles
+    allowed_angles = [0, 0.25 * np.pi, 0.5 * np.pi, 0.75 * np.pi, np.pi]
+    return get_gates_by_name(
+        qubits,
+        single_qubit_gate_names,
+        include_rotations=include_rotations,
+        default_rotation_angle=allowed_angles
+    )

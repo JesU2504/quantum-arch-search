@@ -1,5 +1,0 @@
-2025-11-28 07:14:04,935 INFO: Starting pipeline with metadata: {'timestamp': '20251128-071404', 'preset': 'quick', 'n_qubits': 3, 'baseline_steps': 1000, 'saboteur_steps': 1000, 'adversarial_gens': 2, 'seed': None, 'n_seeds': 5, 'statistical_protocol': {'n_seeds_per_setting': 5, 'aggregation_method': 'mean ± std', 'error_bars': True}}
-2025-11-28 07:14:04,936 INFO: Running baseline architect (noiseless)
-2025-11-28 07:14:29,520 INFO: Skipping lambda sweep as requested
-2025-11-28 07:14:29,521 INFO: Running saboteur-only (attacks baseline circuit)
-2025-11-28 07:14:39,702 INFO: Running adversarial co-evolution
