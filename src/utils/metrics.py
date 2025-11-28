@@ -11,10 +11,12 @@ This module provides standardized metric computation for:
   - Evaluation: Combined circuit quality metrics
 
 TODO: Implement the following:
-  - Fidelity computation using density matrix simulation
   - CNOT gate counting
   - Circuit depth analysis
   - Noise robustness metrics
+
+DONE:
+  - Fidelity computation using density matrix simulation (mixed_state_fidelity)
 """
 
 import numpy as np
@@ -79,6 +81,54 @@ def state_fidelity(state1, state2):
     """
     overlap = np.vdot(state1, state2)
     return float(np.abs(overlap) ** 2)
+
+
+def mixed_state_fidelity(pure_state, density_matrix):
+    """
+    Compute fidelity between a pure state and a density matrix.
+
+    Uses F = <psi|rho|psi> for a pure state |psi> and density matrix rho.
+    This is the correct fidelity metric for evaluating noisy quantum
+    circuit outputs against an ideal target state.
+
+    Args:
+        pure_state: Target pure state vector (numpy array of shape (d,)).
+        density_matrix: Noisy output density matrix (numpy array of shape (d, d)).
+
+    Returns:
+        Fidelity value in [0, 1].
+
+    Raises:
+        ValueError: If dimensions of pure_state and density_matrix don't match.
+
+    Example:
+        >>> # Create a simple 2-qubit pure state |00>
+        >>> pure_state = np.array([1, 0, 0, 0], dtype=complex)
+        >>> # Create a noisy density matrix (mixed state)
+        >>> rho = np.diag([0.9, 0.05, 0.03, 0.02])
+        >>> fidelity = mixed_state_fidelity(pure_state, rho)
+        >>> print(f"Fidelity: {fidelity:.3f}")  # Should be 0.9
+    """
+    pure_state = np.asarray(pure_state, dtype=np.complex128)
+    density_matrix = np.asarray(density_matrix, dtype=np.complex128)
+
+    # Validate dimensions
+    if pure_state.shape[0] != density_matrix.shape[0]:
+        raise ValueError(
+            f"Dimension mismatch: pure_state has dimension {pure_state.shape[0]}, "
+            f"but density_matrix has shape {density_matrix.shape}"
+        )
+    if density_matrix.ndim != 2 or density_matrix.shape[0] != density_matrix.shape[1]:
+        raise ValueError(
+            f"density_matrix must be a square matrix, got shape {density_matrix.shape}"
+        )
+
+    # Compute F = <psi|rho|psi>
+    # rho @ pure_state gives rho|psi>
+    # np.vdot(pure_state, ...) gives <psi|...>
+    fidelity = np.real(np.vdot(pure_state, density_matrix @ pure_state))
+
+    return float(fidelity)
 
 
 def simulate_circuit(circuit, qubits):
