@@ -52,9 +52,11 @@ def plot_training_curve(
         
         if error_metrics and metric_name in error_metrics:
             errors = error_metrics[metric_name]
+            # Show error bars at ~20 evenly spaced points to avoid visual clutter
+            # while preserving the full confidence band via fill_between
             ax.errorbar(x, values, yerr=errors, label=metric_name, 
                        capsize=3, alpha=0.8, errorevery=max(1, len(values)//20))
-            # Add faint fill for confidence interval
+            # Add faint fill for continuous confidence interval visualization
             ax.fill_between(x, np.array(values) - np.array(errors), 
                           np.array(values) + np.array(errors), alpha=0.2)
         else:

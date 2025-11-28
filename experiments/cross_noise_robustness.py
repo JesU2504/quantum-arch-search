@@ -334,8 +334,9 @@ def run_cross_noise_robustness(
             'n_seeds': effective_n_seeds,
             'base_seed': base_seed,
             'statistical_protocol': {
-                'aggregation_method': 'mean ± std',
-                'note': 'Current implementation is deterministic; statistical variation from circuit structure',
+                'aggregation_method': 'mean across epsilon values',
+                'note': 'Noise application is deterministic (density matrix simulation). '
+                        'Statistics summarize variation across the sweep range, not stochastic trials.',
             },
         },
         'over_rotation': {

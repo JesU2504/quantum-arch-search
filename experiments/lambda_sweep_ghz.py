@@ -479,8 +479,9 @@ if __name__ == "__main__":
         training_steps=args.training_steps,
     )
     print("\n=== Final Results ===")
-    for lambda_val in LAMBDA_VALUES:
-        r = results[str(lambda_val)]
-        print(f"λ={lambda_val}: Success={r['success_rate']:.2%}, "
+    # Use keys from results dict to handle custom lambda_values
+    for lambda_key in sorted(results.keys(), key=lambda x: float(x)):
+        r = results[lambda_key]
+        print(f"λ={lambda_key}: Success={r['success_rate']:.2%}, "
               f"Fidelity={r['fidelity_mean']:.4f}±{r['fidelity_std']:.4f}, "
               f"CNOT={r['cnot_mean']:.2f}±{r['cnot_std']:.2f}")

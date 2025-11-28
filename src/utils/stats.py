@@ -22,6 +22,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
+from scipy import stats as scipy_stats
 
 
 def aggregate_metrics(
@@ -59,9 +60,8 @@ def aggregate_metrics(
     sem = std / np.sqrt(n) if n > 0 else 0.0
 
     # Compute confidence interval using t-distribution
-    from scipy import stats
     if n > 1:
-        t_val = stats.t.ppf((1 + confidence_level) / 2, df=n - 1)
+        t_val = scipy_stats.t.ppf((1 + confidence_level) / 2, df=n - 1)
         ci_half = t_val * sem
     else:
         ci_half = 0.0

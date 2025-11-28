@@ -250,9 +250,13 @@ def run_parameter_recovery_for_circuit(circuit: cirq.Circuit, circuit_name: str,
         seed_results = []
         p_noise_seeds = []
         
+        # Get index of this p value for seed offset
+        p_idx = p_values.index(true_p) if true_p in p_values else 0
+        
         for rep in range(n_repetitions):
-            # Use deterministic seed for reproducibility
-            noise_seed = base_seed + rep + int(true_p * 10000)
+            # Use hash-based seed generation to avoid collisions
+            # Format: base_seed * 1000000 + p_index * 1000 + rep
+            noise_seed = base_seed * 1000000 + p_idx * 1000 + rep
             np.random.seed(noise_seed)
             p_noise_seeds.append(noise_seed)
             
