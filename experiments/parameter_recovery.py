@@ -43,7 +43,7 @@ from scipy.optimize import minimize_scalar
 
 import cirq
 
-from qas_gym.utils import get_ghz_state, load_circuit, fidelity_pure_target
+from qas_gym.utils import get_ghz_state, get_toffoli_state, load_circuit, fidelity_pure_target
 
 # Import statistical utilities
 from utils.stats import (
@@ -437,8 +437,8 @@ def run_parameter_recovery(results_dir: str = None, n_qubits: int = 4,
     log(f"Base seed: {base_seed}")
     log(f"Results directory: {results_dir}")
     
-    # Get target state
-    target_state = get_ghz_state(n_qubits)
+    # Get target state - use n-controlled Toffoli as default target
+    target_state = get_toffoli_state(n_qubits)
     
     # Load circuits
     # Try to find circuits in expected locations

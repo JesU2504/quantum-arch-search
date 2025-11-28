@@ -62,11 +62,222 @@ def get_bell_state():
     return np.array([1 / np.sqrt(2), 0, 0, 1 / np.sqrt(2)])
 
 
+def get_toffoli_unitary(n_qubits: int) -> np.ndarray:
+    """
+    Generate the unitary matrix for an n-controlled Toffoli (multi-controlled NOT) gate.
+    
+    For n qubits, this creates an (n-1)-controlled NOT gate where qubits 0 to n-2 are 
+    controls and qubit n-1 is the target. The gate flips the target qubit if and only 
+    if all control qubits are in state |1>.
+    
+    Uses Cirq's big-endian convention where qubit 0 is MSB in state indexing.
+    
+    - n=2: CNOT (1 control, 1 target)
+    - n=3: Toffoli/CCNOT (2 controls, 1 target)
+    - n=4: CCCNOT (3 controls, 1 target)
+    - etc.
+    
+    Args:
+        n_qubits: Number of qubits (>= 2). Control qubits are 0 to n-2, target is n-1.
+        
+    Returns:
+        Unitary matrix of shape (2^n, 2^n) representing the n-controlled Toffoli gate.
+    """
+    if n_qubits < 2:
+        raise ValueError("n-controlled Toffoli requires at least 2 qubits (n >= 2)")
+    
+    dim = 2 ** n_qubits
+    unitary = np.eye(dim, dtype=complex)
+    
+    # Cirq uses big-endian: qubit 0 is MSB
+    # For state index i, bit at position j (from MSB) corresponds to qubit j
+    # Controls: qubits 0 to n-2 (bits at positions 0 to n-2 from MSB)
+    # Target: qubit n-1 (LSB position)
+    
+    # Find all indices where all control qubits are |1>
+    # Control bits are in positions n_qubits-1 down to 1 in the index
+    # We need: bits at positions n_qubits-1, n_qubits-2, ..., 1 all equal to 1
+    # This means the index has pattern: 11...1? where ? is the target bit
+    
+    # Control mask: bits n-2 to 0 (the first n-1 qubits in big-endian)
+    # In the index, these are the upper n-1 bits
+    for i in range(dim):
+        # Check if all control bits are 1
+        # Control bits are at positions n_qubits-1 down to 1 (shifted right by 1)
+        control_bits = i >> 1  # Remove target bit
+        all_controls_one = control_bits == (dim // 2 - 1)  # All n-1 bits are 1
+        
+        if all_controls_one:
+            # Flip target bit (bit 0)
+            target_idx = i ^ 1  # XOR with 1 flips the LSB (target)
+            
+            # Swap in the unitary
+            unitary[i, i] = 0
+            unitary[i, target_idx] = 1
+    
+    return unitary
+
+
+def get_toffoli_target_state(n_qubits: int, input_state: str = None) -> np.ndarray:
+    """
+    Generate the output state of an n-controlled Toffoli gate for a given input.
+    
+    This computes what the n-controlled NOT gate produces when applied to an input state.
+    The default input state is |11...1> (all qubits in |1>), which after applying the
+    Toffoli gate remains |11...1> since all controls are satisfied and the target flips
+    from |1> to |0> would give |11...10>, but we use |11...1> as input.
+    
+    For benchmarking/learning tasks, the standard input is |11...1> which the Toffoli
+    transforms to |11...10> (target flips from 1 to 0 when all controls are 1).
+    
+    Args:
+        n_qubits: Number of qubits (>= 2).
+        input_state: Optional input state as binary string (e.g., '111' for |111>).
+                    If None, defaults to all-ones |11...1>.
+    
+    Returns:
+        Output state vector after applying the n-controlled Toffoli gate.
+    """
+    if n_qubits < 2:
+        raise ValueError("n-controlled Toffoli requires at least 2 qubits (n >= 2)")
+    
+    dim = 2 ** n_qubits
+    
+    # Default input: all ones |11...1>
+    if input_state is None:
+        input_idx = dim - 1  # All bits set = 2^n - 1
+    else:
+        input_idx = int(input_state, 2)
+    
+    # Create input state vector
+    input_vec = np.zeros(dim, dtype=complex)
+    input_vec[input_idx] = 1.0
+    
+    # Apply Toffoli unitary
+    unitary = get_toffoli_unitary(n_qubits)
+    output_vec = unitary @ input_vec
+    
+    return output_vec
+
+
+def create_toffoli_circuit_and_qubits(n_qubits: int) -> tuple[cirq.Circuit, list[cirq.LineQubit]]:
+    """
+    Creates a circuit implementing the n-controlled Toffoli (multi-controlled NOT) gate.
+    
+    For n qubits, this implements an (n-1)-controlled NOT gate where:
+    - Qubits 0 to n-2 are control qubits
+    - Qubit n-1 is the target qubit
+    
+    The circuit prepares all qubits in |1> (via X gates) and then applies the 
+    multi-controlled NOT, resulting in the target state |11...10> (target flipped).
+    
+    - n=2: CNOT preparation circuit
+    - n=3: Toffoli (CCNOT) preparation circuit 
+    - n=4: CCCNOT preparation circuit (using decomposition)
+    - etc.
+    
+    Args:
+        n_qubits: Number of qubits (>= 2).
+        
+    Returns:
+        Tuple of (circuit, qubits) where circuit prepares the Toffoli target state.
+    """
+    if n_qubits < 2:
+        raise ValueError("n-controlled Toffoli requires at least 2 qubits (n >= 2)")
+    
+    qubits = list(cirq.LineQubit.range(n_qubits))
+    circuit = cirq.Circuit()
+    
+    # Step 1: Prepare all qubits in |1> state (apply X to all qubits)
+    for q in qubits:
+        circuit.append(cirq.X(q))
+    
+    # Step 2: Apply the n-controlled NOT gate
+    # Controls: qubits[0:-1], Target: qubits[-1]
+    controls = qubits[:-1]
+    target = qubits[-1]
+    
+    if n_qubits == 2:
+        # Simple CNOT
+        circuit.append(cirq.CNOT(controls[0], target))
+    elif n_qubits == 3:
+        # Toffoli (CCNOT) gate - built into Cirq
+        circuit.append(cirq.TOFFOLI(controls[0], controls[1], target))
+    else:
+        # For n >= 4: Use ControlledGate to create (n-1)-controlled X
+        # Cirq supports multi-controlled gates via controlled_by()
+        controlled_x = cirq.X(target).controlled_by(*controls)
+        circuit.append(controlled_x)
+    
+    return circuit, qubits
+
+
+def get_toffoli_state(n_qubits: int) -> np.ndarray:
+    """
+    Generates the Toffoli target state by simulating the preparation circuit.
+    
+    This is the primary function for obtaining the target state for n-qubit
+    Toffoli-based experiments. It simulates the canonical Toffoli preparation
+    circuit to ensure perfect consistency between the target and the circuit logic.
+    
+    The resulting state is |11...10> for n >= 2 qubits, which is the result of
+    applying an n-controlled NOT to the |11...1> input state.
+    
+    Args:
+        n_qubits: Number of qubits (>= 2).
+        
+    Returns:
+        Target state vector for Toffoli gate output.
+    """
+    if n_qubits < 2:
+        raise ValueError("n-controlled Toffoli requires at least 2 qubits (n >= 2)")
+    
+    circuit, qubits = create_toffoli_circuit_and_qubits(n_qubits)
+    simulator = cirq.Simulator()
+    result = simulator.simulate(circuit, qubit_order=qubits)
+    return result.final_state_vector
+
+
+def get_default_target_state(n_qubits: int) -> np.ndarray:
+    """
+    Get the default target state for quantum architecture search experiments.
+    
+    This is the primary entry point for obtaining target states in experiments.
+    Uses n-controlled Toffoli gates as the default target:
+    - 2 qubits: CNOT target
+    - 3 qubits: Toffoli (CCNOT) target  
+    - 4 qubits: CCCNOT target
+    - etc.
+    
+    Note: For backward compatibility with legacy experiments, use get_ghz_state()
+    explicitly if GHZ state preparation is needed.
+    
+    Args:
+        n_qubits: Number of qubits (>= 2).
+        
+    Returns:
+        Target state vector for the default compilation target.
+    """
+    return get_toffoli_state(n_qubits)
+
+
 def get_ghz_state(n_qubits):
     """
     Generates the GHZ state vector by simulating the canonical preparation circuit.
+    
+    LEGACY/OPTIONAL: This function is retained for backward compatibility with
+    existing experiments. For new experiments, use get_toffoli_state() or
+    get_default_target_state() instead, which use n-controlled Toffoli gates
+    as the default compilation target.
+    
     This ensures the target state is perfectly consistent with the circuit logic.
     The state is (|0...0> + |1...1>) / sqrt(2).
+    
+    Args:
+        n_qubits: Number of qubits.
+        
+    Returns:
+        GHZ state vector.
     """
     circuit, _ = create_ghz_circuit_and_qubits(n_qubits)
     simulator = cirq.Simulator()

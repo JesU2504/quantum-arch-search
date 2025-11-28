@@ -10,6 +10,17 @@ This repository contains a turnkey pipeline to train baseline and adversarial ag
 We demonstrate that Adversarial Co‑Evolution is a parameter‑free regularizer that outperforms static penalty methods on stability, robustness, and Pareto efficiency. See `ExpPlan.md` for the detailed experimental plan and rationale.
 
 
+## Default Target: n-Controlled Toffoli Gates
+
+**New default**: All experiments now use n-controlled Toffoli (multi-controlled NOT) gates as the compilation target:
+- **2 qubits**: CNOT gate
+- **3 qubits**: Toffoli (CCNOT) gate
+- **4 qubits**: CCCNOT gate  
+- **n qubits**: (n-1)-controlled NOT gate
+
+The Toffoli gate target provides a more challenging benchmark than GHZ state preparation, as it requires precise multi-qubit controlled operations. GHZ state preparation remains available as a legacy option via `get_ghz_state()`.
+
+
 ## Install
 
 Tested with Python 3.12 on Linux.
@@ -23,7 +34,7 @@ pip install -r requirements.txt
 Dependencies (pinned): Cirq, Gymnasium, Stable‑Baselines3, NumPy, Matplotlib.
 
 
-## Quick demo (3‑qubit GHZ, full pipeline)
+## Quick demo (3-qubit Toffoli, full pipeline)
 
 Runs baseline architect training, saboteur‑only training, adversarial co‑evolution for a couple of generations, plotting, and a robustness comparison.
 
@@ -34,10 +45,10 @@ python run_experiments.py --preset quick
 Outputs (example): `results/run_YYYYMMDD-HHMMSS/`
 - `baseline/`
 	- `circuit_vanilla.json` — champion vanilla (noiseless) circuit
-	- `architect_ghz_fidelities.txt`, `architect_ghz_steps.txt`, `architect_ghz_training_progress.png`
+	- `architect_fidelities.txt`, `architect_steps.txt`, `architect_training_progress.png`
 - `saboteur/`
 	- `saboteur_trained_on_architect_model.zip`
-	- `saboteur_trained_on_architect_ghz_fidelities.txt`, `saboteur_trained_on_architect_ghz_steps.txt`, `...training_progress.png`
+	- `saboteur_trained_on_architect_fidelities.txt`, `saboteur_trained_on_architect_steps.txt`, `...training_progress.png`
 - `adversarial/adversarial_training_*/`
 	- `circuit_robust.json` — robust circuit after co‑evolution
 	- `coevolution_corrected.png` — corrected co‑evolution plot

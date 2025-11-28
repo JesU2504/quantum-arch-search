@@ -18,7 +18,10 @@ import matplotlib.pyplot as plt
 
 from experiments import config
 from qas_gym.envs import ArchitectEnv  # Import ArchitectEnv
-from qas_gym.utils import get_ghz_state, create_ghz_circuit_and_qubits, save_circuit
+from qas_gym.utils import (
+    get_ghz_state, get_toffoli_state, create_ghz_circuit_and_qubits, 
+    create_toffoli_circuit_and_qubits, save_circuit
+)
 
 class ChampionCircuitCallback(BaseCallback):
     """
@@ -91,7 +94,15 @@ class ChampionCircuitCallback(BaseCallback):
 def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps):
     """
     Trains a baseline architect in a noise-free environment to find a circuit
-    for the GHZ state.
+    for the n-controlled Toffoli gate (default target).
+
+    The target is an n-controlled NOT gate:
+    - 2 qubits: CNOT
+    - 3 qubits: Toffoli (CCNOT)
+    - 4 qubits: CCCNOT
+    - etc.
+    
+    Note: GHZ state preparation remains available as a legacy option via get_ghz_state().
 
     Args:
         results_dir (str): The directory to save models, plots, and circuits.
@@ -100,17 +111,18 @@ def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps):
         n_steps (int): The number of steps to run for each environment per update.
     """
     print(f"Training baseline for {n_qubits} qubits.")
-    print("--- Phase 1: Training Baseline Architect for GHZ State ---")
+    print(f"--- Phase 1: Training Baseline Architect for {n_qubits}-qubit Toffoli Gate ---")
     os.makedirs(results_dir, exist_ok=True)
 
     # Define file paths based on the results_dir
     circuit_filename = os.path.join(results_dir, "circuit_vanilla.json")
-    plot_filename = os.path.join(results_dir, "architect_ghz_training_progress.png")
-    fidelities_filename = os.path.join(results_dir, "architect_ghz_fidelities.txt")
-    steps_filename = os.path.join(results_dir, "architect_ghz_steps.txt")
+    plot_filename = os.path.join(results_dir, "architect_training_progress.png")
+    fidelities_filename = os.path.join(results_dir, "architect_fidelities.txt")
+    steps_filename = os.path.join(results_dir, "architect_steps.txt")
     
-    target_state = get_ghz_state(n_qubits)
-    target_circuit, _ = create_ghz_circuit_and_qubits(n_qubits)
+    # Use n-controlled Toffoli as default target
+    target_state = get_toffoli_state(n_qubits)
+    target_circuit, _ = create_toffoli_circuit_and_qubits(n_qubits)
     print("\n--- Target Circuit (for reference) ---")
     print(target_circuit)
 
@@ -167,7 +179,7 @@ def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps):
         cumulative_best = np.maximum.accumulate(callback.fidelities)
         plt.plot(callback.steps, cumulative_best, 'r-', label='Best Fidelity Found', linewidth=2)
 
-    plt.title(f"Baseline Architect Training Progress ({n_qubits}-Qubit GHZ State)")
+    plt.title(f"Baseline Architect Training Progress ({n_qubits}-Qubit Toffoli Gate)")
     plt.xlabel("Training Steps")
     plt.ylabel("Fidelity")
     plt.grid(True)
