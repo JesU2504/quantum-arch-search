@@ -46,12 +46,29 @@ class SaboteurMultiGateEnv(gym.Env):
         self.current_circuit = circuit
 
     def _encode_gate(self, op):
-        """Helper to map a Cirq Operation to an integer ID."""
+        """Helper to map a Cirq Operation to an integer ID.
+        
+        Gate encoding:
+            0: Empty/Unknown
+            1: X gate (cirq.XPowGate)
+            2: Y gate (cirq.YPowGate)
+            3: Z gate (cirq.ZPowGate)
+            4: H gate (cirq.HPowGate)
+            5: CNOT gate (cirq.CNotPowGate)
+            6: Other single-qubit gates
+            7: Rx rotation gate
+            8: Ry rotation gate
+            9: Rz rotation gate
+        """
         if isinstance(op.gate, cirq.XPowGate): return 1
         if isinstance(op.gate, cirq.YPowGate): return 2
         if isinstance(op.gate, cirq.ZPowGate): return 3
         if isinstance(op.gate, cirq.HPowGate): return 4
         if isinstance(op.gate, cirq.CNotPowGate): return 5
+        # Parameterized rotation gates
+        if isinstance(op.gate, cirq.Rx): return 7
+        if isinstance(op.gate, cirq.Ry): return 8
+        if isinstance(op.gate, cirq.Rz): return 9
         return 6 
 
     def _get_obs(self, circuit=None):
@@ -154,7 +171,20 @@ class SaboteurMultiGateEnv(gym.Env):
 
     @staticmethod
     def create_observation_from_circuit(circuit: cirq.Circuit, n_qubits: int, max_gates: int = 20) -> dict:
-        """Static helper for the ArchitectEnv to generate observations."""
+        """Static helper for the ArchitectEnv to generate observations.
+        
+        Gate encoding:
+            0: Empty/Unknown
+            1: X gate (cirq.XPowGate)
+            2: Y gate (cirq.YPowGate)
+            3: Z gate (cirq.ZPowGate)
+            4: H gate (cirq.HPowGate)
+            5: CNOT gate (cirq.CNotPowGate)
+            6: Other single-qubit gates
+            7: Rx rotation gate
+            8: Ry rotation gate
+            9: Rz rotation gate
+        """
         all_qubits = cirq.LineQubit.range(n_qubits)
         simulator = cirq.DensityMatrixSimulator()
         if not circuit.all_operations():
@@ -176,6 +206,10 @@ class SaboteurMultiGateEnv(gym.Env):
             elif isinstance(op.gate, cirq.ZPowGate): val = 3
             elif isinstance(op.gate, cirq.HPowGate): val = 4
             elif isinstance(op.gate, cirq.CNotPowGate): val = 5
+            # Parameterized rotation gates
+            elif isinstance(op.gate, cirq.Rx): val = 7
+            elif isinstance(op.gate, cirq.Ry): val = 8
+            elif isinstance(op.gate, cirq.Rz): val = 9
             structure_obs[i] = val
             
         return {
