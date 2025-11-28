@@ -107,4 +107,5 @@ If you use this code, please cite the corresponding talk/paper. For questions or
 
 ## Changelog
 
+- **Legacy Environment Directory Removed**: The deprecated `src/envs/` directory (which served as a backward-compatibility shim) has been removed. All environment imports must now use `src.qas_gym.envs` directly.
 - **Environment Consolidation**: All environments and agents (ArchitectEnv, AdversarialArchitectEnv, Saboteur, VQEArchitectEnv) are now unified under `src/qas_gym/envs/`; duplicate definitions in `src/envs/` have been removed. Import from `src.qas_gym.envs` for all environment classes.
