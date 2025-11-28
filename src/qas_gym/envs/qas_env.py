@@ -125,10 +125,10 @@ class QuantumArchSearchEnv(gym.Env):
                 self._rotation_action_indices.append(i)
 
     def __str__(self):
-        rotation_str = f", IncludesRotations={self.include_rotations}" if self.include_rotations else ""
         return f"QuantumArchSearch-v0(Qubits={len(self.qubits)}, Target={self.target}, " \
                f"Gates={', '.join(gate.__str__() for gate in self.action_gates)}, " \
-               f"Observables={', '.join(gate.__str__() for gate in self.state_observables)}{rotation_str})"
+               f"Observables={', '.join(gate.__str__() for gate in self.state_observables)}, " \
+               f"IncludesRotations={self.include_rotations})"
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)

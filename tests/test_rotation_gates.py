@@ -26,6 +26,10 @@ from src.utils.metrics import count_rotation_gates as metrics_count_rotation_gat
 from src.utils.metrics import get_rotation_angles, evaluate_circuit
 
 
+# Test constants
+DEFAULT_TEST_ROTATION_ANGLE = np.pi / 4  # Default angle used for testing rotation gates
+
+
 class TestRotationGateUtilities:
     """Tests for rotation gate utility functions."""
 
@@ -234,7 +238,7 @@ class TestQuantumArchSearchEnvWithRotations:
             reward_penalty=0.01,
             max_timesteps=10,
             include_rotations=True,
-            default_rotation_angle=np.pi/4
+            default_rotation_angle=DEFAULT_TEST_ROTATION_ANGLE
         )
         
         env.reset(seed=42)
@@ -259,7 +263,7 @@ class TestQuantumArchSearchEnvWithRotations:
             reward_penalty=0.01,
             max_timesteps=10,
             include_rotations=True,
-            default_rotation_angle=np.pi/4
+            default_rotation_angle=DEFAULT_TEST_ROTATION_ANGLE
         )
         
         env.reset(seed=42)

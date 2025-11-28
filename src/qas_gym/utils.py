@@ -14,9 +14,10 @@ def get_gates_by_name(qubits, gate_names, include_rotations=False, default_rotat
     Args:
         qubits: List of qubits to apply gates to.
         gate_names: List of gate names (e.g., ['X', 'Y', 'H', 'T', 'S']).
-        include_rotations: If True, include parameterized rotation gates (Rx, Ry, Rz).
-        default_rotation_angle: Default angle for rotation gates (used for initial
-            gate operations, can be modified later).
+        include_rotations: If True, include parameterized rotation gates (Rx, Ry, Rz)
+            with angles specified in radians.
+        default_rotation_angle: Default angle for rotation gates in radians (used for
+            initial gate operations, can be modified later). Default is π/4.
     
     Returns:
         List of gate operations.
