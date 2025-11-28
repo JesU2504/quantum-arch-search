@@ -250,8 +250,11 @@ fidelity_cccnot = full_basis_fidelity_toffoli(circuit_4, qubits_4, n_controls=3)
 print(f"CCCNOT fidelity: {fidelity_cccnot:.4f}")
 
 # For custom gates, use full_basis_fidelity with a custom truth table
-custom_truth_fn = lambda x: x ^ 1  # Simple NOT gate truth table
-custom_fidelity = full_basis_fidelity(circuit, qubits[:1], custom_truth_fn)
+single_qubit = cirq.LineQubit.range(1)
+not_circuit = cirq.Circuit(cirq.X(single_qubit[0]))  # NOT gate
+not_truth_fn = lambda x: x ^ 1  # NOT gate truth table: |0> -> |1>, |1> -> |0>
+not_fidelity = full_basis_fidelity(not_circuit, single_qubit, not_truth_fn)
+print(f"NOT gate fidelity: {not_fidelity:.4f}")  # Should be 1.0
 ```
 
 ### Available Functions

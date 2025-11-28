@@ -342,9 +342,6 @@ def toffoli_truth_table(n_controls: int) -> Callable[[int], int]:
     Returns:
         A function that maps input basis state index to output basis state index.
     """
-    n_qubits = n_controls + 1
-    all_controls_on_mask = (1 << n_qubits) - 2  # All control bits set (not target)
-
     def truth_fn(input_index: int) -> int:
         # Check if all control bits are 1 (ignore target bit which is LSB)
         controls_value = input_index >> 1
