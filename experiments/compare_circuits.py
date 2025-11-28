@@ -4,6 +4,10 @@ Circuit comparison and robustness analysis for quantum architecture search.
 This module evaluates and compares the robustness of vanilla (baseline) and robust 
 (adversarially-trained) circuits under multi-gate saboteur attacks.
 
+Target type and task mode are configured centrally via experiments/config.py:
+- TARGET_TYPE: 'toffoli' (default) or 'ghz'
+- TASK_MODE: 'state_preparation' (default) or 'unitary_preparation'
+
 Statistical Protocol:
     - Multiple attack samples per circuit for robust statistics
     - Results include mean ± std for attacked fidelities
@@ -30,7 +34,7 @@ import json
 from datetime import datetime
 
 from experiments import config
-from qas_gym.utils import get_ghz_state, get_toffoli_state, apply_noise, fidelity_pure_target
+from qas_gym.utils import apply_noise, fidelity_pure_target
 
 # Import statistical utilities
 from utils.stats import (

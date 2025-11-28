@@ -1,3 +1,16 @@
+"""
+Adversarial Co-evolutionary Training Script.
+
+This script implements adversarial training between an Architect agent (learning
+to build robust quantum circuits) and a Saboteur agent (learning to attack them).
+
+Target type and task mode are configured centrally via experiments/config.py:
+- TARGET_TYPE: 'toffoli' (default) or 'ghz'
+- TASK_MODE: 'state_preparation' (default) or 'unitary_preparation'
+
+See experiments/config.py for detailed documentation on configuration options.
+"""
+
 import os
 import sys
 
@@ -20,7 +33,7 @@ from stable_baselines3.common.callbacks import BaseCallback
 from experiments import config
 # Import your custom environments and utilities
 from qas_gym.envs import SaboteurMultiGateEnv, AdversarialArchitectEnv
-from qas_gym.utils import get_bell_state, get_ghz_state, get_toffoli_state, save_circuit
+from qas_gym.utils import get_bell_state, save_circuit
 
 # --- 1. Improved Logger Callback ---
 class FidelityLoggerCallback(BaseCallback):
@@ -54,20 +67,43 @@ def train_adversarial(
     max_circuit_gates: int = 20,
     fidelity_threshold: float = 0.99,
     lambda_penalty: float = 0.5,
+    target_type: str = None,
+    task_mode: str = None,
 ):
+    """
+    Run adversarial co-evolutionary training.
+
+    Args:
+        results_dir: Directory to save results.
+        n_qubits: Number of qubits.
+        n_generations: Number of co-evolutionary generations.
+        architect_steps_per_generation: Training steps for architect per generation.
+        saboteur_steps_per_generation: Training steps for saboteur per generation.
+        max_circuit_gates: Maximum circuit complexity.
+        fidelity_threshold: Target fidelity threshold.
+        lambda_penalty: Penalty coefficient for mean error rate.
+        target_type: Override for config.TARGET_TYPE ('toffoli', 'ghz').
+        task_mode: Override for config.TASK_MODE ('state_preparation', 'unitary_preparation').
+    """
+    # Use central config with optional overrides
+    effective_target = target_type if target_type is not None else config.TARGET_TYPE
+    effective_mode = task_mode if task_mode is not None else config.TASK_MODE
+    experiment_label = config.get_experiment_label(effective_target, effective_mode)
+    
     print("--- Starting Adversarial Co-evolutionary Training ---")
+    print(f"Target: {effective_target}, Mode: {effective_mode}")
+    print(f"Experiment label: {experiment_label}")
     start_time = time.time()
     log_dir = os.path.join(results_dir, f"adversarial_training_{datetime.now().strftime('%Y%m%d-%H%M%S')}")
     os.makedirs(log_dir, exist_ok=True)
 
-    # --- Target State ---
-    # Use n-controlled Toffoli gate as the default target for 3+ qubits
-    # For 2 qubits, use Bell state (legacy behavior)
+    # --- Target State using central config ---
+    # For 2 qubits, use Bell state (legacy behavior for backward compatibility)
     if n_qubits == 2:
         target_state = get_bell_state()
     else:
-        # n-controlled Toffoli: CCNOT for 3 qubits, CCCNOT for 4 qubits, etc.
-        target_state = get_toffoli_state(n_qubits)
+        # Use central config to get target state
+        target_state = config.get_target_state(n_qubits, effective_target)
 
     # --- Initialize Environments ---
     max_saboteur_level = len(SaboteurMultiGateEnv.all_error_rates)

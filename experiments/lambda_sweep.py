@@ -3,16 +3,16 @@
 Lambda Sweep Experiment for Part 1 (Brittleness) of ExpPlan.md.
 
 This script implements Experiment 1.1 from ExpPlan.md:
-- Task: n-qubit Toffoli gate compilation (configurable, default n=4)
+- Task: n-qubit target compilation (configurable via config.TARGET_TYPE)
 - Baseline: Train ArchitectEnv with static penalty λ ∈ [0.001, 0.005, 0.01, 0.05, 0.1]
 - Metrics:
     - Success rate: % of seeds reaching fidelity > 0.99
     - Convergence variance: std. dev. of final CNOT counts
     - Mean/median CNOT count for each lambda
 
-Note: This experiment uses n-controlled Toffoli gates as the default compilation
-target (CCNOT for 3 qubits, CCCNOT for 4 qubits, etc.). GHZ state preparation
-is available as a legacy option via get_ghz_state().
+Target type and task mode are configured centrally via experiments/config.py:
+- TARGET_TYPE: 'toffoli' (default) or 'ghz'
+- TASK_MODE: 'state_preparation' (default) or 'unitary_preparation'
 
 Statistical Protocol:
     - Number of seeds: Configurable via n_seeds parameter (default: config.N_SEEDS)
@@ -47,7 +47,6 @@ from stable_baselines3.common.callbacks import BaseCallback
 
 from experiments import config
 from qas_gym.envs import ArchitectEnv
-from qas_gym.utils import get_ghz_state, get_toffoli_state
 
 # Import statistical utilities
 from utils.stats import (
@@ -294,6 +293,8 @@ def run_lambda_sweep(
     n_seeds: int = None,
     n_qubits: int = 4,
     lambda_values: list = None,
+    target_type: str = None,
+    task_mode: str = None,
 ) -> dict:
     """
     Run the full lambda sweep experiment with statistical reporting.
@@ -308,6 +309,8 @@ def run_lambda_sweep(
         n_seeds: Number of seeds per lambda. Defaults to config.N_SEEDS.
         n_qubits: Number of qubits for the target state.
         lambda_values: List of lambda values to sweep. Defaults to LAMBDA_VALUES.
+        target_type: Override for config.TARGET_TYPE ('toffoli', 'ghz').
+        task_mode: Override for config.TASK_MODE ('state_preparation', 'unitary_preparation').
         
     Returns:
         Dict with per-lambda and aggregate metrics.
@@ -316,6 +319,11 @@ def run_lambda_sweep(
     effective_training_steps = training_steps if training_steps is not None else DEFAULT_TRAINING_STEPS
     effective_n_seeds = n_seeds if n_seeds is not None else config.N_SEEDS
     effective_lambda_values = lambda_values if lambda_values is not None else LAMBDA_VALUES
+    
+    # Use central config with optional overrides
+    effective_target = target_type if target_type is not None else config.TARGET_TYPE
+    effective_mode = task_mode if task_mode is not None else config.TASK_MODE
+    experiment_label = config.get_experiment_label(effective_target, effective_mode)
     
     def log(msg):
         if logger:
@@ -330,15 +338,16 @@ def run_lambda_sweep(
     os.makedirs(results_dir, exist_ok=True)
     
     log(f"=== Lambda Sweep Experiment (ExpPlan Part 1, Exp 1.1) ===")
+    log(f"Target: {effective_target}, Mode: {effective_mode}")
+    log(f"Experiment label: {experiment_label}")
     log(f"Lambda values: {effective_lambda_values}")
     log(f"Seeds per lambda: {effective_n_seeds}")
     log(f"Qubits: {n_qubits}")
     log(f"Training steps per trial: {effective_training_steps}")
     log(f"Results directory: {results_dir}")
     
-    # Get target state - use n-controlled Toffoli as default target
-    # For n >= 2 qubits: CNOT (n=2), CCNOT/Toffoli (n=3), CCCNOT (n=4), etc.
-    target_state = get_toffoli_state(n_qubits)
+    # Get target state using central config
+    target_state = config.get_target_state(n_qubits, effective_target)
     
     # Track all seeds used for summary
     all_seeds_used = list(range(effective_n_seeds))

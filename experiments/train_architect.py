@@ -101,38 +101,42 @@ class ChampionCircuitCallback(BaseCallback):
                     pass
         return True
 
-def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps):
+def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps, 
+                             target_type=None, task_mode=None):
     """
     Trains a baseline architect in a noise-free environment to find a circuit
-    for the n-controlled Toffoli gate (default target).
+    for the configured target (default: n-controlled Toffoli gate).
 
-    The target is an n-controlled NOT gate:
-    - 2 qubits: CNOT
-    - 3 qubits: Toffoli (CCNOT)
-    - 4 qubits: CCCNOT
-    - etc.
-    
-    Note: GHZ state preparation remains available as a legacy option via get_ghz_state().
+    Target type and task mode can be overridden via arguments, otherwise uses
+    the central configuration from experiments/config.py.
 
     Args:
         results_dir (str): The directory to save models, plots, and circuits.
         n_qubits (int): The number of qubits for this training run.
         architect_steps (int): The total number of timesteps to train the agent.
         n_steps (int): The number of steps to run for each environment per update.
+        target_type (str, optional): Override for config.TARGET_TYPE ('toffoli', 'ghz').
+        task_mode (str, optional): Override for config.TASK_MODE ('state_preparation', 'unitary_preparation').
     """
+    # Use central config with optional overrides
+    effective_target = target_type if target_type is not None else config.TARGET_TYPE
+    effective_mode = task_mode if task_mode is not None else config.TASK_MODE
+    experiment_label = config.get_experiment_label(effective_target, effective_mode)
+    
     print(f"Training baseline for {n_qubits} qubits.")
-    print(f"--- Phase 1: Training Baseline Architect for {n_qubits}-qubit Toffoli Gate ---")
+    print(f"--- Phase 1: Training Baseline Architect for {n_qubits}-qubit {effective_target.upper()} ({effective_mode}) ---")
+    print(f"Experiment label: {experiment_label}")
     os.makedirs(results_dir, exist_ok=True)
 
-    # Define file paths based on the results_dir
+    # Define file paths based on the results_dir (include experiment label)
     circuit_filename = os.path.join(results_dir, "circuit_vanilla.json")
     plot_filename = os.path.join(results_dir, "architect_training_progress.png")
     fidelities_filename = os.path.join(results_dir, "architect_fidelities.txt")
     steps_filename = os.path.join(results_dir, "architect_steps.txt")
     
-    # Use n-controlled Toffoli as default target
-    target_state = get_toffoli_state(n_qubits)
-    target_circuit, _ = create_toffoli_circuit_and_qubits(n_qubits)
+    # Get target state and circuit using central config
+    target_state = config.get_target_state(n_qubits, effective_target)
+    target_circuit, _ = config.get_target_circuit(n_qubits, effective_target)
     print("\n--- Target Circuit (for reference) ---")
     print(target_circuit)
 
@@ -189,7 +193,7 @@ def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps):
         cumulative_best = np.maximum.accumulate(callback.fidelities)
         plt.plot(callback.steps, cumulative_best, 'r-', label='Best Fidelity Found', linewidth=2)
 
-    plt.title(f"Baseline Architect Training Progress ({n_qubits}-Qubit Toffoli Gate)")
+    plt.title(f"Baseline Architect Training Progress ({n_qubits}-Qubit {effective_target.upper()})")
     plt.xlabel("Training Steps")
     plt.ylabel("Fidelity")
     plt.grid(True)
