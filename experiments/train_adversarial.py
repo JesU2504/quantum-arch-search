@@ -54,8 +54,10 @@ def train_adversarial(
     max_circuit_gates: int = 20,
     fidelity_threshold: float = 0.99,
     lambda_penalty: float = 0.5,
+    include_rotations: bool = False,
 ):
-    print("--- Starting Adversarial Co-evolutionary Training ---")
+    rotation_status = "with rotation gates" if include_rotations else "with Clifford+T gates only"
+    print(f"--- Starting Adversarial Co-evolutionary Training ({rotation_status}) ---")
     start_time = time.time()
     log_dir = os.path.join(results_dir, f"adversarial_training_{datetime.now().strftime('%Y%m%d-%H%M%S')}")
     os.makedirs(log_dir, exist_ok=True)
@@ -79,6 +81,7 @@ def train_adversarial(
         max_timesteps=max_circuit_gates,
         reward_penalty=0.01,
         complexity_penalty_weight=0.01,
+        include_rotations=include_rotations,  # Enable rotation gates if specified
     )
 
     # Dummy circuit for initialization
@@ -200,6 +203,8 @@ if __name__ == "__main__":
     parser.add_argument('--max-circuit-gates', type=int, default=20, help='Max circuit gates')
     parser.add_argument('--fidelity-threshold', type=float, default=0.99, help='Fidelity threshold')
     parser.add_argument('--lambda-penalty', type=float, default=0.5, help='Penalty coefficient for mean error rate')
+    parser.add_argument('--include-rotations', action='store_true',
+                        help='Include parameterized rotation gates (Rx, Ry, Rz) in action space')
     args = parser.parse_args()
 
     architect_agent, saboteur_agent, arch_env, log_dir, start_time = train_adversarial(
@@ -210,7 +215,8 @@ if __name__ == "__main__":
         saboteur_steps_per_generation=args.saboteur_steps,
         max_circuit_gates=args.max_circuit_gates,
         fidelity_threshold=args.fidelity_threshold,
-        lambda_penalty=args.lambda_penalty
+        lambda_penalty=args.lambda_penalty,
+        include_rotations=args.include_rotations,
     )
 
     # Final Save

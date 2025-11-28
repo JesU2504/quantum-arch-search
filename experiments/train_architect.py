@@ -91,7 +91,7 @@ class ChampionCircuitCallback(BaseCallback):
                     pass
         return True
 
-def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps):
+def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps, include_rotations=False):
     """
     Trains a baseline architect in a noise-free environment to find a circuit
     for the n-controlled Toffoli gate (default target).
@@ -109,9 +109,14 @@ def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps):
         n_qubits (int): The number of qubits for this training run.
         architect_steps (int): The total number of timesteps to train the agent.
         n_steps (int): The number of steps to run for each environment per update.
+        include_rotations (bool): If True, include parameterized rotation gates
+            (Rx, Ry, Rz) in the action space. This enables more expressive circuits
+            suitable for VQE-style variational circuits. Default is False for
+            backward compatibility with Clifford+T gate set.
     """
     print(f"Training baseline for {n_qubits} qubits.")
-    print(f"--- Phase 1: Training Baseline Architect for {n_qubits}-qubit Toffoli Gate ---")
+    rotation_status = "with rotation gates" if include_rotations else "with Clifford+T gates only"
+    print(f"--- Phase 1: Training Baseline Architect for {n_qubits}-qubit Toffoli Gate ({rotation_status}) ---")
     os.makedirs(results_dir, exist_ok=True)
 
     # Define file paths based on the results_dir
@@ -136,6 +141,7 @@ def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps):
         reward_penalty=0.01,
         max_timesteps=config.MAX_CIRCUIT_TIMESTEPS,
         complexity_penalty_weight=0.01, # Add complexity penalty for baseline too
+        include_rotations=include_rotations,  # Enable rotation gates if specified
     )    
 
     # Use the centralized agent hyperparameters from the config file
@@ -179,7 +185,7 @@ def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps):
         cumulative_best = np.maximum.accumulate(callback.fidelities)
         plt.plot(callback.steps, cumulative_best, 'r-', label='Best Fidelity Found', linewidth=2)
 
-    plt.title(f"Baseline Architect Training Progress ({n_qubits}-Qubit Toffoli Gate)")
+    plt.title(f"Baseline Architect Training Progress ({n_qubits}-Qubit Toffoli Gate, {rotation_status})")
     plt.xlabel("Training Steps")
     plt.ylabel("Fidelity")
     plt.grid(True)
@@ -190,6 +196,19 @@ def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps):
     print(f"Training plot saved to {plot_filename}")
 
 if __name__ == "__main__":
-    params = config.EXPERIMENT_PARAMS[4] # Default to 4 qubits for standalone run
-    train_baseline_architect(results_dir="results", n_qubits=4, 
-                             architect_steps=params["ARCHITECT_STEPS"], n_steps=params["ARCHITECT_N_STEPS"])
+    import argparse
+    parser = argparse.ArgumentParser(description="Train a baseline architect agent")
+    parser.add_argument('--n-qubits', type=int, default=4, help='Number of qubits (default: 4)')
+    parser.add_argument('--results-dir', type=str, default='results', help='Directory to save results')
+    parser.add_argument('--include-rotations', action='store_true',
+                        help='Include parameterized rotation gates (Rx, Ry, Rz) in action space')
+    args = parser.parse_args()
+    
+    params = config.EXPERIMENT_PARAMS[args.n_qubits]
+    train_baseline_architect(
+        results_dir=args.results_dir,
+        n_qubits=args.n_qubits, 
+        architect_steps=params["ARCHITECT_STEPS"],
+        n_steps=params["ARCHITECT_N_STEPS"],
+        include_rotations=args.include_rotations
+    )
