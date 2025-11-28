@@ -46,7 +46,7 @@ import numpy as np
 import cirq
 import matplotlib.pyplot as plt
 
-from qas_gym.utils import get_ghz_state, get_toffoli_state, fidelity_pure_target, load_circuit
+from qas_gym.utils import fidelity_pure_target, load_circuit
 
 # Import statistical utilities
 from utils.stats import (
@@ -58,7 +58,7 @@ from utils.stats import (
     format_metric_with_error,
 )
 
-# Import config for default N_SEEDS
+# Import config for default N_SEEDS and target state helpers
 from experiments import config
 
 
@@ -288,8 +288,8 @@ def run_cross_noise_robustness(
         log(f"ERROR: Failed to load robust circuit: {e}")
         return {'error': f'Failed to load robust circuit: {e}'}
     
-    # Get target state - use n-controlled Toffoli as default target
-    target_state = get_toffoli_state(n_qubits)
+    # Get target state using central config
+    target_state = config.get_target_state(n_qubits)
     
     # === Over-rotation sweep ===
     log(f"\n--- Over-rotation sweep (ε ∈ [{epsilon_range[0]}, {epsilon_range[1]}]) ---")

@@ -109,7 +109,8 @@ def get_target_state(
 
 def get_target_circuit(
     n_qubits: int,
-    target_type: Optional[str] = None
+    target_type: Optional[str] = None,
+    include_input_prep: bool = True
 ) -> tuple:
     """
     Get the target circuit and qubits for the specified target type.
@@ -117,6 +118,9 @@ def get_target_circuit(
     Args:
         n_qubits: Number of qubits.
         target_type: Override for TARGET_TYPE. If None, uses global config.
+        include_input_prep: If True, includes input state preparation (X gates for Toffoli).
+            Set to False to get only the gate itself without input preparation.
+            Default True for backward compatibility with state_preparation mode.
 
     Returns:
         Tuple of (circuit, qubits).
@@ -135,11 +139,52 @@ def get_target_circuit(
         )
 
     if effective_target == 'toffoli':
-        return create_toffoli_circuit_and_qubits(n_qubits)
+        if include_input_prep:
+            # Full state preparation circuit (with X gates to prepare |111...1⟩)
+            return create_toffoli_circuit_and_qubits(n_qubits)
+        else:
+            # Just the Toffoli gate without input preparation
+            return _create_toffoli_gate_only(n_qubits)
     elif effective_target == 'ghz':
         return create_ghz_circuit_and_qubits(n_qubits)
     else:
         raise ValueError(f"Unknown target type: {effective_target}")
+
+
+def _create_toffoli_gate_only(n_qubits: int) -> tuple:
+    """
+    Create just the n-controlled Toffoli gate without input state preparation.
+    
+    This is useful for displaying the gate being learned, or for unitary_preparation
+    mode where we test the circuit on all input states.
+    
+    Args:
+        n_qubits: Number of qubits (>= 2).
+        
+    Returns:
+        Tuple of (circuit, qubits) containing only the multi-controlled NOT gate.
+    """
+    import cirq
+    
+    if n_qubits < 2:
+        raise ValueError("n-controlled Toffoli requires at least 2 qubits (n >= 2)")
+    
+    qubits = list(cirq.LineQubit.range(n_qubits))
+    circuit = cirq.Circuit()
+    
+    # Only the n-controlled NOT gate, no input preparation
+    controls = qubits[:-1]
+    target = qubits[-1]
+    
+    if n_qubits == 2:
+        circuit.append(cirq.CNOT(controls[0], target))
+    elif n_qubits == 3:
+        circuit.append(cirq.TOFFOLI(controls[0], controls[1], target))
+    else:
+        controlled_x = cirq.X(target).controlled_by(*controls)
+        circuit.append(controlled_x)
+    
+    return circuit, qubits
 
 
 def compute_fidelity(

@@ -134,11 +134,24 @@ def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps,
     fidelities_filename = os.path.join(results_dir, "architect_fidelities.txt")
     steps_filename = os.path.join(results_dir, "architect_steps.txt")
     
-    # Get target state and circuit using central config
+    # Get target state using central config
     target_state = config.get_target_state(n_qubits, effective_target)
-    target_circuit, _ = config.get_target_circuit(n_qubits, effective_target)
-    print("\n--- Target Circuit (for reference) ---")
-    print(target_circuit)
+    
+    # Show the gate being learned (without input preparation X gates)
+    # This makes it clearer what the agent is trying to learn
+    if effective_target == 'toffoli':
+        gate_circuit, _ = config.get_target_circuit(n_qubits, effective_target, include_input_prep=False)
+        print("\n--- Target Gate (what the agent learns to implement) ---")
+        print(gate_circuit)
+        print("\nNote: In state_preparation mode, we train to output the state |11...10⟩")
+        print("      which is the result of applying this gate to input |11...1⟩.")
+        if effective_mode == 'unitary_preparation':
+            print("      In unitary_preparation mode, we test on ALL 2^n input states.")
+    else:
+        # For GHZ, show the full preparation circuit
+        target_circuit, _ = config.get_target_circuit(n_qubits, effective_target)
+        print("\n--- Target Circuit (for reference) ---")
+        print(target_circuit)
 
     # Use ArchitectEnv for a fair comparison with the adversarial setup
     # The environment will handle creation of qubits, observables, and gates internally.
