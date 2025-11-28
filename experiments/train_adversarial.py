@@ -20,7 +20,7 @@ from stable_baselines3.common.callbacks import BaseCallback
 from experiments import config
 # Import your custom environments and utilities
 from qas_gym.envs import SaboteurMultiGateEnv, AdversarialArchitectEnv
-from qas_gym.utils import get_bell_state, get_ghz_state, save_circuit
+from qas_gym.utils import get_bell_state, get_ghz_state, get_toffoli_state, save_circuit
 
 # --- 1. Improved Logger Callback ---
 class FidelityLoggerCallback(BaseCallback):
@@ -61,10 +61,13 @@ def train_adversarial(
     os.makedirs(log_dir, exist_ok=True)
 
     # --- Target State ---
+    # Use n-controlled Toffoli gate as the default target for 3+ qubits
+    # For 2 qubits, use Bell state (legacy behavior)
     if n_qubits == 2:
         target_state = get_bell_state()
     else:
-        target_state = get_ghz_state(n_qubits)
+        # n-controlled Toffoli: CCNOT for 3 qubits, CCCNOT for 4 qubits, etc.
+        target_state = get_toffoli_state(n_qubits)
 
     # --- Initialize Environments ---
     max_saboteur_level = len(SaboteurMultiGateEnv.all_error_rates)
@@ -177,10 +180,10 @@ def train_adversarial(
         # -----------------------------
         # 3. SAFETY SAVE (Inside Loop)
         # -----------------------------
-        np.savetxt(os.path.join(log_dir, "architect_ghz_fidelities.txt"), architect_fidelities)
-        np.savetxt(os.path.join(log_dir, "architect_ghz_steps.txt"), architect_steps, fmt='%d')
-        np.savetxt(os.path.join(log_dir, "saboteur_trained_on_architect_ghz_fidelities.txt"), saboteur_fidelities)
-        np.savetxt(os.path.join(log_dir, "saboteur_trained_on_architect_ghz_steps.txt"), saboteur_steps, fmt='%d')
+        np.savetxt(os.path.join(log_dir, "architect_fidelities.txt"), architect_fidelities)
+        np.savetxt(os.path.join(log_dir, "architect_steps.txt"), architect_steps, fmt='%d')
+        np.savetxt(os.path.join(log_dir, "saboteur_trained_on_architect_fidelities.txt"), saboteur_fidelities)
+        np.savetxt(os.path.join(log_dir, "saboteur_trained_on_architect_steps.txt"), saboteur_steps, fmt='%d')
         
         if champion_circuit is not None:
             save_circuit(os.path.join(log_dir, "circuit_robust.json"), champion_circuit)

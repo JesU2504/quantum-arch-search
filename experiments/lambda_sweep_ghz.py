@@ -3,12 +3,16 @@
 Lambda Sweep Experiment for Part 1 (Brittleness) of ExpPlan.md.
 
 This script implements Experiment 1.1 from ExpPlan.md:
-- Task: 4-qubit GHZ state preparation (configurable)
+- Task: n-qubit Toffoli gate compilation (configurable, default n=4)
 - Baseline: Train ArchitectEnv with static penalty λ ∈ [0.001, 0.005, 0.01, 0.05, 0.1]
 - Metrics:
     - Success rate: % of seeds reaching fidelity > 0.99
     - Convergence variance: std. dev. of final CNOT counts
     - Mean/median CNOT count for each lambda
+
+Note: This experiment uses n-controlled Toffoli gates as the default compilation
+target (CCNOT for 3 qubits, CCCNOT for 4 qubits, etc.). GHZ state preparation
+is available as a legacy option via get_ghz_state().
 
 Statistical Protocol:
     - Number of seeds: Configurable via n_seeds parameter (default: config.N_SEEDS)
@@ -43,7 +47,7 @@ from stable_baselines3.common.callbacks import BaseCallback
 
 from experiments import config
 from qas_gym.envs import ArchitectEnv
-from qas_gym.utils import get_ghz_state
+from qas_gym.utils import get_ghz_state, get_toffoli_state
 
 # Import statistical utilities
 from utils.stats import (
@@ -332,8 +336,9 @@ def run_lambda_sweep(
     log(f"Training steps per trial: {effective_training_steps}")
     log(f"Results directory: {results_dir}")
     
-    # Get target state
-    target_state = get_ghz_state(n_qubits)
+    # Get target state - use n-controlled Toffoli as default target
+    # For n >= 2 qubits: CNOT (n=2), CCNOT/Toffoli (n=3), CCCNOT (n=4), etc.
+    target_state = get_toffoli_state(n_qubits)
     
     # Track all seeds used for summary
     all_seeds_used = list(range(effective_n_seeds))

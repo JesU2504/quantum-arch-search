@@ -30,7 +30,7 @@ import json
 from datetime import datetime
 
 from experiments import config
-from qas_gym.utils import get_ghz_state, apply_noise, fidelity_pure_target
+from qas_gym.utils import get_ghz_state, get_toffoli_state, apply_noise, fidelity_pure_target
 
 # Import statistical utilities
 from utils.stats import (
@@ -128,7 +128,8 @@ def compare_noise_resilience(base_results_dir, num_runs, n_qubits, samples=32, l
     log("--- Aggregating and Comparing Circuit Robustness (Multi-Gate Attacks) ---")
     summary_json = os.path.join(base_results_dir, "robust_eval.json")
     samples_csv = os.path.join(base_results_dir, "attacked_fidelity_samples.csv")
-    target_state = get_ghz_state(n_qubits)
+    # Use n-controlled Toffoli as default target for circuit robustness evaluation
+    target_state = get_toffoli_state(n_qubits)
 
     all_metrics_vanilla = []
     all_metrics_robust = []

@@ -29,6 +29,9 @@ from typing import Callable, Optional, Sequence
 def ghz_circuit(n_qubits):
     """
     Create a perfect GHZ circuit for n qubits.
+    
+    LEGACY/OPTIONAL: This function is retained for backward compatibility.
+    For new experiments, use toffoli_circuit() instead.
 
     Creates the state (|00...0> + |11...1>) / sqrt(2)
     using a Hadamard on the first qubit followed by CNOTs.
@@ -50,9 +53,84 @@ def ghz_circuit(n_qubits):
     return circuit, qubits
 
 
+def toffoli_circuit(n_qubits):
+    """
+    Create a circuit implementing the n-controlled Toffoli gate.
+    
+    This is the default circuit for n-qubit experiments. For n qubits,
+    this implements an (n-1)-controlled NOT gate where:
+    - Qubits 0 to n-2 are control qubits
+    - Qubit n-1 is the target qubit
+    
+    The circuit prepares all qubits in |1> (via X gates) and then applies
+    the multi-controlled NOT, resulting in the target state |11...10>.
+    
+    - n=2: CNOT preparation circuit
+    - n=3: Toffoli (CCNOT) preparation circuit
+    - n=4: CCCNOT preparation circuit
+    - etc.
+
+    Args:
+        n_qubits: Number of qubits (>= 2).
+
+    Returns:
+        Tuple of (circuit, qubits) where circuit is a Cirq circuit
+        and qubits is the list of qubits used.
+    """
+    if n_qubits < 2:
+        raise ValueError("n-controlled Toffoli requires at least 2 qubits")
+    
+    qubits = list(cirq.LineQubit.range(n_qubits))
+    circuit = cirq.Circuit()
+    
+    # Step 1: Prepare all qubits in |1> state
+    for q in qubits:
+        circuit.append(cirq.X(q))
+    
+    # Step 2: Apply the n-controlled NOT gate
+    controls = qubits[:-1]
+    target = qubits[-1]
+    
+    if n_qubits == 2:
+        circuit.append(cirq.CNOT(controls[0], target))
+    elif n_qubits == 3:
+        circuit.append(cirq.TOFFOLI(controls[0], controls[1], target))
+    else:
+        controlled_x = cirq.X(target).controlled_by(*controls)
+        circuit.append(controlled_x)
+    
+    return circuit, qubits
+
+
+def ideal_toffoli_state(n_qubits):
+    """
+    Compute the ideal n-controlled Toffoli output state.
+    
+    This is the default target state for n-qubit experiments.
+    Returns the output of applying an n-controlled NOT to |11...1>,
+    which is |11...10> (target qubit flips from 1 to 0 when all controls are 1).
+
+    Args:
+        n_qubits: Number of qubits (>= 2).
+
+    Returns:
+        State vector as numpy array of shape (2^n_qubits,).
+    """
+    if n_qubits < 2:
+        raise ValueError("n-controlled Toffoli requires at least 2 qubits")
+    
+    circuit, qubits = toffoli_circuit(n_qubits)
+    simulator = cirq.Simulator()
+    result = simulator.simulate(circuit, qubit_order=qubits)
+    return result.final_state_vector
+
+
 def ideal_ghz_state(n_qubits):
     """
     Compute the ideal GHZ state vector.
+    
+    LEGACY/OPTIONAL: This function is retained for backward compatibility.
+    For new experiments, use ideal_toffoli_state() instead.
 
     Returns (|00...0> + |11...1>) / sqrt(2)
 
