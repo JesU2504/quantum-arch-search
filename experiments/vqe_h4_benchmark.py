@@ -42,7 +42,7 @@ import matplotlib.pyplot as plt
 # Add project root to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.envs import VQEArchitectEnv
+from src.qas_gym.envs import VQEArchitectEnv
 from src.utils.metrics import state_energy
 
 

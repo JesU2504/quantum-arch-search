@@ -103,3 +103,8 @@ The repository ships the core pipeline and figures for Parts 2 and 7, and a stro
 
 If you use this code, please cite the corresponding talk/paper. For questions or issues, open an issue or contact the authors.
 
+
+
+## Changelog
+
+- **Environment Consolidation**: All environments and agents (ArchitectEnv, AdversarialArchitectEnv, Saboteur, VQEArchitectEnv) are now unified under `src/qas_gym/envs/`; duplicate definitions in `src/envs/` have been removed. Import from `src.qas_gym.envs` for all environment classes.
