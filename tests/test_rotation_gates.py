@@ -7,6 +7,7 @@ These tests verify:
 - Circuit serialization with rotation parameters
 - Gate counting and metrics for rotation gates
 - GHZ state recovery with rotation gates available
+- Configuration module get_action_gates with rotation gates
 """
 
 import numpy as np
@@ -24,6 +25,7 @@ from src.qas_gym.utils import (
 )
 from src.utils.metrics import count_rotation_gates as metrics_count_rotation_gates
 from src.utils.metrics import get_rotation_angles, evaluate_circuit
+from experiments.config import get_action_gates, INCLUDE_ROTATIONS
 
 
 # Test constants
@@ -511,6 +513,102 @@ class TestGHZStateRecoveryWithRotations:
         # Both should produce valid results
         assert 'fidelity' in info1
         assert 'fidelity' in info2
+
+
+class TestConfigModuleGetActionGates:
+    """Tests for experiments/config.py get_action_gates function with rotation gate support."""
+
+    def test_config_include_rotations_default_is_false(self):
+        """Test that INCLUDE_ROTATIONS config default is False for backward compatibility."""
+        assert INCLUDE_ROTATIONS is False
+
+    def test_get_action_gates_without_rotations(self):
+        """Test get_action_gates returns only Clifford+T gates when include_rotations=False."""
+        qubits = cirq.LineQubit.range(2)
+        gates = get_action_gates(qubits, include_rotations=False)
+        
+        # Should have X, Y, Z, H, T, S on each qubit (6 gates * 2 qubits = 12) + 2 CNOTs = 14
+        # Count single-qubit gates and CNOT gates
+        single_qubit_gates = [g for g in gates if len(g.qubits) == 1]
+        two_qubit_gates = [g for g in gates if len(g.qubits) == 2]
+        
+        assert len(single_qubit_gates) == 12  # 6 gate types * 2 qubits
+        assert len(two_qubit_gates) == 2  # CNOT(0,1) and CNOT(1,0)
+        
+        # No rotation gates should be present
+        rotation_count = sum(1 for g in gates if is_rotation_gate(g.gate))
+        assert rotation_count == 0
+
+    def test_get_action_gates_with_rotations(self):
+        """Test get_action_gates includes Rx, Ry, Rz when include_rotations=True."""
+        qubits = cirq.LineQubit.range(2)
+        gates = get_action_gates(qubits, include_rotations=True)
+        
+        # Should have X, Y, Z, H, T, S + Rx, Ry, Rz on each qubit
+        # (6 + 3) gates * 2 qubits = 18 single-qubit + 2 CNOTs = 20
+        single_qubit_gates = [g for g in gates if len(g.qubits) == 1]
+        two_qubit_gates = [g for g in gates if len(g.qubits) == 2]
+        
+        assert len(single_qubit_gates) == 18  # 9 gate types * 2 qubits
+        assert len(two_qubit_gates) == 2  # CNOT(0,1) and CNOT(1,0)
+        
+        # Count rotation gates - should be 3 types * 2 qubits = 6
+        rotation_count = sum(1 for g in gates if is_rotation_gate(g.gate))
+        assert rotation_count == 6
+
+    def test_get_action_gates_default_uses_config_flag(self):
+        """Test that get_action_gates uses INCLUDE_ROTATIONS config when not specified."""
+        qubits = cirq.LineQubit.range(2)
+        
+        # When include_rotations is not passed, it should use INCLUDE_ROTATIONS (False)
+        gates_default = get_action_gates(qubits)
+        gates_explicit_false = get_action_gates(qubits, include_rotations=False)
+        
+        # Should be the same since INCLUDE_ROTATIONS is False
+        assert len(gates_default) == len(gates_explicit_false)
+        
+        rotation_count = sum(1 for g in gates_default if is_rotation_gate(g.gate))
+        assert rotation_count == 0
+
+    def test_get_action_gates_correct_gate_types(self):
+        """Test that the correct gate types are included with rotations enabled."""
+        qubits = cirq.LineQubit.range(2)
+        gates = get_action_gates(qubits, include_rotations=True)
+        
+        # Collect gate type names
+        gate_types = set()
+        for g in gates:
+            gate = g.gate
+            # Check for rotation gates first (more specific)
+            if isinstance(gate, cirq.Rx):
+                gate_types.add('Rx')
+            elif isinstance(gate, cirq.Ry):
+                gate_types.add('Ry')
+            elif isinstance(gate, cirq.Rz):
+                gate_types.add('Rz')
+            # Check for Pauli gates (X, Y, Z) by comparing with cirq constants
+            elif gate == cirq.X:
+                gate_types.add('X')
+            elif gate == cirq.Y:
+                gate_types.add('Y')
+            elif gate == cirq.Z:
+                gate_types.add('Z')
+            # Check for H gate
+            elif isinstance(gate, cirq.HPowGate):
+                gate_types.add('H')
+            # Check for T and S gates (ZPowGate with specific exponents)
+            elif isinstance(gate, cirq.ZPowGate):
+                if np.isclose(gate.exponent, 0.25):
+                    gate_types.add('T')
+                elif np.isclose(gate.exponent, 0.5):
+                    gate_types.add('S')
+            # Check for CNOT
+            elif isinstance(gate, cirq.CNotPowGate):
+                gate_types.add('CNOT')
+        
+        # Verify all expected gate types are present
+        expected_types = {'X', 'Y', 'Z', 'H', 'T', 'S', 'Rx', 'Ry', 'Rz', 'CNOT'}
+        assert gate_types == expected_types
 
 
 if __name__ == "__main__":
