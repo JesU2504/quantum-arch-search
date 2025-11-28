@@ -259,13 +259,13 @@ class VQEArchitectEnv(gym.Env):
         # H4 Hamiltonian coefficients for stretched geometry (1.5 Å)
         # These coefficients create a model where:
         # - |0000> state gives approximately HF energy (-1.85 Ha)
-        # - Ground state is a correlated superposition with energy ≈ -2.05 Ha
+        # - Ground state is a correlated superposition with energy ≈ -2.20 Ha
         # The coefficients are tuned to provide a realistic model that
         # captures strong correlation at stretched geometries.
         #
         # For |0000>, Z expectation is +1 for all qubits, so:
         # E(|0000>) = g0 + 4*g_z + 3*g_zz (ZZ terms with Z=+1 give +g_zz)
-        # We want E(|0000>) ≈ -1.85 Ha and ground state ≈ -2.05 Ha
+        # We want E(|0000>) ≈ -1.85 Ha and ground state ≈ -2.20 Ha
 
         # Constant term (sets the energy scale)
         g0 = -1.25
