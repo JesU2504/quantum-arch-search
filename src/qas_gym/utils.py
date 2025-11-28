@@ -123,12 +123,10 @@ def get_toffoli_target_state(n_qubits: int, input_state: str = None) -> np.ndarr
     Generate the output state of an n-controlled Toffoli gate for a given input.
     
     This computes what the n-controlled NOT gate produces when applied to an input state.
-    The default input state is |11...1> (all qubits in |1>), which after applying the
-    Toffoli gate remains |11...1> since all controls are satisfied and the target flips
-    from |1> to |0> would give |11...10>, but we use |11...1> as input.
+    The default input state is |11...1> (all qubits in |1>). When the Toffoli gate is
+    applied, all control qubits are satisfied (all |1>), so the target qubit is flipped.
     
-    For benchmarking/learning tasks, the standard input is |11...1> which the Toffoli
-    transforms to |11...10> (target flips from 1 to 0 when all controls are 1).
+    The result is |11...10> - the target qubit (last qubit) flips from |1> to |0>.
     
     Args:
         n_qubits: Number of qubits (>= 2).
