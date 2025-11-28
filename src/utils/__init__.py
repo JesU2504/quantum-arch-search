@@ -30,6 +30,16 @@ from .plotting import (
     plot_qubit_overhead,
     plot_noise_resilience,
 )
+from .stats import (
+    aggregate_metrics,
+    aggregate_seed_results,
+    create_experiment_summary,
+    save_experiment_summary,
+    write_summary_txt,
+    get_git_commit_hash,
+    format_metric_with_error,
+    compute_success_rate,
+)
 
 __all__ = [
     # Metrics
@@ -53,4 +63,13 @@ __all__ = [
     "plot_lambda_sweep",
     "plot_qubit_overhead",
     "plot_noise_resilience",
+    # Stats
+    "aggregate_metrics",
+    "aggregate_seed_results",
+    "create_experiment_summary",
+    "save_experiment_summary",
+    "write_summary_txt",
+    "get_git_commit_hash",
+    "format_metric_with_error",
+    "compute_success_rate",
 ]

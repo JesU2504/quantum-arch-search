@@ -12,6 +12,14 @@ if _src_root not in sys.path:
 import numpy as np
 import cirq
 
+# --- Statistical Reporting Configuration ---
+# Number of random seeds per experimental setting for statistical validity.
+# Minimum recommended: 5, ideal: 10 for publication-quality results.
+# Can be overridden via CLI --n-seeds argument in run_experiments.py.
+N_SEEDS = 5  # Default number of seeds per experiment setting
+N_SEEDS_MIN = 5  # Minimum recommended for statistical validity
+N_SEEDS_RECOMMENDED = 10  # Recommended for publication-quality results
+
 # --- General Experiment Parameters ---
 N_RUNS = 5 
 RESULTS_DIR = "results"
