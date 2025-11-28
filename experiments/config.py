@@ -80,7 +80,7 @@ INCLUDE_ROTATIONS = False
 
 def get_action_gates(
     qubits: list[cirq.LineQubit],
-    include_rotations: bool = None
+    include_rotations: bool = INCLUDE_ROTATIONS
 ) -> list[cirq.Operation]:
     """
     Get the action gates for quantum architecture search experiments.
@@ -90,7 +90,7 @@ def get_action_gates(
         include_rotations: If True, include parameterized rotation gates (Rx, Ry, Rz)
             in addition to the Clifford+T gates. When True, the action space becomes
             more expressive (suitable for VQE-style variational circuits).
-            Defaults to config.INCLUDE_ROTATIONS if not specified.
+            Defaults to INCLUDE_ROTATIONS config value.
     
     Returns:
         List of gate operations including single-qubit gates, optionally rotation
@@ -100,7 +100,5 @@ def get_action_gates(
         The default gate set is Clifford+T: X, Y, Z, H, T, S (plus CNOT).
         When include_rotations=True, Rx, Ry, Rz gates are added for each qubit.
     """
-    if include_rotations is None:
-        include_rotations = INCLUDE_ROTATIONS
     single_qubit_gate_names = ['X', 'Y', 'Z', 'H', 'T', 'S']
     return get_gates_by_name(qubits, single_qubit_gate_names, include_rotations=include_rotations)

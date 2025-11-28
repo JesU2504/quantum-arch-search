@@ -586,21 +586,21 @@ class TestConfigModuleGetActionGates:
                 gate_types.add('Ry')
             elif isinstance(gate, cirq.Rz):
                 gate_types.add('Rz')
-            # Check for Pauli gates (X, Y, Z)
-            elif isinstance(gate, type(cirq.X)):  # _PauliX
+            # Check for Pauli gates (X, Y, Z) by comparing with cirq constants
+            elif gate == cirq.X:
                 gate_types.add('X')
-            elif isinstance(gate, type(cirq.Y)):  # _PauliY
+            elif gate == cirq.Y:
                 gate_types.add('Y')
-            elif isinstance(gate, type(cirq.Z)):  # _PauliZ
+            elif gate == cirq.Z:
                 gate_types.add('Z')
             # Check for H gate
             elif isinstance(gate, cirq.HPowGate):
                 gate_types.add('H')
             # Check for T and S gates (ZPowGate with specific exponents)
             elif isinstance(gate, cirq.ZPowGate):
-                if abs(gate.exponent - 0.25) < 1e-10:
+                if np.isclose(gate.exponent, 0.25):
                     gate_types.add('T')
-                elif abs(gate.exponent - 0.5) < 1e-10:
+                elif np.isclose(gate.exponent, 0.5):
                     gate_types.add('S')
             # Check for CNOT
             elif isinstance(gate, cirq.CNotPowGate):
