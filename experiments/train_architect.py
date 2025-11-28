@@ -101,7 +101,7 @@ class ChampionCircuitCallback(BaseCallback):
                     pass
         return True
 
-def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps, include_rotations=False):
+def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps, include_rotations=False, target_type=None, task_mode=None):
     """
     Trains a baseline architect in a noise-free environment to find a circuit
     for the configured target (default: n-controlled Toffoli gate).
@@ -156,16 +156,18 @@ def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps, in
 
     # Use ArchitectEnv for a fair comparison with the adversarial setup
     # The environment will handle creation of qubits, observables, and gates internally.
+    # Enforce gate set from config.py
+    qubits = [cirq.LineQubit(i) for i in range(n_qubits)]
+    action_gates = config.get_action_gates(qubits, include_rotations=include_rotations)
     env = ArchitectEnv(
         target=target_state,
-        # Set threshold > 1.0 to ensure episodes only end when max_timesteps is reached.
-        # This forces the agent to find the best possible circuit within the complexity limit.
         fidelity_threshold=1.1,
         reward_penalty=0.01,
         max_timesteps=config.MAX_CIRCUIT_TIMESTEPS,
-        complexity_penalty_weight=0.01, # Add complexity penalty for baseline too
-        include_rotations=include_rotations,  # Enable rotation gates if specified
-    )    
+        complexity_penalty_weight=0.01,
+        include_rotations=include_rotations,
+        action_gates=action_gates,
+    )
 
     # Use the centralized agent hyperparameters from the config file
     agent_params = config.AGENT_PARAMS.copy()

@@ -1,3 +1,63 @@
+# --- Target State and Circuit Utilities ---
+def get_target_state(n_qubits, target_type=None):
+    """
+    Returns the target state vector for the given number of qubits and target type.
+    Supported target types: 'ghz', 'toffoli'.
+    """
+    import numpy as np
+    if target_type is None:
+        target_type = TARGET_TYPE
+    if target_type.lower() == "ghz":
+        # GHZ state: (|00...0> + |11...1>)/sqrt(2)
+        state = np.zeros(2**n_qubits, dtype=complex)
+        state[0] = 1/np.sqrt(2)
+        state[-1] = 1/np.sqrt(2)
+        return state
+    elif target_type.lower() == "toffoli":
+        # Toffoli state: |110> (for 3 qubits), generalize as needed
+        state = np.zeros(2**n_qubits, dtype=complex)
+        if n_qubits == 3:
+            state[6] = 1.0  # |110>
+        else:
+            state[0] = 1.0  # fallback to |0...0>
+        return state
+    else:
+        raise ValueError(f"Unknown target_type: {target_type}")
+
+def get_target_circuit(n_qubits, target_type=None, include_input_prep=True):
+    """
+    Returns a Cirq circuit that prepares the target state for the given number of qubits and target type.
+    Supported target types: 'ghz', 'toffoli'.
+    """
+    import cirq
+    qubits = [cirq.LineQubit(i) for i in range(n_qubits)]
+    circuit = cirq.Circuit()
+    if target_type is None:
+        target_type = TARGET_TYPE
+    if target_type.lower() == "ghz":
+        # Prepare GHZ state: H on q0, CNOT chain
+        circuit.append(cirq.H(qubits[0]))
+        for i in range(n_qubits - 1):
+            circuit.append(cirq.CNOT(qubits[i], qubits[i+1]))
+        return circuit, qubits
+    elif target_type.lower() == "toffoli":
+        # Prepare Toffoli state: for 3 qubits, |110>
+        if n_qubits == 3:
+            if include_input_prep:
+                circuit.append([cirq.X(qubits[0]), cirq.X(qubits[1])])  # |110>
+            return circuit, qubits
+        else:
+            if include_input_prep:
+                circuit.append([cirq.X(qubits[0])])  # fallback: |100...0>
+            return circuit, qubits
+    else:
+        raise ValueError(f"Unknown target_type: {target_type}")
+# --- Utility: Experiment Label Helper ---
+def get_experiment_label(target_type, task_mode):
+    """
+    Returns a string label for the experiment based on target type and task mode.
+    """
+    return f"{target_type}_{task_mode}"
 import os
 import sys
 
@@ -26,6 +86,12 @@ RESULTS_DIR = "results"
 # CRITICAL: This determines the padding size for the Saboteur's input.
 # Must be consistent across env creation in train_adversarial.py
 MAX_CIRCUIT_TIMESTEPS = 20 
+
+# --- Default Target Type for Experiments ---
+TARGET_TYPE = "ghz"  # or "toffoli" as needed
+
+# --- Default Task Mode for Experiments ---
+TASK_MODE = "state_preparation"  # or "unitary_preparation" as needed
 
 # --- Per-Qubit Hyperparameter Configurations ---
 EXPERIMENT_PARAMS = {

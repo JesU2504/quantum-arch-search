@@ -81,7 +81,7 @@ def train_adversarial(
         target_state = get_bell_state()
     else:
         # Use central config to get target state
-        target_state = config.get_target_state(n_qubits, effective_target)
+        target_state = config.get_target_state(n_qubits, config.TARGET_TYPE)
 
     # --- Initialize Environments ---
     max_saboteur_level = len(SaboteurMultiGateEnv.all_error_rates)

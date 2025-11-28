@@ -257,6 +257,8 @@ def run_parameter_recovery_for_circuit(circuit: cirq.Circuit, circuit_name: str,
             # Use hash-based seed generation to avoid collisions
             # Format: base_seed * 1000000 + p_index * 1000 + rep
             noise_seed = base_seed * 1000000 + p_idx * 1000 + rep
+            # Ensure seed is within valid range for numpy
+            noise_seed = int(noise_seed % (2**32 - 1))
             np.random.seed(noise_seed)
             p_noise_seeds.append(noise_seed)
             

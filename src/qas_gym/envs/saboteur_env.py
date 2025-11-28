@@ -73,26 +73,29 @@ class SaboteurMultiGateEnv(gym.Env):
 
     def _get_obs(self, circuit=None):
         target_circuit = circuit if circuit is not None else self.current_circuit
-        
         # 1. Quantum State Component
         if target_circuit is None or not target_circuit.all_operations():
             state_obs = np.zeros((2 * self.n_qubits,), dtype=np.float32)
             structure_obs = np.zeros((self.max_gates,), dtype=np.int32)
         else:
             all_qubits = cirq.LineQubit.range(self.n_qubits)
-            obs_vals = self.simulator.simulate_expectation_values(
-                target_circuit,
-                observables=[cirq.X(q) for q in all_qubits] + [cirq.Y(q) for q in all_qubits],
-                qubit_order=all_qubits
-            )
-            state_obs = np.array(obs_vals).real.astype(np.float32)
+            try:
+                obs_vals = self.simulator.simulate_expectation_values(
+                    target_circuit,
+                    observables=[cirq.X(q) for q in all_qubits] + [cirq.Y(q) for q in all_qubits],
+                    qubit_order=all_qubits
+                )
+                state_obs = np.array(obs_vals).real.astype(np.float32)
+            except Exception as e:
+                import warnings
+                warnings.warn(f"simulate_expectation_values failed: {e}. Returning zeros.")
+                state_obs = np.zeros((2 * self.n_qubits,), dtype=np.float32)
 
             # 2. Structure Component
             structure_obs = np.zeros((self.max_gates,), dtype=np.int32)
             for i, op in enumerate(target_circuit.all_operations()):
                 if i >= self.max_gates: break
                 structure_obs[i] = self._encode_gate(op)
-        
         return {
             "projected_state": state_obs,
             "gate_structure": structure_obs
@@ -188,14 +191,19 @@ class SaboteurMultiGateEnv(gym.Env):
         all_qubits = cirq.LineQubit.range(n_qubits)
         simulator = cirq.DensityMatrixSimulator()
         if not circuit.all_operations():
-             state_obs = np.zeros((2 * n_qubits,), dtype=np.float32)
+            state_obs = np.zeros((2 * n_qubits,), dtype=np.float32)
         else:
-            obs_vals = simulator.simulate_expectation_values(
-                circuit,
-                observables=[cirq.X(q) for q in all_qubits] + [cirq.Y(q) for q in all_qubits],
-                qubit_order=all_qubits
-            )
-            state_obs = np.array(obs_vals).real.astype(np.float32)
+            try:
+                obs_vals = simulator.simulate_expectation_values(
+                    circuit,
+                    observables=[cirq.X(q) for q in all_qubits] + [cirq.Y(q) for q in all_qubits],
+                    qubit_order=all_qubits
+                )
+                state_obs = np.array(obs_vals).real.astype(np.float32)
+            except Exception as e:
+                import warnings
+                warnings.warn(f"simulate_expectation_values failed: {e}. Returning zeros.")
+                state_obs = np.zeros((2 * n_qubits,), dtype=np.float32)
 
         structure_obs = np.zeros((max_gates,), dtype=np.int32)
         for i, op in enumerate(circuit.all_operations()):

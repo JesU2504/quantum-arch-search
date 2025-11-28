@@ -144,7 +144,14 @@ def run_pipeline(args):
 	os.makedirs(baseline_dir, exist_ok=True)
 	if not args.skip_baseline:
 		logger.info('Running baseline architect (noiseless)')
-		train_baseline_architect(results_dir=baseline_dir, n_qubits=args.n_qubits, architect_steps=baseline_steps, n_steps=baseline_n_steps)
+		# Enforce include_rotations from config.py
+		train_baseline_architect(
+			results_dir=baseline_dir,
+			n_qubits=args.n_qubits,
+			architect_steps=baseline_steps,
+			n_steps=baseline_n_steps,
+			include_rotations=exp_config.INCLUDE_ROTATIONS
+		)
 	else:
 		logger.info('Skipping baseline as requested')
 
@@ -197,7 +204,17 @@ def run_pipeline(args):
 	adv_training_dir = None
 	if not args.skip_adversarial:
 		logger.info('Running adversarial co-evolution')
-		train_adversarial(results_dir=adversarial_dir, n_qubits=args.n_qubits, n_generations=adversarial_gens, architect_steps_per_generation=adversarial_arch_steps, saboteur_steps_per_generation=adversarial_sab_steps, max_circuit_gates=args.max_circuit_gates, fidelity_threshold=args.fidelity_threshold)
+		# Enforce include_rotations from config.py
+		train_adversarial(
+			results_dir=adversarial_dir,
+			n_qubits=args.n_qubits,
+			n_generations=adversarial_gens,
+			architect_steps_per_generation=adversarial_arch_steps,
+			saboteur_steps_per_generation=adversarial_sab_steps,
+			max_circuit_gates=args.max_circuit_gates,
+			fidelity_threshold=args.fidelity_threshold,
+			include_rotations=exp_config.INCLUDE_ROTATIONS
+		)
 		# Find the latest adversarial training subdir for plotting
 		from glob import glob
 		import re
