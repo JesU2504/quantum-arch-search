@@ -33,7 +33,7 @@ from stable_baselines3.common.callbacks import BaseCallback
 from experiments import config
 # Import your custom environments and utilities
 from qas_gym.envs import SaboteurMultiGateEnv, AdversarialArchitectEnv
-from qas_gym.utils import get_bell_state, save_circuit
+from qas_gym.utils import save_circuit
 from qas_gym.utils import get_toffoli_unitary
 
 # --- 1. Improved Logger Callback ---
@@ -71,20 +71,45 @@ def train_adversarial(
     include_rotations: bool = False,
     task_mode: str = None,
 ):
+    # --- Effective configuration ---
+    effective_task_mode = task_mode if task_mode is not None else config.TASK_MODE
+    effective_target_type = config.TARGET_TYPE
     rotation_status = "with rotation gates" if include_rotations else "with Clifford+T gates only"
+    
+    # --- Log configuration at start ---
+    print("\n" + "=" * 60)
+    print("ADVERSARIAL TRAINING CONFIGURATION")
+    print("=" * 60)
+    print(f"Target Type: {effective_target_type}")
+    print(f"Task Mode: {effective_task_mode}")
+    print(f"Number of Qubits: {n_qubits}")
+    print(f"Rotation Gates: {'Enabled' if include_rotations else 'Disabled'}")
+    print(f"Generations: {n_generations}")
+    print(f"Architect Steps/Gen: {architect_steps_per_generation}")
+    print(f"Saboteur Steps/Gen: {saboteur_steps_per_generation}")
+    print(f"Max Circuit Gates: {max_circuit_gates}")
+    print(f"Fidelity Threshold: {fidelity_threshold}")
+    print(f"Lambda Penalty: {lambda_penalty}")
+    print(f"Results Directory: {results_dir}")
+    print("=" * 60 + "\n")
+    
     print(f"--- Starting Adversarial Co-evolutionary Training ({rotation_status}) ---")
     start_time = time.time()
     log_dir = os.path.join(results_dir, f"adversarial_training_{datetime.now().strftime('%Y%m%d-%H%M%S')}")
     os.makedirs(log_dir, exist_ok=True)
 
-    # --- Target State using central config and task_mode ---
-    # For 2 qubits, use Bell state (legacy behavior for backward compatibility)
-    effective_task_mode = task_mode if task_mode is not None else config.TASK_MODE
-    if n_qubits == 2:
-        target_state = get_bell_state()
-    else:
-        # Use central config to get target state, passing task_mode if needed in the future
-        target_state = config.get_target_state(n_qubits, config.TARGET_TYPE)
+    # --- Target State using central config ---
+    # Always use toffoli target state (configurable via config.TARGET_TYPE)
+    target_state = config.get_target_state(n_qubits, effective_target_type)
+    
+    # --- Ideal unitary for unitary mode ---
+    from qas_gym.utils import get_ideal_unitary
+    ideal_U = None
+    if effective_task_mode == 'unitary_preparation':
+        try:
+            ideal_U = get_ideal_unitary(n_qubits, effective_target_type)
+        except Exception:
+            ideal_U = None
 
     # --- Initialize Environments ---
     max_saboteur_level = len(SaboteurMultiGateEnv.all_error_rates)
@@ -102,6 +127,8 @@ def train_adversarial(
         include_rotations=include_rotations,  # Enable rotation gates if specified
         action_gates=action_gates,
         qubits=qubits,
+        task_mode=effective_task_mode,
+        ideal_unitary=ideal_U,
     )
 
     # Dummy circuit for initialization
@@ -220,35 +247,12 @@ def train_adversarial(
     return architect_agent, saboteur_agent, arch_env, log_dir, start_time
 
 def _verify_unitary_toffoli(circuit: cirq.Circuit, n_qubits: int) -> None:
-    """Verify champion circuit implements Toffoli across all basis inputs and print accuracy."""
-    qubits = list(cirq.LineQubit.range(n_qubits))
-    sim = cirq.Simulator()
-    U_ideal = get_toffoli_unitary(n_qubits)
-    dim = 2 ** n_qubits
-    correct = 0
-    U_learned = np.zeros((dim, dim), dtype=complex)
-    for idx in range(dim):
-        init_bits = [(idx >> b) & 1 for b in range(n_qubits)]
-        prep_ops = [cirq.X(qubits[b]) for b, bit in enumerate(init_bits) if bit == 1]
-        test_circuit = cirq.Circuit()
-        test_circuit.append(prep_ops)
-        test_circuit += circuit
-        result = sim.simulate(test_circuit, qubit_order=qubits)
-        out_state = result.final_state_vector
-        U_learned[:, idx] = out_state
-        basis_vec = np.zeros(dim, dtype=complex)
-        basis_vec[idx] = 1.0
-        ideal_out = U_ideal @ basis_vec
-        fid = np.abs(np.vdot(ideal_out, out_state)) ** 2
-        if fid > 1 - 1e-9:
-            correct += 1
-    accuracy = correct / dim
-    print(f"[Verifier] Toffoli truth-table accuracy across {dim} inputs: {accuracy:.3f}")
-    if accuracy < 1.0:
-        print("[Verifier] Note: Circuit matches the target state but not full unitary.")
-    d = dim
-    proc_fid = (np.abs(np.trace(np.conj(U_ideal).T @ U_learned)) ** 2) / (d * d)
-    print(f"[Verifier] Process fidelity (unitary matrices): {proc_fid:.6f}")
+    """Verify champion circuit implements Toffoli across all basis inputs and print accuracy.
+    
+    Delegates to the shared verify_toffoli_unitary function in qas_gym.utils.
+    """
+    from qas_gym.utils import verify_toffoli_unitary
+    verify_toffoli_unitary(circuit, n_qubits, silent=False)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
