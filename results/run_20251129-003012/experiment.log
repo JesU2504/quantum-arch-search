@@ -1,0 +1,14 @@
+2025-11-29 00:30:12,708 INFO: Starting pipeline with metadata: {'timestamp': '20251129-003012', 'preset': 'quick', 'n_qubits': 3, 'baseline_steps': 1000, 'saboteur_steps': 1000, 'adversarial_gens': 2, 'seed': None, 'n_seeds': 5, 'statistical_protocol': {'n_seeds_per_setting': 5, 'aggregation_method': 'mean ± std', 'error_bars': True}}
+2025-11-29 00:30:12,709 INFO: Running baseline architect (noiseless)
+2025-11-29 00:30:35,505 INFO: Running lambda sweep experiment (ExpPlan Part 1, Exp 1.1) with n_seeds=5
+2025-11-29 00:30:35,506 INFO: === Lambda Sweep Experiment (ExpPlan Part 1, Exp 1.1) ===
+2025-11-29 00:30:35,506 INFO: Target: toffoli, Mode: unitary_preparation
+2025-11-29 00:30:35,506 INFO: Experiment label: toffoli_unitary_preparation
+2025-11-29 00:30:35,506 INFO: Lambda values: [0.001, 0.005, 0.01, 0.05, 0.1]
+2025-11-29 00:30:35,506 INFO: Seeds per lambda: 5
+2025-11-29 00:30:35,506 INFO: Qubits: 3
+2025-11-29 00:30:35,507 INFO: Training steps per trial: 1000
+2025-11-29 00:30:35,507 INFO: Results directory: results/run_20251129-003012/lambda_sweep
+2025-11-29 00:30:35,507 INFO: 
+--- Lambda = 0.001 ---
+2025-11-29 00:30:35,507 INFO:   Seed 1/5...

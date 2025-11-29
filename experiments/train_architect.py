@@ -32,6 +32,7 @@ import matplotlib.pyplot as plt
 from experiments import config
 from qas_gym.envs import ArchitectEnv  # Import ArchitectEnv
 from qas_gym.utils import save_circuit
+from qas_gym.utils import verify_toffoli_unitary, get_toffoli_unitary, get_ideal_unitary
 
 class ChampionCircuitCallback(BaseCallback):
     """
@@ -46,6 +47,10 @@ class ChampionCircuitCallback(BaseCallback):
         self.print_freq = print_freq # Align with n_steps for cleaner logs
         self.last_printed_step = 0
         self.circuit_filename = circuit_filename
+        # Optional verification config, set by trainer
+        self.verify_unitary: bool = False
+        self.n_qubits: int | None = None
+        self.unitary_mode: bool = False
 
     def _on_step(self) -> bool:
         # Log progress
@@ -58,8 +63,24 @@ class ChampionCircuitCallback(BaseCallback):
         # Check for new champion circuit at the end of an episode
         if 'infos' in self.locals and self.locals['infos'] and self.locals['dones'][0]:
             info = self.locals['infos'][0]
-            
-            if 'fidelity' in info:
+
+            # Determine if we are in unitary mode (set once)
+            if not self.unitary_mode and self.verify_unitary:
+                self.unitary_mode = True
+
+            # Always use process fidelity in unitary mode, else use state fidelity
+            if self.unitary_mode and self.n_qubits is not None:
+                try:
+                    circuit = self.training_env.get_attr('champion_circuit')[0]
+                    if circuit is not None:
+                        _, process_fid = verify_toffoli_unitary(circuit, self.n_qubits, silent=True)
+                        self.fidelities.append(process_fid)
+                        self.steps.append(self.num_timesteps)
+                        if self.best_fidelity is None or process_fid > self.best_fidelity:
+                            self.best_fidelity = process_fid
+                except Exception:
+                    pass
+            elif (not self.unitary_mode) and 'fidelity' in info:
                 fidelity = info['fidelity']
                 self.fidelities.append(fidelity)
                 self.steps.append(self.num_timesteps)
@@ -78,28 +99,39 @@ class ChampionCircuitCallback(BaseCallback):
                 champion_circuit = None
                 champion_fid = None
 
-            if champion_circuit and (champion_fid is not None) and (champion_fid > self.best_fidelity):
-                self.best_fidelity = champion_fid
-                print(f"\n--- New Champion Circuit Found at Step {self.num_timesteps} ---")
-                print(f"Fidelity: {champion_fid:.6f}")
-                print(champion_circuit)
-                # Save champion and also record its fidelity and step so
-                # the callback's fidelity trace and plotted 'Best Fidelity'
-                # include champions that were discovered mid-episode.
-                save_circuit(self.circuit_filename, champion_circuit)
-                print(f"Saved new champion circuit to {self.circuit_filename}\n")
-                # Append the champion fidelity and current timestep to the
-                # recorded fidelities/steps so plotting and fidelity files
-                # reflect the saved champion.
-                try:
-                    # Avoid duplicate entries if the same fidelity was already recorded
-                    if not self.fidelities or (self.fidelities and abs(self.fidelities[-1] - champion_fid) > 1e-9):
+            if champion_circuit:
+                if champion_circuit and self.verify_unitary and self.n_qubits is not None:
+                    try:
+                        print(f"[DEBUG] Callback called at step {self.num_timesteps}")
+                        accuracy, process_fid = verify_toffoli_unitary(champion_circuit, self.n_qubits, silent=True)
+                        print(f"[DEBUG] Computed process fidelity: {process_fid}")
+                        # Always report the first circuit, even if process_fid == 0
+                        if self.best_fidelity is None or process_fid > self.best_fidelity or (self.best_fidelity == -1.0 and process_fid == 0.0):
+                            print(f"\n--- New Champion Circuit Found at Step {self.num_timesteps} ---")
+                            print(f"Process Fidelity: {process_fid:.6f}")
+                            print(champion_circuit)
+                            save_circuit(self.circuit_filename, champion_circuit)
+                            print(f"Saved new champion circuit to {self.circuit_filename}\n")
+                            self.fidelities.append(process_fid)
+                            self.steps.append(self.num_timesteps)
+                            self.best_fidelity = process_fid
+                    except Exception as e:
+                        print(f"[Verifier] Skipped unitary verification due to error: {e}")
+                elif champion_circuit:
+                    if self.best_fidelity is None or (champion_fid is not None and champion_fid > self.best_fidelity):
+                        print(f"\n--- New Champion Circuit Found at Step {self.num_timesteps} ---")
+                        print(f"Fidelity: {champion_fid:.6f}")
+                        print(champion_circuit)
+                        save_circuit(self.circuit_filename, champion_circuit)
+                        print(f"Saved new champion circuit to {self.circuit_filename}\n")
                         self.fidelities.append(champion_fid)
                         self.steps.append(self.num_timesteps)
-                except Exception:
-                    # Be conservative: don't break the callback if recording fails
-                    pass
+                        self.best_fidelity = champion_fid
         return True
+
+    def _verify_champion_unitary(self, circuit: cirq.Circuit, n_qubits: int) -> None:
+        """Delegate to shared verifier in utils for Toffoli unitary checks."""
+        verify_toffoli_unitary(circuit, n_qubits, silent=False)
 
 def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps, include_rotations=False, target_type=None, task_mode=None):
     """
@@ -144,10 +176,13 @@ def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps, in
         gate_circuit, _ = config.get_target_circuit(n_qubits, effective_target, include_input_prep=False)
         print("\n--- Target Gate (what the agent learns to implement) ---")
         print(gate_circuit)
-        print("\nNote: In state_preparation mode, we train to output the state |11...10⟩")
-        print("      which is the result of applying this gate to input |11...1⟩.")
-        if effective_mode == 'unitary_preparation':
-            print("      In unitary_preparation mode, we test on ALL 2^n input states.")
+        if effective_mode == 'state_preparation':
+            print("\nNote: You are in state_preparation mode.")
+            print("      We train to output the state |11...10⟩, which is the result")
+            print("      of applying this gate to input |11...1⟩.")
+        elif effective_mode == 'unitary_preparation':
+            print("\nNote: You are in unitary_preparation mode.")
+            print("      We evaluate fidelity across ALL 2^n computational basis inputs.")
     else:
         # For GHZ, show the full preparation circuit
         target_circuit, _ = config.get_target_circuit(n_qubits, effective_target)
@@ -159,6 +194,13 @@ def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps, in
     # Enforce gate set from config.py
     qubits = [cirq.LineQubit(i) for i in range(n_qubits)]
     action_gates = config.get_action_gates(qubits, include_rotations=include_rotations)
+    # Ideal unitary for unitary mode (auto from config for any target)
+    ideal_U = None
+    if effective_mode == 'unitary_preparation':
+        try:
+            ideal_U = get_ideal_unitary(n_qubits, effective_target)
+        except Exception:
+            ideal_U = None
     env = ArchitectEnv(
         target=target_state,
         fidelity_threshold=1.1,
@@ -167,6 +209,8 @@ def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps, in
         complexity_penalty_weight=0.01,
         include_rotations=include_rotations,
         action_gates=action_gates,
+        task_mode=effective_mode,
+        ideal_unitary=ideal_U,
     )
 
     # Use the centralized agent hyperparameters from the config file
@@ -177,6 +221,9 @@ def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps, in
     
     print("\n--- Starting Training ---")
     callback = ChampionCircuitCallback(circuit_filename=circuit_filename)
+    # Enable unitary verification when in unitary_preparation mode and Toffoli target
+    callback.verify_unitary = (effective_mode == 'unitary_preparation' and effective_target == 'toffoli')
+    callback.n_qubits = n_qubits
     model.learn(total_timesteps=architect_steps, callback=callback)
     print("\n--- Training Finished ---")
 

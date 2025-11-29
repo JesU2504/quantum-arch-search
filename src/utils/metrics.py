@@ -1,3 +1,47 @@
+"""General metrics utilities for quantum circuit evaluation."""
+
+from __future__ import annotations
+
+import numpy as np
+
+def process_fidelity(U_ideal: np.ndarray, U_learned: np.ndarray) -> float:
+    """
+    Compute the unitary process fidelity between two square matrices:
+
+    F = |Tr(U_ideal† U_learned)|^2 / d^2, where d is the dimension (2^n for n qubits).
+
+    Args:
+        U_ideal: The target unitary matrix (shape [d, d]).
+        U_learned: The learned/implemented unitary matrix (shape [d, d]).
+
+    Returns:
+        A float in [0, 1] representing process fidelity.
+    """
+    if U_ideal.shape != U_learned.shape:
+        raise ValueError(f"Matrix shape mismatch: {U_ideal.shape} vs {U_learned.shape}")
+    d = U_ideal.shape[0]
+    return (np.abs(np.trace(np.conj(U_ideal).T @ U_learned)) ** 2) / (d * d)
+
+def unitary_from_basis_columns(columns: list[np.ndarray]) -> np.ndarray:
+    """
+    Assemble a unitary-like matrix from output statevectors corresponding to
+    each computational basis input. Each vector is a column.
+
+    Args:
+        columns: List of length d, each a complex vector of length d.
+
+    Returns:
+        A [d, d] complex numpy array with the provided columns.
+    """
+    if not columns:
+        raise ValueError("No columns provided for unitary assembly")
+    d = columns[0].shape[0]
+    U = np.zeros((d, d), dtype=complex)
+    for idx, vec in enumerate(columns):
+        if vec.shape[0] != d:
+            raise ValueError(f"Column {idx} has wrong length: {vec.shape[0]} != {d}")
+        U[:, idx] = vec
+    return U
 """
 Metrics utilities for Quantum Architecture Search.
 

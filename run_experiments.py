@@ -258,11 +258,25 @@ def run_pipeline(args):
 	else:
 		logger.warning('Vanilla circuit not found; compare will be incomplete')
 
-	# Try direct path first
+	# Try direct path first (validate qubit count)
 	if os.path.exists(robust_src):
-		shutil.copy(robust_src, os.path.join(run0, 'circuit_robust.json'))
-		logger.info('Copied robust circuit to compare/run_0')
-		robust_found = True
+		try:
+			from qas_gym.utils import load_circuit
+			rc = load_circuit(robust_src)
+			# Validate against requested n_qubits
+			qubit_ids = set()
+			for op in rc.all_operations():
+				for q in op.qubits:
+					qubit_ids.add(str(q))
+			circuit_n_qubits = len(qubit_ids)
+			if circuit_n_qubits == args.n_qubits:
+				shutil.copy(robust_src, os.path.join(run0, 'circuit_robust.json'))
+				logger.info('Copied robust circuit to compare/run_0')
+				robust_found = True
+			else:
+				logger.warning(f'Robust circuit at {robust_src} is for {circuit_n_qubits} qubits, expected {args.n_qubits}. Skipping this robust circuit.')
+		except Exception as e:
+			logger.warning(f'Failed to validate robust circuit at {robust_src}: {e}. Skipping.')
 	else:
 		# Search for latest adversarial_training_* subdir
 		from glob import glob
@@ -270,12 +284,27 @@ def run_pipeline(args):
 		adv_subdirs = glob(os.path.join(adversarial_dir, 'adversarial_training_*'))
 		if adv_subdirs:
 			adv_subdirs.sort(key=lambda x: re.findall(r'adversarial_training_(\d+)-(\d+)', x)[0] if re.findall(r'adversarial_training_(\d+)-(\d+)', x) else x)
-			adv_training_dir = adv_subdirs[-1]
-			robust_candidate = os.path.join(adv_training_dir, 'circuit_robust.json')
-			if os.path.exists(robust_candidate):
-				shutil.copy(robust_candidate, os.path.join(run0, 'circuit_robust.json'))
-				logger.info(f'Copied robust circuit from {robust_candidate} to compare/run_0')
-				robust_found = True
+			# Try latest first, then fall back to earlier ones until a matching n_qubits is found
+			for cand_dir in reversed(adv_subdirs):
+				robust_candidate = os.path.join(cand_dir, 'circuit_robust.json')
+				if os.path.exists(robust_candidate):
+					try:
+						from qas_gym.utils import load_circuit
+						rc = load_circuit(robust_candidate)
+						qubit_ids = set()
+						for op in rc.all_operations():
+							for q in op.qubits:
+								qubit_ids.add(str(q))
+						circuit_n_qubits = len(qubit_ids)
+						if circuit_n_qubits == args.n_qubits:
+							shutil.copy(robust_candidate, os.path.join(run0, 'circuit_robust.json'))
+							logger.info(f'Copied robust circuit from {robust_candidate} to compare/run_0')
+							robust_found = True
+							break
+						else:
+							logger.info(f'Skipping robust candidate {robust_candidate}: {circuit_n_qubits} qubits (expected {args.n_qubits}).')
+					except Exception as e:
+						logger.info(f'Failed to validate robust candidate {robust_candidate}: {e}. Continuing search.')
 		if not robust_found:
 			logger.warning('Robust circuit not found; compare will be incomplete')
 
@@ -313,16 +342,25 @@ def run_pipeline(args):
 				if os.path.exists(robust_candidate):
 					robust_src = robust_candidate
 		
-		run_parameter_recovery(
-			results_dir=param_recovery_dir,
-			n_qubits=args.n_qubits,
-			baseline_circuit_path=vanilla_src if os.path.exists(vanilla_src) else None,
-			robust_circuit_path=robust_src,
-			n_repetitions=effective_n_seeds,
-			base_seed=args.seed if args.seed is not None else 42,
-			logger=logger
-		)
-		logger.info('Parameter recovery experiment complete. Results saved to %s', param_recovery_dir)
+		# Only run if we have at least the baseline circuit; robust is optional
+		have_baseline = os.path.exists(vanilla_src)
+		have_robust = robust_src is not None and os.path.exists(robust_src)
+		if have_baseline:
+			# Determine robust path to pass (string guaranteed)
+			from typing import cast
+			robust_path_to_use = cast(str, robust_src) if have_robust else vanilla_src
+			run_parameter_recovery(
+				results_dir=param_recovery_dir,
+				n_qubits=args.n_qubits,
+				baseline_circuit_path=vanilla_src,
+				robust_circuit_path=robust_path_to_use,
+				n_repetitions=effective_n_seeds,
+				base_seed=args.seed if args.seed is not None else 42,
+				logger=logger
+			)
+			logger.info('Parameter recovery experiment complete. Results saved to %s', param_recovery_dir)
+		else:
+			logger.warning('Skipping parameter recovery: baseline circuit not found at %s', vanilla_src)
 	else:
 		logger.info('Skipping parameter recovery as requested')
 	# 6) Cross-Noise Robustness (ExpPlan Part 2, Exp 2.1)

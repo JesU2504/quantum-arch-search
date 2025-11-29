@@ -1,0 +1,2 @@
+2025-11-29 00:13:21,227 INFO: Starting pipeline with metadata: {'timestamp': '20251129-001321', 'preset': 'full', 'n_qubits': 3, 'baseline_steps': 200000, 'saboteur_steps': 200000, 'adversarial_gens': 10, 'seed': None, 'n_seeds': 5, 'statistical_protocol': {'n_seeds_per_setting': 5, 'aggregation_method': 'mean ± std', 'error_bars': True}}
+2025-11-29 00:13:21,228 INFO: Running baseline architect (noiseless)

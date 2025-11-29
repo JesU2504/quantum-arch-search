@@ -106,13 +106,39 @@ class AdversarialArchitectEnv(ArchitectEnv):
                             
                 noisy_circuit = cirq.Circuit(noisy_ops)
                 
-                # Calculate fidelity under attack
+                # Calculate state fidelity under attack (always for reporting)
                 fidelity_under_attack = self.get_fidelity(noisy_circuit)
-                
                 info['fidelity_under_attack'] = fidelity_under_attack
-                
-                # REWARD OVERRIDE: The Architect is now judged solely on robustness
-                reward = fidelity_under_attack
+
+                # REWARD OVERRIDE:
+                # - In unitary_preparation mode, judge robustness via unitary process fidelity under noise
+                # - Otherwise, use the state fidelity under attack
+                if self.task_mode == 'unitary_preparation' and self.ideal_unitary is not None:
+                    try:
+                        import numpy as np
+                        import cirq
+                        from utils.metrics import unitary_from_basis_columns, process_fidelity
+                        dim = 2 ** len(self.qubits)
+                        columns = []
+                        sim = cirq.Simulator()
+                        for idx in range(dim):
+                            init_bits = [(idx >> b) & 1 for b in range(len(self.qubits))]
+                            prep_ops = [cirq.X(self.qubits[b]) for b, bit in enumerate(init_bits) if bit == 1]
+                            test_circuit = cirq.Circuit()
+                            test_circuit.append(prep_ops)
+                            test_circuit += noisy_circuit
+                            result = sim.simulate(test_circuit, qubit_order=self.qubits)
+                            out_state = result.final_state_vector
+                            columns.append(out_state)
+                        U_learned_noisy = unitary_from_basis_columns(columns)
+                        proc_fid_attack = process_fidelity(self.ideal_unitary, U_learned_noisy)
+                        info['process_fidelity_under_attack'] = proc_fid_attack
+                        reward = proc_fid_attack
+                    except Exception:
+                        # Fallback to state fidelity under attack if unitary computation fails
+                        reward = fidelity_under_attack
+                else:
+                    reward = fidelity_under_attack
             else:
                 # If no saboteur, fallback to standard fidelity
                 info['fidelity_under_attack'] = self.get_fidelity(final_circuit)

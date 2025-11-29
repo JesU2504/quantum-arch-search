@@ -34,6 +34,7 @@ from experiments import config
 # Import your custom environments and utilities
 from qas_gym.envs import SaboteurMultiGateEnv, AdversarialArchitectEnv
 from qas_gym.utils import get_bell_state, save_circuit
+from qas_gym.utils import get_toffoli_unitary
 
 # --- 1. Improved Logger Callback ---
 class FidelityLoggerCallback(BaseCallback):
@@ -89,6 +90,9 @@ def train_adversarial(
     max_saboteur_level = len(SaboteurMultiGateEnv.all_error_rates)
 
     # Architect env args
+    # Build qubits and action gates using centralized config to enforce gate set
+    qubits = [cirq.LineQubit(i) for i in range(n_qubits)]
+    action_gates = config.get_action_gates(qubits, include_rotations=include_rotations)
     arch_env_kwargs = dict(
         target=target_state,
         fidelity_threshold=fidelity_threshold,
@@ -96,6 +100,8 @@ def train_adversarial(
         reward_penalty=0.01,
         complexity_penalty_weight=0.01,
         include_rotations=include_rotations,  # Enable rotation gates if specified
+        action_gates=action_gates,
+        qubits=qubits,
     )
 
     # Dummy circuit for initialization
@@ -169,6 +175,12 @@ def train_adversarial(
             if fid > best_fidelity:
                 best_fidelity = fid
                 champion_circuit = arch_env.champion_circuit
+                # Optional: verify unitary behavior across all basis inputs for Toffoli
+                if config.TARGET_TYPE == 'toffoli' and effective_task_mode == 'unitary_preparation':
+                    try:
+                        _verify_unitary_toffoli(champion_circuit, n_qubits)
+                    except Exception as e:
+                        print(f"[Verifier] Skipped unitary verification due to error: {e}")
 
         # -----------------------------
         # 2. Train Saboteur
@@ -206,6 +218,37 @@ def train_adversarial(
             save_circuit(os.path.join(log_dir, "circuit_robust.json"), champion_circuit)
 
     return architect_agent, saboteur_agent, arch_env, log_dir, start_time
+
+def _verify_unitary_toffoli(circuit: cirq.Circuit, n_qubits: int) -> None:
+    """Verify champion circuit implements Toffoli across all basis inputs and print accuracy."""
+    qubits = list(cirq.LineQubit.range(n_qubits))
+    sim = cirq.Simulator()
+    U_ideal = get_toffoli_unitary(n_qubits)
+    dim = 2 ** n_qubits
+    correct = 0
+    U_learned = np.zeros((dim, dim), dtype=complex)
+    for idx in range(dim):
+        init_bits = [(idx >> b) & 1 for b in range(n_qubits)]
+        prep_ops = [cirq.X(qubits[b]) for b, bit in enumerate(init_bits) if bit == 1]
+        test_circuit = cirq.Circuit()
+        test_circuit.append(prep_ops)
+        test_circuit += circuit
+        result = sim.simulate(test_circuit, qubit_order=qubits)
+        out_state = result.final_state_vector
+        U_learned[:, idx] = out_state
+        basis_vec = np.zeros(dim, dtype=complex)
+        basis_vec[idx] = 1.0
+        ideal_out = U_ideal @ basis_vec
+        fid = np.abs(np.vdot(ideal_out, out_state)) ** 2
+        if fid > 1 - 1e-9:
+            correct += 1
+    accuracy = correct / dim
+    print(f"[Verifier] Toffoli truth-table accuracy across {dim} inputs: {accuracy:.3f}")
+    if accuracy < 1.0:
+        print("[Verifier] Note: Circuit matches the target state but not full unitary.")
+    d = dim
+    proc_fid = (np.abs(np.trace(np.conj(U_ideal).T @ U_learned)) ** 2) / (d * d)
+    print(f"[Verifier] Process fidelity (unitary matrices): {proc_fid:.6f}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

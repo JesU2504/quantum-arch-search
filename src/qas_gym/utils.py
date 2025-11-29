@@ -1,5 +1,6 @@
 import cirq
 import numpy as np
+from utils.metrics import process_fidelity
 from typing import Sequence, List, Dict, Any, Optional, Tuple
 
 
@@ -7,13 +8,14 @@ from typing import Sequence, List, Dict, Any, Optional, Tuple
 ROTATION_GATE_TYPES = ['Rx', 'Ry', 'Rz']
 
 
-from typing import Sequence, Union
+from typing import Sequence, Union, Optional
 
 def get_gates_by_name(
     qubits,
     gate_names,
     include_rotations=False,
-    default_rotation_angle: Union[float, Sequence[float]] = np.pi/4
+    default_rotation_angle: Union[float, Sequence[float]] = np.pi/4,
+    rotation_types: Optional[Sequence[str]] = None,
 ):
 
     """
@@ -54,12 +56,17 @@ def get_gates_by_name(
             angles = default_rotation_angle
         else:
             angles = [default_rotation_angle]
+        # Determine which rotation gate types to include
+        rot_types = list(ROTATION_GATE_TYPES if rotation_types is None else rotation_types)
         for q in qubits:
             for angle in angles:
                 a = float(angle)  # type: ignore
-                action_gates.append(cirq.rx(a).on(q))
-                action_gates.append(cirq.ry(a).on(q))
-                action_gates.append(cirq.rz(a).on(q))
+                if 'Rx' in rot_types:
+                    action_gates.append(cirq.rx(a).on(q))
+                if 'Ry' in rot_types:
+                    action_gates.append(cirq.ry(a).on(q))
+                if 'Rz' in rot_types:
+                    action_gates.append(cirq.rz(a).on(q))
 
     # Add two-qubit CNOT gates for all ordered pairs
     for q1 in qubits:
@@ -454,6 +461,99 @@ def get_ghz_state(n_qubits):
     result = simulator.simulate(circuit)
     # The state vector is guaranteed to be real for the canonical GHZ circuit.
     return result.final_state_vector
+
+def get_target_state(n_qubits: int, target_type: str | None = None) -> np.ndarray:
+    """General target state provider for supported targets.
+
+    Supports 'ghz' and 'toffoli'. Defaults to project-wide TARGET_TYPE if None
+    (when called via config wrapper).
+    """
+    import numpy as np
+    tt = (target_type or 'toffoli').lower()
+    if tt == 'ghz':
+        state = np.zeros(2 ** n_qubits, dtype=complex)
+        state[0] = 1/np.sqrt(2)
+        state[-1] = 1/np.sqrt(2)
+        return state
+    elif tt == 'toffoli':
+        return get_toffoli_target_state(n_qubits)
+    else:
+        raise ValueError(f"Unknown target_type: {target_type}")
+
+def get_target_circuit(n_qubits: int, target_type: str | None = None, include_input_prep: bool = True) -> tuple[cirq.Circuit, list[cirq.LineQubit]]:
+    """General target circuit provider for supported targets.
+
+    Supports 'ghz' and 'toffoli'. Returns (circuit, qubits).
+    """
+    tt = (target_type or 'toffoli').lower()
+    if tt == 'ghz':
+        # Canonical GHZ preparation
+        qubits = [cirq.LineQubit(i) for i in range(n_qubits)]
+        circuit = cirq.Circuit()
+        if n_qubits > 0:
+            circuit.append(cirq.H(qubits[0]))
+            for i in range(n_qubits - 1):
+                circuit.append(cirq.CNOT(qubits[i], qubits[i+1]))
+        return circuit, qubits
+    elif tt == 'toffoli':
+        return create_toffoli_circuit_and_qubits(n_qubits)
+    else:
+        raise ValueError(f"Unknown target_type: {target_type}")
+
+def verify_toffoli_unitary(circuit: cirq.Circuit, n_qubits: int, *, silent: bool = False) -> tuple[float, float]:
+    """
+    Verify a circuit implements the n-qubit Toffoli (multi-controlled NOT) unitary.
+
+    Returns (truth_table_accuracy, process_fidelity), and optionally prints a report.
+    Process fidelity is computed as F = |Tr(U_ideal† U_learned)|^2 / d^2 with d=2^n.
+    """
+    qubits = list(cirq.LineQubit.range(n_qubits))
+    sim = cirq.Simulator()
+    U_ideal = get_toffoli_unitary(n_qubits)
+    dim = 2 ** n_qubits
+    correct = 0
+    U_learned = np.zeros((dim, dim), dtype=complex)
+    for idx in range(dim):
+        init_bits = [(idx >> b) & 1 for b in range(n_qubits)]
+        prep_ops = [cirq.X(qubits[b]) for b, bit in enumerate(init_bits) if bit == 1]
+        test_circuit = cirq.Circuit()
+        test_circuit.append(prep_ops)
+        test_circuit += circuit
+        result = sim.simulate(test_circuit, qubit_order=qubits)
+        out_state = result.final_state_vector
+        U_learned[:, idx] = out_state
+        basis_vec = np.zeros(dim, dtype=complex)
+        basis_vec[idx] = 1.0
+        ideal_out = U_ideal @ basis_vec
+        fid = np.abs(np.vdot(ideal_out, out_state)) ** 2
+        if fid > 1 - 1e-9:
+            correct += 1
+    accuracy = correct / dim
+    proc_fid = process_fidelity(U_ideal, U_learned)
+    if not silent:
+        print(f"[Verifier] Toffoli truth-table accuracy across {dim} inputs: {accuracy:.3f}")
+        print(f"[Verifier] Process fidelity (unitary matrices): {proc_fid:.6f}")
+        if accuracy < 1.0:
+            print("[Verifier] Note: Circuit matches the target state but not full unitary.")
+    return accuracy, proc_fid
+
+def get_ideal_unitary(n_qubits: int, target_type: str) -> Optional[np.ndarray]:
+    """Return ideal unitary for a target type.
+
+    - 'toffoli': multi-controlled NOT unitary over n qubits.
+    - 'ghz': unitary of the canonical GHZ preparation circuit.
+    - otherwise: None.
+    """
+    if target_type.lower() == 'toffoli':
+        return get_toffoli_unitary(n_qubits)
+    elif target_type.lower() == 'ghz':
+        circuit, qubits = create_ghz_circuit_and_qubits(n_qubits)
+        try:
+            return circuit.unitary(qubit_order=qubits)
+        except Exception:
+            return None
+    else:
+        return None
 
 
 def fidelity_pure_target(circuit: cirq.Circuit, target_state: np.ndarray, qubits: Sequence[cirq.Qid]) -> float:

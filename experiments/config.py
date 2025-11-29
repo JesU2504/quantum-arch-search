@@ -1,47 +1,16 @@
 # --- Target State and Circuit Utilities ---
 def get_target_state(n_qubits, target_type=None):
-    """
-    Returns the target state vector for the given number of qubits and target type.
-    Supported target types: 'ghz', 'toffoli'.
-    """
-    import numpy as np
-    if target_type is None:
-        target_type = TARGET_TYPE
-    if target_type.lower() == "ghz":
-        # GHZ state: (|00...0> + |11...1>)/sqrt(2)
-        state = np.zeros(2**n_qubits, dtype=complex)
-        state[0] = 1/np.sqrt(2)
-        state[-1] = 1/np.sqrt(2)
-        return state
-    elif target_type.lower() == "toffoli":
-        # Use utility to get correct Toffoli target state for any n_qubits
-        from qas_gym.utils import get_toffoli_target_state
-        return get_toffoli_target_state(n_qubits)
-    else:
-        raise ValueError(f"Unknown target_type: {target_type}")
+    """Delegate to qas_gym.utils.get_target_state for central logic."""
+    from qas_gym.utils import get_target_state as _util_get_target_state
+    tt = target_type if target_type is not None else TARGET_TYPE
+    return _util_get_target_state(n_qubits, tt)
 
 def get_target_circuit(n_qubits, target_type=None, include_input_prep=True):
-    """
-    Returns a Cirq circuit that prepares the target state for the given number of qubits and target type.
-    Supported target types: 'ghz', 'toffoli'.
-    """
-    import cirq
-    qubits = [cirq.LineQubit(i) for i in range(n_qubits)]
-    circuit = cirq.Circuit()
-    if target_type is None:
-        target_type = TARGET_TYPE
-    if target_type.lower() == "ghz":
-        # Prepare GHZ state: H on q0, CNOT chain
-        circuit.append(cirq.H(qubits[0]))
-        for i in range(n_qubits - 1):
-            circuit.append(cirq.CNOT(qubits[i], qubits[i+1]))
-        return circuit, qubits
-    elif target_type.lower() == "toffoli":
-        # Use utility to get correct Toffoli preparation circuit for any n_qubits
-        from qas_gym.utils import create_toffoli_circuit_and_qubits
-        return create_toffoli_circuit_and_qubits(n_qubits)
-    else:
-        raise ValueError(f"Unknown target_type: {target_type}")
+    """Delegate to qas_gym.utils.get_target_circuit for central logic."""
+    from qas_gym.utils import get_target_circuit as _util_get_target_circuit
+    tt = target_type if target_type is not None else TARGET_TYPE
+    return _util_get_target_circuit(n_qubits, tt, include_input_prep)
+
 # --- Utility: Experiment Label Helper ---
 def get_experiment_label(target_type, task_mode):
     """
@@ -141,6 +110,9 @@ from qas_gym.utils import get_gates_by_name
 # Set to True to enable VQE-style variational circuits with more expressive action space.
 # Set to False (default) for backward compatibility with Clifford+T gate set.
 INCLUDE_ROTATIONS = True
+# Limit rotation gate types to reduce action space while preserving Toffoli synthesis.
+# Rz(π/4) acts as the T gate (up to global phase), sufficient for Toffoli.
+ROTATION_TYPES = ['Rz']
 
 
 def get_action_gates(
@@ -167,10 +139,20 @@ def get_action_gates(
     """
     single_qubit_gate_names = ['H'] #['X', 'Y', 'Z', 'H', 'T', 'S']
     # Define allowed rotation angles
-    allowed_angles = [0, 0.25 * np.pi, 0.5 * np.pi, 0.75 * np.pi, np.pi]
+    # Include both T (π/4) and T† (-π/4) for exact Toffoli synthesis.
+    # Cirq interprets angles modulo 2π, so negative angles are valid.
+    allowed_angles = [
+        -0.25 * np.pi,  # T†
+        0,              
+        0.25 * np.pi,   # T
+        0.5 * np.pi,
+        0.75 * np.pi,
+        np.pi
+    ]
     return get_gates_by_name(
         qubits,
         single_qubit_gate_names,
         include_rotations=include_rotations,
-        default_rotation_angle=allowed_angles
+        default_rotation_angle=allowed_angles,
+        rotation_types=ROTATION_TYPES
     )

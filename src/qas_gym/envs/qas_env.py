@@ -60,7 +60,9 @@ class QuantumArchSearchEnv(gym.Env):
             action_gates: Optional[List[cirq.GateOperation]] = None,
             complexity_penalty_weight=0.0,
             include_rotations: bool = False,
-            default_rotation_angle: float = np.pi / 4
+            default_rotation_angle: float = np.pi / 4,
+            task_mode: Optional[str] = None,
+            ideal_unitary: Optional[np.ndarray] = None,
     ):
         """
         Initialize the Quantum Architecture Search Environment.
@@ -88,6 +90,8 @@ class QuantumArchSearchEnv(gym.Env):
         self._max_episode_steps = max_timesteps
         self.include_rotations = include_rotations
         self.default_rotation_angle = default_rotation_angle
+        self.task_mode = task_mode or 'state_preparation'
+        self.ideal_unitary = ideal_unitary
 
         # --- Initialize Qubits, Observables, and Gates ---
         # This logic must come before defining the observation and action spaces.
@@ -263,7 +267,8 @@ class QuantumArchSearchEnv(gym.Env):
         observation = self._get_obs()
 
         # The fidelity is calculated on the clean circuit at each step for reward shaping.
-        # The final, post-sabotage fidelity will be handled in the external training loop.
+        # In unitary_preparation, we still compute state fidelity for shaping but override the
+        # terminal reward with process fidelity against the ideal unitary.
         current_fidelity = self.get_fidelity(circuit)
 
         terminated = (current_fidelity >= self.fidelity_threshold) or \
@@ -272,11 +277,34 @@ class QuantumArchSearchEnv(gym.Env):
 
         # --- Reward Shaping for Architect ---
         # This reward encourages building a high-fidelity circuit.
-        # The primary reward for robustness will come from the training loop.
+        # In unitary mode, terminal reward is replaced by unitary process fidelity if available.
         fidelity_delta = current_fidelity - self.previous_final_fidelity
         reward = (0.1 * fidelity_delta) + reward_penalty  # Small shaping reward
         if terminated:
             reward -= self.complexity_penalty_weight * self.get_circuit_complexity(circuit)
+            # Override terminal reward in unitary mode using process fidelity
+            if self.task_mode == 'unitary_preparation' and self.ideal_unitary is not None:
+                try:
+                    # Assemble learned unitary by simulating all basis inputs
+                    dim = 2 ** len(self.qubits)
+                    columns = []
+                    sim = cirq.Simulator()
+                    for idx in range(dim):
+                        init_bits = [(idx >> b) & 1 for b in range(len(self.qubits))]
+                        prep_ops = [cirq.X(self.qubits[b]) for b, bit in enumerate(init_bits) if bit == 1]
+                        test_circuit = cirq.Circuit()
+                        test_circuit.append(prep_ops)
+                        test_circuit += circuit
+                        result = sim.simulate(test_circuit, qubit_order=self.qubits)
+                        out_state = result.final_state_vector
+                        columns.append(out_state)
+                    from utils.metrics import unitary_from_basis_columns, process_fidelity
+                    U_learned = unitary_from_basis_columns(columns)
+                    proc_fid = process_fidelity(self.ideal_unitary, U_learned)
+                    reward = proc_fid
+                except Exception:
+                    # If unitary computation fails, keep shaping reward
+                    pass
 
         # Build info dict with rotation gate information
         circuit_info = self.get_circuit_info()
@@ -288,6 +316,8 @@ class QuantumArchSearchEnv(gym.Env):
             'total_gates': circuit_info['total_gates'],
             'cnot_count': circuit_info['cnot_count']
         }
+        if terminated and self.task_mode == 'unitary_preparation' and self.ideal_unitary is not None:
+            info['process_fidelity'] = reward
         
         if current_fidelity > self.best_fidelity:
             self.best_fidelity = current_fidelity
