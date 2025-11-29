@@ -119,10 +119,12 @@ class AdversarialArchitectEnv(ArchitectEnv):
                         import cirq
                         from utils.metrics import unitary_from_basis_columns, process_fidelity
                         dim = 2 ** len(self.qubits)
+                        n_qubits = len(self.qubits)
                         columns = []
                         sim = cirq.Simulator()
                         for idx in range(dim):
-                            init_bits = [(idx >> b) & 1 for b in range(len(self.qubits))]
+                            # Cirq uses big-endian ordering: qubit 0 is MSB of state index
+                            init_bits = [(idx >> (n_qubits - 1 - b)) & 1 for b in range(n_qubits)]
                             prep_ops = [cirq.X(self.qubits[b]) for b, bit in enumerate(init_bits) if bit == 1]
                             test_circuit = cirq.Circuit()
                             test_circuit.append(prep_ops)

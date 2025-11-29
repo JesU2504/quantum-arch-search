@@ -38,12 +38,18 @@ class ChampionCircuitCallback(BaseCallback):
     """
     A callback to save the best circuit found during training.
     It also logs progress and collects fidelity data for plotting.
+    
+    Champion circuit logic:
+    - Triggers if any circuit achieves fidelity > 0 (saves at least one circuit
+      if any rollout is better than zero).
+    - If no circuit is saved, logs the reason at the end of training.
     """
     def __init__(self, circuit_filename, verbose=0, print_freq=4096):
         super().__init__(verbose)
         self.fidelities = []
         self.steps = []
-        self.best_fidelity = -1.0
+        self.best_fidelity = -1.0  # Best fidelity seen (for reporting)
+        self.best_saved_fidelity = -1.0  # Best fidelity of circuits actually saved
         self.print_freq = print_freq # Align with n_steps for cleaner logs
         self.last_printed_step = 0
         self.circuit_filename = circuit_filename
@@ -51,6 +57,9 @@ class ChampionCircuitCallback(BaseCallback):
         self.verify_unitary: bool = False
         self.n_qubits: int | None = None
         self.unitary_mode: bool = False
+        # Track whether any circuit was ever saved
+        self.circuit_saved: bool = False
+        self.circuits_evaluated: int = 0
 
     def _on_step(self) -> bool:
         # Log progress
@@ -68,25 +77,6 @@ class ChampionCircuitCallback(BaseCallback):
             if not self.unitary_mode and self.verify_unitary:
                 self.unitary_mode = True
 
-            # Always use process fidelity in unitary mode, else use state fidelity
-            if self.unitary_mode and self.n_qubits is not None:
-                try:
-                    circuit = self.training_env.get_attr('champion_circuit')[0]
-                    if circuit is not None:
-                        _, process_fid = verify_toffoli_unitary(circuit, self.n_qubits, silent=True)
-                        self.fidelities.append(process_fid)
-                        self.steps.append(self.num_timesteps)
-                        if self.best_fidelity is None or process_fid > self.best_fidelity:
-                            self.best_fidelity = process_fid
-                except Exception:
-                    pass
-            elif (not self.unitary_mode) and 'fidelity' in info:
-                fidelity = info['fidelity']
-                self.fidelities.append(fidelity)
-                self.steps.append(self.num_timesteps)
-                if fidelity > self.best_fidelity:
-                    self.best_fidelity = fidelity
-
             # The environment may set 'is_champion' on the step where the improvement
             # occurred, which can be mid-episode. Relying on the terminal-step 'info'
             # means we can miss champions discovered earlier in the episode. Instead
@@ -100,38 +90,93 @@ class ChampionCircuitCallback(BaseCallback):
                 champion_fid = None
 
             if champion_circuit:
-                if champion_circuit and self.verify_unitary and self.n_qubits is not None:
+                self.circuits_evaluated += 1
+                
+                if self.verify_unitary and self.n_qubits is not None:
+                    # Unitary verification mode
                     try:
-                        print(f"[DEBUG] Callback called at step {self.num_timesteps}")
                         accuracy, process_fid = verify_toffoli_unitary(champion_circuit, self.n_qubits, silent=True)
-                        print(f"[DEBUG] Computed process fidelity: {process_fid}")
-                        # Always report the first circuit, even if process_fid == 0
-                        if self.best_fidelity is None or process_fid > self.best_fidelity or (self.best_fidelity == -1.0 and process_fid == 0.0):
+                        
+                        # Track for reporting
+                        self.fidelities.append(process_fid)
+                        self.steps.append(self.num_timesteps)
+                        if process_fid > self.best_fidelity:
+                            self.best_fidelity = process_fid
+                        
+                        # Save if: first circuit ever OR improved over last saved fidelity
+                        # This ensures at least one circuit is saved if any fidelity >= 0
+                        should_save = (self.best_saved_fidelity < 0) or (process_fid > self.best_saved_fidelity)
+                        if should_save:
                             print(f"\n--- New Champion Circuit Found at Step {self.num_timesteps} ---")
                             print(f"Process Fidelity: {process_fid:.6f}")
                             print(champion_circuit)
                             save_circuit(self.circuit_filename, champion_circuit)
                             print(f"Saved new champion circuit to {self.circuit_filename}\n")
-                            self.fidelities.append(process_fid)
-                            self.steps.append(self.num_timesteps)
-                            self.best_fidelity = process_fid
+                            self.best_saved_fidelity = process_fid
+                            self.circuit_saved = True
                     except Exception as e:
                         print(f"[Verifier] Skipped unitary verification due to error: {e}")
-                elif champion_circuit:
-                    if self.best_fidelity is None or (champion_fid is not None and champion_fid > self.best_fidelity):
+                else:
+                    # State fidelity mode
+                    if 'fidelity' in info:
+                        fidelity = info['fidelity']
+                    else:
+                        fidelity = champion_fid
+                    
+                    # Track for reporting
+                    if fidelity is not None:
+                        self.fidelities.append(fidelity)
+                        self.steps.append(self.num_timesteps)
+                        if fidelity > self.best_fidelity:
+                            self.best_fidelity = fidelity
+                    
+                    # Save if: first circuit ever OR improved over last saved fidelity
+                    should_save = (self.best_saved_fidelity < 0) or (fidelity is not None and fidelity > self.best_saved_fidelity)
+                    if should_save and fidelity is not None:
                         print(f"\n--- New Champion Circuit Found at Step {self.num_timesteps} ---")
-                        print(f"Fidelity: {champion_fid:.6f}")
+                        print(f"Fidelity: {fidelity:.6f}")
                         print(champion_circuit)
                         save_circuit(self.circuit_filename, champion_circuit)
                         print(f"Saved new champion circuit to {self.circuit_filename}\n")
-                        self.fidelities.append(champion_fid)
-                        self.steps.append(self.num_timesteps)
-                        self.best_fidelity = champion_fid
+                        self.best_saved_fidelity = fidelity
+                        self.circuit_saved = True
         return True
 
     def _verify_champion_unitary(self, circuit: cirq.Circuit, n_qubits: int) -> None:
         """Delegate to shared verifier in utils for Toffoli unitary checks."""
         verify_toffoli_unitary(circuit, n_qubits, silent=False)
+
+    def get_final_report(self) -> str:
+        """Generate a final report explaining the training outcome.
+        
+        Returns:
+            A string describing whether a circuit was saved and why/why not.
+        """
+        lines = []
+        lines.append("\n" + "=" * 60)
+        lines.append("CHAMPION CIRCUIT CALLBACK FINAL REPORT")
+        lines.append("=" * 60)
+        lines.append(f"Circuits evaluated: {self.circuits_evaluated}")
+        lines.append(f"Best fidelity achieved: {self.best_fidelity:.6f}")
+        lines.append(f"Circuit saved: {'Yes' if self.circuit_saved else 'No'}")
+        
+        if not self.circuit_saved:
+            lines.append("\n--- Why no circuit was saved ---")
+            if self.circuits_evaluated == 0:
+                lines.append("  - No circuits were evaluated during training.")
+                lines.append("  - Possible causes:")
+                lines.append("    * No episode completed successfully")
+                lines.append("    * Environment did not produce any champion circuits")
+            elif self.best_fidelity < 0:
+                lines.append("  - No circuit achieved fidelity >= 0.")
+                lines.append("  - The RL agent did not find any valid circuits.")
+            else:
+                lines.append("  - This is unexpected. Please report this as a bug.")
+        else:
+            lines.append(f"\nCircuit saved to: {self.circuit_filename}")
+        
+        lines.append("=" * 60 + "\n")
+        return "\n".join(lines)
 
 def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps, include_rotations=False, target_type=None, task_mode=None):
     """
@@ -156,9 +201,23 @@ def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps, in
     effective_mode = task_mode if task_mode is not None else config.TASK_MODE
     experiment_label = config.get_experiment_label(effective_target, effective_mode)
     
-    print(f"Training baseline for {n_qubits} qubits.")
+    # Log configuration at the start of the run
+    print("\n" + "=" * 60)
+    print("EXPERIMENT CONFIGURATION")
+    print("=" * 60)
+    print(f"Target Type: {effective_target}")
+    print(f"Task Mode: {effective_mode}")
+    print(f"Number of Qubits: {n_qubits}")
+    print(f"Rotation Gates: {'Enabled' if include_rotations else 'Disabled'}")
+    print(f"Total Training Steps: {architect_steps}")
+    print(f"Steps per Update: {n_steps}")
+    print(f"Max Circuit Timesteps: {config.MAX_CIRCUIT_TIMESTEPS}")
+    print(f"Fidelity Threshold: 1.1 (unreachable; training by improvement)")
+    print(f"Results Directory: {results_dir}")
+    print("=" * 60 + "\n")
+    
     rotation_status = "with rotation gates" if include_rotations else "with Clifford+T gates only"
-    print(f"--- Phase 1: Training Baseline Architect for {n_qubits}-qubit Toffoli Gate ({rotation_status}) ---")
+    print(f"--- Phase 1: Training Baseline Architect for {n_qubits}-qubit {effective_target.title()} ({rotation_status}) ---")
     os.makedirs(results_dir, exist_ok=True)
 
     # Define file paths based on the results_dir (include experiment label)
@@ -228,10 +287,14 @@ def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps, in
     print("\n--- Training Finished ---")
 
     # --- Final processing ---
+    # Print detailed final report from callback
+    print(callback.get_final_report())
+    
     if os.path.exists(circuit_filename):
-        print(f"\nFinal vanilla circuit saved in {circuit_filename}")
+        print(f"Final vanilla circuit saved in {circuit_filename}")
     else:
-        print("\nNo circuit achieving a fidelity > 0 was found and saved.")
+        print("No circuit file was created.")
+        print("Check the final report above for details on why no circuit was saved.")
 
     # Save fidelities for analysis
     with open(fidelities_filename, "w") as f:
