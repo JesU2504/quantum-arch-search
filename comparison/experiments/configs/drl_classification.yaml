@@ -1,0 +1,246 @@
+# DRL Classification Configuration (arXiv:2407.20147)
+# ====================================================
+# This configuration file provides settings for the DRL-based quantum machine
+# learning architecture search approach from arXiv:2407.20147, tailored for
+# classification experiments.
+#
+# NOTE: This config provides hyperparameters extracted from the paper. The
+# entrypoint is left as a placeholder - maintainers should set it to the
+# appropriate DRL runner script.
+#
+# Reference: "Quantum Machine Learning Architecture Search via Deep Reinforcement Learning"
+# Authors: Chia-Hao Li, Kuang-Yao Wang, Hsi-Sheng Goan
+# Venue: IEEE QCE 2024
+
+experiment:
+  name: "drl_classification_2407.20147"
+  description: "DRL-based quantum architecture search for classification (arXiv:2407.20147)"
+  reference: "arXiv:2407.20147"
+  method: "drl"
+  task_type: "classification"
+
+# Agent entrypoint configuration
+# TODO: Maintainers should set these paths to their DRL implementation
+entrypoint:
+  # Placeholder - set to your DRL classification agent script
+  script: "TODO: path/to/drl_classification_runner.py"
+  
+  # Command template for running the agent
+  command_template: >
+    python {script}
+    --config {config}
+    --output-dir {output_dir}
+    --seed {seed}
+    --dataset {dataset}
+    --n-qubits {n_qubits}
+    --max-gates {max_gates}
+    --episodes {episodes}
+
+# Dataset configuration
+dataset:
+  # Primary datasets from paper
+  name: "make_classification"  # Options: make_classification, make_moons
+  source: "sklearn.datasets"
+  
+  # Dataset parameters (sklearn defaults - paper does not specify)
+  make_classification:
+    n_samples: 200  # Assumed - not specified in paper
+    n_features: 4   # Number of qubits used
+    n_informative: 4
+    n_redundant: 0
+    n_classes: 2
+    random_state: null  # Set per seed
+    
+  make_moons:
+    n_samples: 200  # Assumed - not specified in paper
+    noise: 0.1      # Assumed - not specified in paper
+    random_state: null
+    
+  # Train/test split (assumed - not specified in paper)
+  train_test_split: 0.8
+  
+  notes: "Paper does not specify dataset sizes or splits. Values are reasonable assumptions."
+
+# Data encoding (from paper)
+data_encoding:
+  strategy: "arctan_embedding"
+  description: "theta_i = arctan(f_i), phi_i = arctan(f_i^2); apply RY(theta_i) and RZ(phi_i) on qubit i"
+  fixed: true  # Encoding is not searched by the agent
+
+# Quantum circuit settings
+quantum_circuit:
+  n_qubits: 4  # Number of qubits (matches feature dimensions)
+  max_gates: 20  # L in paper - maximum circuit depth/gates
+  
+  # Gate set from paper (Equation 1)
+  gate_set:
+    rotation_gates: ["RX", "RY", "RZ"]
+    entangling_gates: ["CNOT"]
+    
+  # Parameterization
+  rotation_angles:
+    type: "classically_optimized"
+    description: "Agent selects gate type and qubit; angles optimized in inner loop"
+
+# DRL algorithm settings (from paper Section VI-B)
+drl_algorithm:
+  name: "DDQN"
+  description: "N-step Double Deep Q-Network"
+  
+  # Discount factor (paper Eq. gamma = 0.005^(1/L))
+  discount_factor:
+    formula: "0.005^(1/L)"
+    L: 20  # max_gates
+    computed_value: 0.7498942093324559  # 0.005^(1/20)
+    
+  # Experience replay
+  replay_buffer_size: 16384
+  
+  # Target network
+  target_network_update_frequency: 512
+  
+  # Exploration
+  exploration:
+    strategy: "epsilon_greedy"
+    epsilon_start: 1.0
+    epsilon_end: 0.1
+    decay_type: "linear"
+
+# Policy network architecture (from paper)
+policy_network:
+  type: "MLP"
+  activation: "LeakyReLU"
+  regularization: "dropout"
+  
+  # Input: flattened 4 x L state matrix
+  input_size: 80  # 4 * 20 (for L=20)
+  
+  # Output: Q-values for each action
+  # For 4 qubits: 3*4 + 4*3 = 24 actions (rotation types + CNOT pairs)
+  output_size: 24
+  
+  # Architecture details (not specified in paper - reasonable assumptions)
+  hidden_layers: [128, 64]  # Assumed
+  dropout_rate: 0.1  # Assumed
+  
+  notes: "Exact architecture not specified in paper. Values are reasonable assumptions."
+
+# Training hyperparameters
+training:
+  # Number of episodes
+  total_episodes: 800
+  
+  # These are not specified in paper - reasonable assumptions
+  learning_rate: 0.001  # Assumed - common DQN default
+  batch_size: 32  # Assumed - common DQN default
+  optimizer: "Adam"  # Assumed - common choice
+  
+  # N-step return (mentioned but N not specified)
+  n_step: 3  # Assumed - common value
+  
+  notes: "Learning rate, batch size, optimizer not specified in paper. Using common defaults."
+
+# Inner-loop parameter optimization (for VQC training)
+inner_loop_optimization:
+  purpose: "Train rotation angles after each gate addition"
+  max_epochs: 15  # From paper
+  early_stopping: true
+  early_stopping_criterion: "accuracy >= ytarget"
+  
+  # Loss function (from paper Definition IV.1)
+  loss_function: "binary_cross_entropy"
+  
+  # Optimizer (not specified in paper)
+  optimizer: "Adam"  # Assumed
+  learning_rate: 0.01  # Assumed
+  batch_size: null  # Full batch assumed
+  
+  notes: "Paper specifies 15 epochs max. Optimizer/LR not specified."
+
+# Reward function (from paper Equation 7)
+reward_function:
+  type: "accuracy_based_with_complexity_penalty"
+  
+  # Success case: y_l >= ytarget and l < L
+  success_reward: "0.2 * (y_l / ytarget) * (L - l)"
+  
+  # Failure case: y_l < ymin and l = L
+  failure_penalty: "-0.2 * ((ytarget - y_l) / ytarget) * l"
+  
+  # Dynamic reward (otherwise)
+  dynamic_reward: "clip((y_l - y_{l-1}) / (y_{l-1} + 1e-6) - 0.01 * l, -1.5, 1.5)"
+  
+  # Parameters
+  scaling_factor: 0.2
+  gate_penalty_coefficient: 0.01
+  reward_clip_range: [-1.5, 1.5]
+
+# Adaptive search (from paper Section VI-B.3)
+adaptive_search:
+  enabled: true
+  
+  ytarget_initial: 0.5  # Assumed starting point
+  ytarget_increment: 0.01
+  ytarget_increase_condition:
+    training: "10 successes in 12 consecutive episodes"
+    testing: "5 consecutive tests with higher accuracy"
+    
+  epsilon_decay_on_increase: 0.95
+  
+  notes: "Initial ytarget not specified. 0.5 is a reasonable starting point."
+
+# Fixed target mode (alternative to adaptive)
+fixed_target:
+  enabled: false
+  ytarget: 0.85  # From paper Figure 3
+
+# Compute budget
+compute_budget:
+  episodes: 800
+  evaluations_per_episode: null  # Varies with episode length
+  max_steps_per_episode: 20  # Equal to max_gates
+
+# Logging configuration
+logging:
+  format: "jsonl"
+  log_interval: 10  # Log every N episodes
+  
+  # Fields to log
+  fields:
+    - eval_id
+    - timestamp
+    - method
+    - seed
+    - episode
+    - train_accuracy
+    - test_accuracy
+    - gate_count
+    - circuit_depth
+    - episode_reward
+    - ytarget
+    - epsilon
+    - wall_time_s
+
+# Reproducibility
+seeds:
+  values: [0, 1, 2, 3, 4]  # 5 seeds for statistical comparison
+
+# Output paths
+output:
+  base_dir: "comparison/logs/drl_classification"
+  log_file: "drl_classif_run_{seed}.jsonl"
+  circuit_file: "circuit_drl_classif_{seed}.json"
+  metrics_file: "metrics_drl_classif_{seed}.json"
+
+# Metrics to report
+metrics:
+  primary:
+    - classification_accuracy_train
+    - classification_accuracy_test
+  secondary:
+    - gate_count
+    - circuit_depth
+    - episode_reward
+  smoothing:
+    train: 40  # 40-episode moving average
+    test: 4    # 4-episode moving average

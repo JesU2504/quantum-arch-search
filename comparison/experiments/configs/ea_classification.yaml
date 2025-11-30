@@ -1,0 +1,223 @@
+# EA (Coevolutionary) Classification Configuration
+# =================================================
+# This configuration file provides settings for running classification experiments
+# with the coevolutionary EA agents, matched to the DRL settings from arXiv:2407.20147
+# for fair comparison.
+#
+# NOTE: Settings are matched to drl_classification.yaml for comparable experiments:
+# - Same gate set (RX, RY, RZ, CNOT)
+# - Same max circuit depth (20 gates)
+# - Same evaluation budget
+# - Same inner-loop optimization settings
+# - Same datasets
+
+experiment:
+  name: "ea_classification_comparison"
+  description: "EA/co-evolution for classification, matched to DRL paper settings"
+  reference: "quantum-arch-search repository"
+  method: "ea"
+  task_type: "classification"
+
+# Agent entrypoint configuration
+# TODO: Maintainers should adapt the existing EA pipeline for classification tasks
+entrypoint:
+  # Placeholder - adapt existing pipeline for classification
+  script: "TODO: experiments/train_architect_classification.py"
+  
+  # Alternative: use existing VQE environment as base
+  alternative_script: "experiments/vqe_architecture_search_example.py"
+  
+  # Command template
+  command_template: >
+    python {script}
+    --config {config}
+    --output-dir {output_dir}
+    --seed {seed}
+    --dataset {dataset}
+    --n-qubits {n_qubits}
+    --max-gates {max_gates}
+    --total-evaluations {total_evaluations}
+
+# Dataset configuration (matched to DRL)
+dataset:
+  name: "make_classification"  # Options: make_classification, make_moons
+  source: "sklearn.datasets"
+  
+  # Dataset parameters (matched to DRL config)
+  make_classification:
+    n_samples: 200
+    n_features: 4
+    n_informative: 4
+    n_redundant: 0
+    n_classes: 2
+    random_state: null
+    
+  make_moons:
+    n_samples: 200
+    noise: 0.1
+    random_state: null
+    
+  train_test_split: 0.8
+
+# Data encoding (matched to DRL paper)
+data_encoding:
+  strategy: "arctan_embedding"
+  description: "theta_i = arctan(f_i), phi_i = arctan(f_i^2); apply RY(theta_i) and RZ(phi_i) on qubit i"
+  fixed: true
+
+# Quantum circuit settings (matched to DRL)
+quantum_circuit:
+  n_qubits: 4
+  max_gates: 20  # Matched to DRL L=20
+  
+  # Gate set (matched to DRL paper)
+  gate_set:
+    rotation_gates: ["RX", "RY", "RZ"]
+    entangling_gates: ["CNOT"]
+    
+  # Use parameterized rotations like DRL
+  include_rotations: true
+  rotation_types: ["RX", "RY", "RZ"]
+
+# Environment settings (adapted from repository's existing configs)
+environment:
+  task_mode: "classification"  # New mode for classification
+  max_circuit_timesteps: 20  # Matched to max_gates
+  
+  # Accuracy threshold for termination
+  accuracy_threshold: 0.99
+  
+  # Reward penalty for gate usage (matched to DRL)
+  gate_penalty: 0.01
+
+# EA/Coevolution settings
+ea_settings:
+  # Population and generations
+  population_size: 20
+  generations: 40  # Adjusted to match ~800 evaluations
+  
+  # Selection
+  selection_method: "tournament"
+  tournament_size: 3
+  
+  # Genetic operators
+  mutation_rate: 0.1
+  crossover_rate: 0.7
+  
+  # Elitism
+  elite_count: 2
+  
+  notes: "Population * generations = 800 evaluations (matched to DRL episodes)"
+
+# Alternative: PPO-based architect (from repository)
+ppo_settings:
+  enabled: false  # Set true to use PPO instead of pure EA
+  
+  # PPO hyperparameters
+  n_steps: 1000
+  batch_size: 100
+  n_epochs: 10
+  gamma: 0.75  # Matched to DRL computed gamma for L=20
+  gae_lambda: 0.95
+  learning_rate: 0.0003
+  ent_coef: 0.01
+  clip_range: 0.2
+  device: "cpu"
+  
+  total_timesteps: 16000  # ~800 episodes * 20 steps/episode
+
+# Inner-loop parameter optimization (matched to DRL)
+inner_loop_optimization:
+  purpose: "Optimize rotation angles for each candidate circuit"
+  max_epochs: 15  # Matched to DRL
+  early_stopping: true
+  early_stopping_criterion: "accuracy >= target"
+  
+  # Optimizer settings
+  optimizer: "Adam"
+  learning_rate: 0.01
+  batch_size: null  # Full batch
+  
+  # Loss function
+  loss_function: "binary_cross_entropy"
+
+# Fitness/Reward function (adapted from DRL reward)
+fitness_function:
+  type: "accuracy_based_with_complexity_penalty"
+  
+  # Primary objective: classification accuracy
+  accuracy_weight: 1.0
+  
+  # Complexity penalty (matched to DRL)
+  gate_penalty_coefficient: 0.01
+  
+  # Combined fitness
+  formula: "accuracy - 0.01 * gate_count"
+  
+  notes: "Simplified version of DRL reward for EA fitness evaluation"
+
+# Compute budget (matched to DRL)
+compute_budget:
+  total_evaluations: 800  # Matched to DRL episodes
+  evaluations_per_generation: 20  # population_size
+  max_generations: 40
+
+# Logging configuration
+logging:
+  format: "jsonl"
+  log_interval: 1  # Log every generation
+  
+  fields:
+    - eval_id
+    - timestamp
+    - method
+    - seed
+    - generation
+    - train_accuracy
+    - test_accuracy
+    - best_train_accuracy
+    - best_test_accuracy
+    - gate_count
+    - circuit_depth
+    - fitness
+    - wall_time_s
+
+# Reproducibility
+seeds:
+  values: [0, 1, 2, 3, 4]  # Matched to DRL seeds
+
+# Output paths
+output:
+  base_dir: "comparison/logs/ea_classification"
+  log_file: "ea_classif_run_{seed}.jsonl"
+  circuit_file: "circuit_ea_classif_{seed}.json"
+  metrics_file: "metrics_ea_classif_{seed}.json"
+
+# Metrics to report (matched to DRL)
+metrics:
+  primary:
+    - classification_accuracy_train
+    - classification_accuracy_test
+  secondary:
+    - gate_count
+    - circuit_depth
+    - fitness
+  comparison_metrics:
+    - evals_to_70_accuracy
+    - evals_to_80_accuracy
+    - evals_to_90_accuracy
+    - final_accuracy
+    - best_accuracy
+    - final_gate_count
+
+# Checklist for fair comparison with DRL
+comparison_checklist:
+  - "Same gate set (RX, RY, RZ, CNOT)"
+  - "Same max circuit depth (L=20)"
+  - "Same evaluation budget (~800 circuit evaluations)"
+  - "Same inner-loop optimization (15 epochs max, Adam)"
+  - "Same dataset (make_classification or make_moons)"
+  - "Same train/test split"
+  - "Same data encoding (arctan embedding)"
+  - "Same number of seeds (5)"
+  - "Gate penalty coefficient matched (0.01)"
