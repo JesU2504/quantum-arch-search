@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Quantum Architecture Search Experiment Log Entry",
+  "description": "Schema for logging experiment results from DRL and EA quantum architecture search methods",
+  "type": "object",
+  "required": [
+    "eval_id",
+    "timestamp",
+    "method",
+    "seed",
+    "best_fidelity",
+    "fidelity_metric"
+  ],
+  "properties": {
+    "eval_id": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Unique identifier for this evaluation within the run"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when this log entry was created"
+    },
+    "method": {
+      "type": "string",
+      "enum": ["drl", "ea"],
+      "description": "Method used: 'drl' for Deep Reinforcement Learning (arXiv:2407.20147), 'ea' for Evolutionary Algorithm (coevolutionary)"
+    },
+    "seed": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Random seed used for reproducibility"
+    },
+    "best_fidelity": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Best fidelity achieved so far in this run (0 to 1)"
+    },
+    "fidelity_metric": {
+      "type": "string",
+      "enum": ["trace_overlap", "average_gate", "entanglement", "state_fidelity"],
+      "description": "Type of fidelity metric used"
+    },
+    "circuit_depth": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Circuit depth (number of layers/moments)"
+    },
+    "gate_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of gates in the circuit"
+    },
+    "wall_time_s": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Wall clock time in seconds since start of run"
+    },
+    "cum_eval_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Cumulative number of circuit evaluations so far"
+    },
+    "unitary_hash": {
+      "type": "string",
+      "description": "Hash of the circuit unitary matrix for deduplication/verification (optional)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes or metadata about this evaluation (optional)"
+    },
+    "cnot_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of CNOT/CX gates in the circuit (optional)"
+    },
+    "rotation_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of parameterized rotation gates (optional)"
+    },
+    "episode_reward": {
+      "type": "number",
+      "description": "Episode reward for RL-based methods (optional)"
+    },
+    "training_loss": {
+      "type": "number",
+      "description": "Training loss value (optional)"
+    },
+    "circuit_json": {
+      "type": "string",
+      "description": "JSON-serialized circuit representation (optional)"
+    }
+  },
+  "additionalProperties": true
+}

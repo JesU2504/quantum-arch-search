@@ -1,0 +1,136 @@
+# EA (Coevolutionary) Agent Configuration
+# ========================================
+# This configuration file provides example settings for running the
+# coevolutionary quantum architecture search agents from this repository.
+#
+# NOTE: This config does NOT reimplement the EA agents. It provides parameters
+# for the existing Architect/Saboteur coevolution pipeline in the repository.
+#
+# To use this config:
+# 1. Use with run_experiments.py or individual experiment scripts
+# 2. Adjust hyperparameters as needed for your experiment
+# 3. Ensure log output follows comparison/logs/schema.json format
+
+experiment:
+  name: "coevolutionary_qas"
+  description: "Adversarial Coevolution for Quantum Circuit Architecture Search"
+  reference: "quantum-arch-search repository"
+  method: "ea"
+
+# Agent entrypoint configuration
+# These map to existing scripts in the repository
+entrypoint:
+  # Main pipeline script
+  pipeline: "run_experiments.py"
+  
+  # Individual experiment scripts (in experiments/)
+  baseline_architect: "experiments/train_architect.py"
+  saboteur_only: "experiments/train_saboteur_only.py"
+  adversarial: "experiments/train_adversarial.py"
+  comparison: "experiments/compare_circuits.py"
+  
+  # Command template for full pipeline
+  command_template: >
+    python {pipeline}
+    --preset {preset}
+    --n-qubits {n_qubits}
+    --base-dir {output_dir}
+    --seed {seed}
+
+# Environment settings
+environment:
+  n_qubits: 3
+  target_type: "toffoli"  # Options: toffoli, ghz
+  task_mode: "unitary_preparation"  # Options: state_preparation, unitary_preparation
+  max_circuit_timesteps: 20
+  fidelity_threshold: 0.99
+  include_rotations: true
+  rotation_types: ["Rz"]
+
+# Training presets (from run_experiments.py)
+# Choose one: quick, full, long
+preset: "quick"
+
+# Custom training parameters (override preset if needed)
+training:
+  # Baseline architect training
+  baseline:
+    steps: 10000  # quick=1000, full=200000, long=1000000
+    n_steps: 1000
+  
+  # Saboteur-only training
+  saboteur:
+    steps: 10000
+    n_steps: 1000
+    max_error_level: 1
+  
+  # Adversarial coevolution
+  adversarial:
+    generations: 5  # quick=2, full=10, long=20
+    architect_steps_per_gen: 5000
+    saboteur_steps_per_gen: 5000
+    max_circuit_gates: 8
+
+# PPO hyperparameters (shared across agents)
+ppo:
+  n_steps: 1000
+  batch_size: 100
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  learning_rate: 0.0003
+  ent_coef: 0.01
+  device: "cpu"
+
+# Logging configuration
+logging:
+  # Output format for logs (should match schema.json)
+  format: "jsonl"
+  log_interval: 100  # Log every N evaluations
+  
+  # Fields to log (must include required schema fields)
+  fields:
+    - eval_id
+    - timestamp
+    - method
+    - seed
+    - best_fidelity
+    - fidelity_metric
+    - circuit_depth
+    - gate_count
+    - wall_time_s
+    - cum_eval_count
+    - notes
+
+# Reproducibility
+seeds:
+  # Run multiple seeds for statistical significance
+  values: [0, 1, 2, 3, 4]
+  # Or specify a single seed
+  # seed: 42
+
+# Output paths
+output:
+  base_dir: "comparison/logs/ea"
+  log_file: "ea_run_{seed}.jsonl"
+  circuit_file: "circuit_ea_{seed}.json"
+  metrics_file: "metrics_ea_{seed}.json"
+
+# Additional experiments (optional)
+experiments:
+  # Lambda sweep (ExpPlan Part 1)
+  lambda_sweep:
+    enabled: false
+    lambda_values: [0.001, 0.005, 0.01, 0.05, 0.1]
+    n_seeds_per_lambda: 5
+  
+  # Cross-noise robustness (ExpPlan Part 2)
+  cross_noise:
+    enabled: false
+    noise_types: ["coherent_overrotation", "asymmetric_pauli"]
+    noise_levels: [0.0, 0.001, 0.005, 0.01, 0.02]
+  
+  # Parameter recovery
+  parameter_recovery:
+    enabled: false
+    n_repetitions: 10
