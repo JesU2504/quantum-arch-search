@@ -1,223 +1,166 @@
 # EA (Coevolutionary) Classification Configuration
 # =================================================
-# This configuration file provides settings for running classification experiments
-# with the coevolutionary EA agents, matched to the DRL settings from arXiv:2407.20147
-# for fair comparison.
+# This configuration file provides parameters for the EA/co-evolution runs
+# matched to the DRL settings from arXiv:2407.20147 for fair comparison.
 #
-# NOTE: Settings are matched to drl_classification.yaml for comparable experiments:
-# - Same gate set (RX, RY, RZ, CNOT)
-# - Same max circuit depth (20 gates)
-# - Same evaluation budget
-# - Same inner-loop optimization settings
-# - Same datasets
+# NOTE: This config does NOT reimplement the EA agents. It provides parameters
+# for the existing Architect/Saboteur coevolution pipeline in this repository,
+# aligned with the DRL paper's settings where applicable.
+#
+# To use this config:
+# 1. Use with run_experiments.py or individual experiment scripts
+# 2. Ensure log output follows comparison/logs/schema.json format
+# 3. See paper_metadata/quantum_ml_arch_search_2407.20147.json for DRL details
 
 experiment:
-  name: "ea_classification_comparison"
-  description: "EA/co-evolution for classification, matched to DRL paper settings"
+  name: "ea_classification_matched"
+  description: "Coevolutionary QAS matched to DRL classification settings from arXiv:2407.20147"
   reference: "quantum-arch-search repository"
   method: "ea"
-  task_type: "classification"
+  task_type: "binary_classification"
 
-# Agent entrypoint configuration
-# TODO: Maintainers should adapt the existing EA pipeline for classification tasks
-entrypoint:
-  # Placeholder - adapt existing pipeline for classification
-  script: "TODO: experiments/train_architect_classification.py"
-  
-  # Alternative: use existing VQE environment as base
-  alternative_script: "experiments/vqe_architecture_search_example.py"
-  
-  # Command template
-  command_template: >
-    python {script}
-    --config {config}
-    --output-dir {output_dir}
-    --seed {seed}
-    --dataset {dataset}
-    --n-qubits {n_qubits}
-    --max-gates {max_gates}
-    --total-evaluations {total_evaluations}
+# Gate set matched to DRL paper
+gate_set:
+  allowed_gates: ["RX", "RY", "RZ", "CNOT"]
+  parameterized_gates: ["RX", "RY", "RZ"]
+  # CNOT connectivity matched to paper: qubit i to (i+1) mod n
+  connectivity: "nearest_neighbor_cyclic"
 
-# Dataset configuration (matched to DRL)
-dataset:
-  name: "make_classification"  # Options: make_classification, make_moons
-  source: "sklearn.datasets"
-  
-  # Dataset parameters (matched to DRL config)
+# Dataset configurations matched to DRL paper
+datasets:
   make_classification:
-    n_samples: 200
+    source: "sklearn.datasets.make_classification"
     n_features: 4
-    n_informative: 4
-    n_redundant: 0
-    n_classes: 2
-    random_state: null
-    
+    n_qubits: 4
+    max_depth: 20  # Matched to DRL max_gates
+    inner_loop_epochs: 15  # Matched to DRL
+    target_accuracy: 0.85  # Matched to DRL fixed target
+  
   make_moons:
-    n_samples: 200
-    noise: 0.1
-    random_state: null
-    
-  train_test_split: 0.8
+    source: "sklearn.datasets.make_moons"
+    n_features: 2
+    n_qubits: 2
+    max_depth: 25  # Matched to DRL max_gates
+    inner_loop_epochs: 25  # Matched to DRL
+    target_accuracy: 0.85  # Matched to DRL fixed target
 
-# Data encoding (matched to DRL paper)
-data_encoding:
-  strategy: "arctan_embedding"
-  description: "theta_i = arctan(f_i), phi_i = arctan(f_i^2); apply RY(theta_i) and RZ(phi_i) on qubit i"
-  fixed: true
+# Data encoding matched to DRL paper
+encoding:
+  method: "arctan_embedding"
+  description: "theta_i = arctan(f_i), phi_i = arctan(f_i^2)"
+  gates_per_qubit: ["RY(theta_i)", "RZ(phi_i)"]
 
-# Quantum circuit settings (matched to DRL)
-quantum_circuit:
-  n_qubits: 4
-  max_gates: 20  # Matched to DRL L=20
-  
-  # Gate set (matched to DRL paper)
-  gate_set:
-    rotation_gates: ["RX", "RY", "RZ"]
-    entangling_gates: ["CNOT"]
-    
-  # Use parameterized rotations like DRL
-  include_rotations: true
-  rotation_types: ["RX", "RY", "RZ"]
+# Inner-loop optimization matched to DRL paper
+inner_loop:
+  optimizer: "Adam"  # Repository default
+  learning_rate: 0.01  # Repository default
+  batch_size: 32  # Repository default
+  loss: "binary_cross_entropy"
+  epochs_per_step:
+    make_classification: 15  # Matched to DRL
+    make_moons: 25  # Matched to DRL
 
-# Environment settings (adapted from repository's existing configs)
-environment:
-  task_mode: "classification"  # New mode for classification
-  max_circuit_timesteps: 20  # Matched to max_gates
-  
-  # Accuracy threshold for termination
-  accuracy_threshold: 0.99
-  
-  # Reward penalty for gate usage (matched to DRL)
-  gate_penalty: 0.01
+# Evaluation budget matched to DRL paper
+# DRL paper uses 800-1200 episodes; we match total circuit evaluations
+eval_budget:
+  # Total evaluations should be comparable to DRL
+  # DRL: 800-1200 episodes, each episode builds circuit step-by-step
+  # EA: population_size * generations * inner_evals ≈ DRL total_evals
+  total_circuit_evaluations: 1200  # Matched to DRL adaptive
+  # Alternative: match episodes directly
+  equivalent_episodes: 1200
 
-# EA/Coevolution settings
-ea_settings:
-  # Population and generations
-  population_size: 20
-  generations: 40  # Adjusted to match ~800 evaluations
-  
-  # Selection
-  selection_method: "tournament"
-  tournament_size: 3
-  
-  # Genetic operators
-  mutation_rate: 0.1
-  crossover_rate: 0.7
-  
-  # Elitism
-  elite_count: 2
-  
-  notes: "Population * generations = 800 evaluations (matched to DRL episodes)"
+# EA-specific hyperparameters
+# NOTE: These are repository defaults as not specified by user
+ea_hyperparameters:
+  population_size: 20  # Repository default
+  generations: 60  # Computed to match eval_budget: 20 * 60 = 1200 total
+  mutation_rate: 0.3  # Repository default
+  crossover_rate: 0.7  # Repository default
+  selection_method: "tournament"  # Repository default
+  tournament_size: 3  # Repository default
+  elitism: 2  # Repository default - keep top 2 individuals
 
-# Alternative: PPO-based architect (from repository)
-ppo_settings:
-  enabled: false  # Set true to use PPO instead of pure EA
+# Coevolution-specific settings (repository architecture)
+coevolution:
+  # Architect settings
+  architect:
+    enabled: true
+    ppo_steps_per_generation: 5000  # Repository default
   
-  # PPO hyperparameters
-  n_steps: 1000
-  batch_size: 100
-  n_epochs: 10
-  gamma: 0.75  # Matched to DRL computed gamma for L=20
-  gae_lambda: 0.95
-  learning_rate: 0.0003
-  ent_coef: 0.01
-  clip_range: 0.2
-  device: "cpu"
+  # Saboteur settings (adversarial component)
+  saboteur:
+    enabled: true
+    ppo_steps_per_generation: 5000  # Repository default
+    max_error_level: 1  # Repository default
   
-  total_timesteps: 16000  # ~800 episodes * 20 steps/episode
+  # Adversarial training
+  adversarial_generations: 10  # Repository default
 
-# Inner-loop parameter optimization (matched to DRL)
-inner_loop_optimization:
-  purpose: "Optimize rotation angles for each candidate circuit"
-  max_epochs: 15  # Matched to DRL
-  early_stopping: true
-  early_stopping_criterion: "accuracy >= target"
-  
-  # Optimizer settings
-  optimizer: "Adam"
-  learning_rate: 0.01
-  batch_size: null  # Full batch
-  
-  # Loss function
-  loss_function: "binary_cross_entropy"
+# Seeds matched to DRL config for fair comparison
+seeds: [0, 1, 2, 3, 4]
 
-# Fitness/Reward function (adapted from DRL reward)
-fitness_function:
-  type: "accuracy_based_with_complexity_penalty"
-  
-  # Primary objective: classification accuracy
-  accuracy_weight: 1.0
-  
-  # Complexity penalty (matched to DRL)
-  gate_penalty_coefficient: 0.01
-  
-  # Combined fitness
-  formula: "accuracy - 0.01 * gate_count"
-  
-  notes: "Simplified version of DRL reward for EA fitness evaluation"
+# Entrypoint command placeholder
+# TODO: Maintainers should replace with actual EA runner command
+entrypoint_command: |
+  # Replace with your EA agent command, e.g.:
+  # python run_experiments.py \
+  #   --preset quick \
+  #   --n-qubits 4 \
+  #   --base-dir comparison/logs/ea \
+  #   --seed {seed}
+  # 
+  # Or for classification-specific experiments:
+  # python your_ea_classifier.py \
+  #   --config comparison/experiments/configs/ea_classification.yaml \
+  #   --dataset make_classification \
+  #   --output comparison/logs/ea/ea_classif_run_{seed}.jsonl \
+  #   --seed {seed}
+  echo "TODO: Set entrypoint_command to your EA runner"
 
-# Compute budget (matched to DRL)
-compute_budget:
-  total_evaluations: 800  # Matched to DRL episodes
-  evaluations_per_generation: 20  # population_size
-  max_generations: 40
+# Output paths
+output:
+  base_dir: "comparison/logs/ea"
+  log_file: "ea_classif_run_{seed}.jsonl"
+  metrics_file: "metrics_ea_classif_{seed}.json"
 
 # Logging configuration
 logging:
   format: "jsonl"
-  log_interval: 1  # Log every generation
-  
+  log_interval: 10  # Log every N evaluations
+  # Fields to log (must include schema.json required fields)
   fields:
     - eval_id
     - timestamp
     - method
     - seed
-    - generation
-    - train_accuracy
-    - test_accuracy
-    - best_train_accuracy
+    - best_val_accuracy
     - best_test_accuracy
     - gate_count
     - circuit_depth
-    - fitness
+    - generation
+    - population_best_fitness
+    - cum_eval_count
     - wall_time_s
+    - notes
 
-# Reproducibility
-seeds:
-  values: [0, 1, 2, 3, 4]  # Matched to DRL seeds
+# Comparison alignment checklist
+alignment_checklist:
+  gate_set: "✓ Matched to DRL: RX, RY, RZ, CNOT"
+  max_depth: "✓ Matched: 20 for make_classification, 25 for make_moons"
+  inner_loop_epochs: "✓ Matched: 15 for make_classification, 25 for make_moons"
+  eval_budget: "✓ Matched: 1200 total evaluations (DRL adaptive episodes)"
+  encoding: "✓ Matched: arctan embedding"
+  loss: "✓ Matched: binary cross-entropy"
+  seeds: "✓ Matched: [0, 1, 2, 3, 4]"
 
-# Output paths
-output:
-  base_dir: "comparison/logs/ea_classification"
-  log_file: "ea_classif_run_{seed}.jsonl"
-  circuit_file: "circuit_ea_classif_{seed}.json"
-  metrics_file: "metrics_ea_classif_{seed}.json"
-
-# Metrics to report (matched to DRL)
-metrics:
-  primary:
-    - classification_accuracy_train
-    - classification_accuracy_test
-  secondary:
-    - gate_count
-    - circuit_depth
-    - fitness
-  comparison_metrics:
-    - evals_to_70_accuracy
-    - evals_to_80_accuracy
-    - evals_to_90_accuracy
-    - final_accuracy
-    - best_accuracy
-    - final_gate_count
-
-# Checklist for fair comparison with DRL
-comparison_checklist:
-  - "Same gate set (RX, RY, RZ, CNOT)"
-  - "Same max circuit depth (L=20)"
-  - "Same evaluation budget (~800 circuit evaluations)"
-  - "Same inner-loop optimization (15 epochs max, Adam)"
-  - "Same dataset (make_classification or make_moons)"
-  - "Same train/test split"
-  - "Same data encoding (arctan embedding)"
-  - "Same number of seeds (5)"
-  - "Gate penalty coefficient matched (0.01)"
+# Notes about EA-specific parameter choices
+notes:
+  - "population_size=20: Repository default, not specified by user"
+  - "generations=60: Chosen so population_size * generations ≈ DRL episodes"
+  - "mutation_rate=0.3: Repository default"
+  - "crossover_rate=0.7: Repository default"
+  - "selection_method: tournament with size 3 (repository default)"
+  - "elitism=2: Repository default"
+  - "coevolution settings: Using repository defaults for architect/saboteur"
+  - "For pure EA comparison (no coevolution), disable saboteur"

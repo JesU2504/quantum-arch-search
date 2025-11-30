@@ -1,299 +1,191 @@
 {
   "paper_title": "Quantum Machine Learning Architecture Search via Deep Reinforcement Learning",
   "authors": [
-    "Chia-Hao Li",
-    "Kuang-Yao Wang",
-    "Hsi-Sheng Goan"
+    "Xin Dai",
+    "Tzu-Chieh Wei",
+    "Shinjae Yoo",
+    "Samuel Yen-Chi Chen"
   ],
   "arxiv_id": "2407.20147",
   "arxiv_url": "https://arxiv.org/abs/2407.20147",
-  "venue": "IEEE International Conference on Quantum Computing and Engineering (QCE) 2024",
+  "paper_pdf": "https://arxiv.org/pdf/2407.20147",
+  "venue": "2024 IEEE International Conference on Quantum Computing and Engineering (QCE)",
   "doi": "10.1109/QCE60285.2024.00179",
-
-  "task_type": "classification",
-  "tasks": [
-    {
-      "name": "make_classification",
-      "description": "Sklearn synthetic classification dataset with controlled class structure",
-      "source": "sklearn.datasets.make_classification",
-      "n_samples": null,
-      "n_features": null,
-      "train_val_test_split": null,
-      "notes": "Paper does not specify exact dataset size or split ratio. Standard sklearn defaults likely used."
-    },
-    {
-      "name": "make_moons",
-      "description": "Sklearn two-interleaving half-circles dataset for binary classification",
-      "source": "sklearn.datasets.make_moons",
-      "n_samples": null,
-      "n_features": 2,
-      "train_val_test_split": null,
-      "notes": "Paper does not specify exact dataset size or split ratio. make_moons has 2 features by definition."
+  "tasks": {
+    "task_type": "binary_classification",
+    "datasets": [
+      {
+        "name": "make_classification",
+        "source": "sklearn.datasets.make_classification",
+        "n_features": 4,
+        "n_informative": null,
+        "description": "n-dimensional datasets with normally distributed clusters around vertices of hypercube"
+      },
+      {
+        "name": "make_moons",
+        "source": "sklearn.datasets.make_moons",
+        "n_features": 2,
+        "description": "Two interleaving half-moon shaped clusters for non-linear decision boundaries"
+      }
+    ],
+    "train_test_split": null,
+    "preprocessing": {
+      "encoding": "arctan_embedding",
+      "encoding_formula": "theta_i = arctan(f_i), phi_i = arctan(f_i^2)",
+      "encoding_gates": "RY(theta_i) and RZ(phi_i) on qubit i"
     }
-  ],
-
-  "drl_algorithm": {
-    "name": "N-step Double Deep Q-Network (DDQN)",
-    "reference": "Van Hasselt et al. 2016 - Deep Reinforcement Learning with Double Q-learning",
-    "discount_factor": {
-      "formula": "gamma = 0.005^(1/L)",
-      "description": "L is the maximum number of quantum gates allowed. This promotes achieving tasks with minimal gate usage.",
-      "example_value": null,
-      "notes": "Gamma varies with L. For L=20, gamma ≈ 0.75"
+  },
+  "drl_controller": {
+    "algorithm": "N-step Double Deep Q-Network (DDQN)",
+    "policy_architecture": {
+      "type": "MLP",
+      "layers": "sequence of linear layers",
+      "activation": "LeakyReLU",
+      "regularization": "dropout",
+      "input": "flattened state vector (4 x L matrix)",
+      "output": "Q-values for each action"
     },
+    "lr": null,
+    "optimizer": null,
+    "batch_size": null,
+    "num_episodes": {
+      "make_classification_fixed": 800,
+      "make_classification_adaptive": 1200,
+      "make_moons_fixed": 800,
+      "make_moons_adaptive": 1200
+    },
+    "entropy_coeff": null,
+    "gamma": {
+      "formula": "0.005^(1/L)",
+      "description": "L is maximum number of quantum gates allowed"
+    },
+    "value_loss_coeff": null,
     "target_network_update_frequency": 512,
     "experience_replay_buffer_size": 16384,
-    "exploration_strategy": {
-      "type": "epsilon_greedy",
-      "epsilon_initial": 1.0,
-      "epsilon_final": 0.1,
-      "decay_schedule": "linear_over_time",
-      "notes": "Epsilon decays from 1 to 0.1 over training"
+    "epsilon_greedy": {
+      "initial": 1.0,
+      "final": 0.1,
+      "decay": "over time"
     },
-    "n_step": null,
-    "notes": "N-step return used but exact N not specified in paper"
+    "n_steps": null,
+    "loss_function": "Smooth_L1"
   },
-
-  "policy_network_architecture": {
-    "type": "MLP (Multilayer Perceptron)",
-    "layers": "sequence of linear layers",
-    "activation": "LeakyReLU",
-    "regularization": "dropout",
-    "input_size": {
-      "formula": "4 * L",
-      "description": "Flattened state vector of 4 x L matrix"
-    },
-    "output_size": {
-      "description": "Q-values for each action in action space"
-    },
-    "hidden_layers": null,
-    "hidden_units": null,
-    "dropout_rate": null,
-    "notes": "Exact number of hidden layers and units not specified"
+  "controller_action_state": {
+    "action_space_description": "Select quantum gate type (RX, RY, RZ, CNOT) and location (qubit index). For CNOT: control and target qubits. For rotation gates: qubit and axis (X, Y, or Z). Rotation angles optimized by classical optimizer during training.",
+    "state_representation_description": "4 x L matrix where L is max layers. First two elements: control and NOT gate locations. Third and fourth elements: rotation gate location and axis. Test accuracy appended after each testing episode."
   },
-
-  "training_hyperparameters": {
-    "learning_rate": null,
-    "batch_size": null,
-    "optimizer": null,
-    "total_episodes": {
-      "fixed_target": 800,
-      "adaptive_search": null,
-      "notes": "800 episodes for fixed target experiments; adaptive search episodes not specified"
-    },
-    "entropy_coefficient": null,
-    "value_loss_coefficient": null,
-    "max_grad_norm": null,
-    "notes": "Most training hyperparameters (learning rate, batch size, optimizer) not explicitly stated"
-  },
-
-  "state_representation": {
-    "type": "matrix",
-    "shape": "4 x L",
-    "description": "L is maximum number of layers/gates",
-    "encoding": [
-      {
-        "element": 0,
-        "description": "Location of control qubit for CNOT gates"
-      },
-      {
-        "element": 1,
-        "description": "Location of target (NOT) qubit for CNOT gates"
-      },
-      {
-        "element": 2,
-        "description": "Location of rotation gate"
-      },
-      {
-        "element": 3,
-        "description": "Rotation axis (X, Y, or Z)"
-      }
-    ],
-    "additional_features": "Test accuracy appended to state vector after each testing episode",
-    "notes": "State is flattened to 1D vector (4*L) for MLP input"
-  },
-
-  "action_space": {
-    "type": "discrete",
+  "gate_set_and_constraints": {
     "gate_set": ["RX", "RY", "RZ", "CNOT"],
-    "action_encoding": {
-      "rotation_gates": "Agent selects gate type (X, Y, Z) and qubit; rotation angle optimized classically",
-      "cnot_gates": "Agent selects control and target qubits"
-    },
-    "total_actions": {
-      "formula": "n + n + n + n*(n-1) = 3n + n*(n-1)",
-      "description": "For n qubits: n choices each for RX, RY, RZ position, plus n*(n-1) CNOT combinations",
-      "notes": "Simplified: agent chooses gate type and placement, not rotation angles"
+    "parameterized_gates": ["RX", "RY", "RZ"],
+    "connectivity": "CNOT between qubit i and (i+1) mod n",
+    "max_depth": {
+      "make_classification": 20,
+      "make_moons": 25
     }
   },
-
-  "connectivity_constraints": {
-    "type": "all-to-all",
-    "notes": "Paper implies CNOT between any (i, i+1 mod n) pairs in action set. Full connectivity assumed for simulation."
-  },
-
-  "max_depth_termination": {
-    "max_gates": {
-      "L_values_used": [20],
-      "description": "Maximum number of quantum gates allowed",
-      "notes": "L=20 used in experiments shown in figures"
-    },
-    "termination_conditions": [
-      "Achieve desired accuracy (ytarget)",
-      "Reach maximum gate limit (L)"
-    ]
-  },
-
   "inner_loop_optimization": {
-    "purpose": "Train quantum classifier parameters (rotation angles) after each gate addition",
-    "optimizer": null,
-    "learning_rate": null,
-    "max_epochs_per_step": 15,
-    "early_stopping": "Stop if desired accuracy reached",
-    "loss_function": "binary_cross_entropy",
-    "loss_formula": "-( y*log(y_hat) + (1-y)*log(1-y_hat) )",
+    "optimizer": "classical optimizer (not specified)",
+    "lr": null,
+    "num_epochs": {
+      "make_classification": 15,
+      "make_moons": 25
+    },
     "batch_size": null,
-    "notes": "Classical optimizer trains VQC parameters. Specific optimizer/LR not stated."
+    "loss": "binary cross-entropy",
+    "loss_formula": "-(y * log(y_hat) + (1-y) * log(1-y_hat))",
+    "stopping_criterion": "fixed number of epochs or desired accuracy reached"
   },
-
-  "data_encoding": {
-    "strategy": "arctan_embedding",
-    "description": "For each feature vector f in R^n, angles computed as theta_i = arctan(f_i) and phi_i = arctan(f_i^2)",
-    "gates_applied": "RY(theta_i) and RZ(phi_i) on qubit i for each feature i",
-    "notes": "Input encoding is fixed (not searched by the agent)"
-  },
-
-  "reward_function": {
-    "type": "accuracy_based_with_complexity_penalty",
-    "formula": {
-      "success_case": "0.2 * (y_l / y_target) * (L - l), if y_l >= y_target and l < L",
-      "failure_case": "-0.2 * ((y_target - y_l) / y_target) * l, if y_l < y_min and l = L",
-      "otherwise": "clip((y_l - y_{l-1}) / (y_{l-1} + 1e-6) - 0.01 * l, -1.5, 1.5)"
+  "reward_design": {
+    "primary_reward": "Based on classification accuracy and gate count",
+    "reward_function": {
+      "case_1": {
+        "condition": "y_l >= y_target and l < L",
+        "formula": "0.2 * (y_l / y_target) * (L - l)"
+      },
+      "case_2": {
+        "condition": "y_l < y_min and l == L",
+        "formula": "-0.2 * ((y_target - y_l) / y_target) * l"
+      },
+      "case_3": {
+        "condition": "otherwise",
+        "formula": "clip((y_l - y_{l-1}) / (y_{l-1} + 1e-6) - 0.01 * l, -1.5, 1.5)"
+      }
     },
-    "variables": {
-      "y_l": "Classification accuracy at step l",
-      "y_target": "Target classification accuracy",
-      "y_min": "Minimum acceptable accuracy threshold",
-      "L": "Maximum number of gates",
-      "l": "Current gate count"
+    "complexity_penalties": {
+      "gate_penalty_coefficient": 0.01,
+      "description": "Reward decreases as more gates are added"
     },
-    "complexity_penalty": {
-      "type": "linear_gate_penalty",
-      "coefficient": 0.01,
-      "description": "Penalty of 0.01 per gate added in the dynamic reward"
+    "adaptive_objective": {
+      "enabled": true,
+      "initial_target_accuracy": 0.8,
+      "target_accuracy_increment": 0.01,
+      "train_update_condition": "10 successes in 12 consecutive episodes",
+      "test_update_condition": "5 consecutive higher accuracies",
+      "epsilon_decay_rate": 0.95
+    }
+  },
+  "compute_budget_and_repeats": {
+    "episodes_or_evals_reported": {
+      "fixed_target": 800,
+      "adaptive_target": 1200
     },
-    "reward_clipping": [-1.5, 1.5],
-    "notes": "Scaling factor 0.2 moderates reward magnitude for stability"
+    "num_seeds": null,
+    "n_qubits": {
+      "make_classification": 4,
+      "make_moons": 2
+    }
   },
-
-  "adaptive_search": {
-    "enabled": true,
-    "ytarget_initial": null,
-    "ytarget_increment": 0.01,
-    "ytarget_increase_condition": "10 successes in 12 consecutive training episodes",
-    "testing_ytarget_increase_condition": "5 consecutive tests with higher accuracy",
-    "epsilon_decay_on_increase": {
-      "factor": 0.95,
-      "description": "Epsilon reduced to 95% of its value when ytarget increases"
-    },
-    "notes": "Adaptive search dynamically raises target accuracy to push agent toward better solutions"
-  },
-
-  "compute_budget": {
-    "total_episodes": 800,
-    "evaluations_per_episode": null,
-    "wall_clock_time": null,
-    "hardware": null,
-    "seeds_runs": null,
-    "notes": "Number of independent runs/seeds and wall-clock time not reported in paper"
-  },
-
   "reported_metrics": {
-    "primary": [
-      {
-        "name": "classification_accuracy",
-        "type": "train",
-        "smoothing": "40-episode moving average"
-      },
-      {
-        "name": "classification_accuracy",
-        "type": "test",
-        "smoothing": "4-episode moving average"
+    "train_accuracy": true,
+    "test_accuracy": true,
+    "num_gates": true,
+    "reward": true,
+    "best_results": {
+      "make_classification_adaptive_1200ep": {
+        "test_accuracy": 0.93,
+        "num_gates": 4
       }
-    ],
-    "secondary": [
-      {
-        "name": "number_of_gates",
-        "type": "train",
-        "smoothing": "40-episode moving average"
+    },
+    "classical_baselines": {
+      "make_classification": {
+        "logistic_regression": {
+          "accuracy": 0.903,
+          "parameters": 5
+        },
+        "svm": {
+          "accuracy": 0.903,
+          "support_vectors": 110
+        }
       },
-      {
-        "name": "number_of_gates",
-        "type": "test",
-        "smoothing": "4-episode moving average"
-      },
-      {
-        "name": "episode_reward",
-        "type": "train",
-        "smoothing": null
-      },
-      {
-        "name": "episode_reward",
-        "type": "test",
-        "smoothing": null
-      }
-    ],
-    "reported_values": {
-      "make_classification_fixed_target": {
-        "ytarget": 0.85,
-        "max_gates": 20,
-        "final_test_accuracy": "stable and high (exact value not stated)",
-        "final_gate_count": "minimal (exact value not stated)"
-      },
-      "make_moons_fixed_target": {
-        "notes": "Similar trends observed, exact values not reported"
+      "make_moons": {
+        "logistic_regression": {
+          "accuracy": 0.825,
+          "parameters": 3
+        },
+        "svm_rbf": {
+          "accuracy": 1.0,
+          "support_vectors": 44
+        }
       }
     }
   },
-
-  "implementation_details": {
-    "quantum_simulator": "TensorCircuit (Zhang et al. 2022)",
-    "deep_learning_framework": "PyTorch",
-    "ml_library": "scikit-learn",
-    "references": [
-      "TensorCircuit: arXiv:2205.10091",
-      "PyTorch: Paszke et al. 2019 (NeurIPS)",
-      "scikit-learn: Pedregosa et al. 2011 (JMLR)"
-    ]
+  "software_frameworks": {
+    "quantum_simulation": "TensorCircuit",
+    "deep_learning": "PyTorch",
+    "datasets": "scikit-learn"
   },
-
-  "notes_and_omissions": {
-    "omitted_hyperparameters": [
-      "Learning rate for DQN training",
-      "Batch size for experience replay sampling",
-      "Exact MLP architecture (hidden layers, units)",
-      "Dropout rate",
-      "N-step return length",
-      "Initial y_target for adaptive search",
-      "Dataset sizes and train/test splits"
-    ],
-    "assumptions_for_reproduction": [
-      "Standard Adam optimizer likely used for DQN",
-      "sklearn default dataset parameters likely used",
-      "80/20 train/test split commonly used",
-      "2-3 hidden layers with 64-256 units typical for DQN"
-    ],
-    "key_insights": [
-      "Agent selects gate types and positions, not rotation angles",
-      "Rotation angles optimized classically after each gate addition",
-      "Reward function balances accuracy improvement with gate efficiency",
-      "Adaptive search prevents premature convergence to simple solutions"
-    ]
-  },
-
-  "extraction_metadata": {
-    "extracted_from": "arXiv:2407.20147",
-    "extraction_date": "2024",
-    "extractor_notes": "Values extracted from paper text and figures. Many hyperparameters not explicitly stated in the paper."
-  }
+  "notes": [
+    "Learning rate (lr) for DDQN not explicitly specified in paper",
+    "Batch size for RL training not explicitly specified in paper",
+    "Number of seeds/repetitions not explicitly stated",
+    "Train/test split ratio not specified",
+    "Optimizer for DDQN (Adam, SGD, etc.) not specified",
+    "N-step value in N-step DDQN not specified",
+    "Specific MLP architecture (hidden layer sizes) not detailed",
+    "Inner-loop optimizer for quantum circuit parameters not specified",
+    "Inner-loop batch size not specified",
+    "Adaptive search shows dynamic adjustment of y_target starting from 0.8 or 0.85",
+    "Paper focuses on noise-free simulations; noisy device extension discussed as future work",
+    "Action space scales as 3n + n(n-1) = O(n^2) for n qubits"
+  ]
 }

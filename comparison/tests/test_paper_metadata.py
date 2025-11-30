@@ -1,8 +1,8 @@
 """
 Tests for paper metadata JSON file.
 
-These tests verify that the paper metadata file exists and contains
-the required fields for fair comparison between DRL and EA methods.
+These tests verify that the paper metadata JSON exists and contains
+all required keys for fair comparison between DRL and EA methods.
 """
 
 import json
@@ -17,165 +17,174 @@ if str(_repo_root) not in sys.path:
     sys.path.insert(0, str(_repo_root))
 
 
-METADATA_PATH = Path(__file__).parent.parent / 'paper_metadata' / 'quantum_ml_arch_search_2407.20147.json'
+def load_paper_metadata():
+    """Load the paper metadata JSON file."""
+    metadata_path = Path(__file__).parent.parent / 'paper_metadata' / 'quantum_ml_arch_search_2407.20147.json'
+    with open(metadata_path, 'r') as f:
+        return json.load(f)
+
+
+@pytest.fixture
+def metadata():
+    """Fixture to load the paper metadata."""
+    return load_paper_metadata()
 
 
 class TestPaperMetadataExists:
-    """Tests for paper metadata file existence."""
+    """Tests for paper metadata file existence and structure."""
 
     def test_metadata_file_exists(self):
         """Paper metadata file should exist."""
-        assert METADATA_PATH.exists(), f"Metadata file not found at {METADATA_PATH}"
+        metadata_path = Path(__file__).parent.parent / 'paper_metadata' / 'quantum_ml_arch_search_2407.20147.json'
+        assert metadata_path.exists(), f"Metadata file not found at {metadata_path}"
 
     def test_metadata_is_valid_json(self):
-        """Metadata file should be valid JSON."""
-        with open(METADATA_PATH, 'r') as f:
+        """Paper metadata file should be valid JSON."""
+        metadata_path = Path(__file__).parent.parent / 'paper_metadata' / 'quantum_ml_arch_search_2407.20147.json'
+        with open(metadata_path, 'r') as f:
             metadata = json.load(f)
         assert isinstance(metadata, dict)
 
 
-class TestPaperMetadataRequiredFields:
-    """Tests for required fields in paper metadata."""
+class TestRequiredTopLevelKeys:
+    """Tests for required top-level keys in paper metadata."""
 
-    @pytest.fixture
-    def metadata(self):
-        """Load metadata fixture."""
-        with open(METADATA_PATH, 'r') as f:
-            return json.load(f)
+    REQUIRED_KEYS = [
+        'paper_title',
+        'authors',
+        'arxiv_id',
+        'arxiv_url',
+        'paper_pdf',
+        'tasks',
+        'drl_controller',
+        'controller_action_state',
+        'gate_set_and_constraints',
+        'inner_loop_optimization',
+        'reward_design',
+        'compute_budget_and_repeats',
+        'reported_metrics',
+        'notes',
+    ]
 
-    def test_has_paper_title(self, metadata):
-        """Metadata should have paper_title."""
-        assert 'paper_title' in metadata
+    def test_has_all_required_keys(self, metadata):
+        """Metadata should contain all required top-level keys."""
+        for key in self.REQUIRED_KEYS:
+            assert key in metadata, f"Required key '{key}' not in metadata"
+
+    def test_paper_title_is_string(self, metadata):
+        """paper_title should be a non-empty string."""
         assert isinstance(metadata['paper_title'], str)
         assert len(metadata['paper_title']) > 0
 
-    def test_has_authors(self, metadata):
-        """Metadata should have authors list."""
-        assert 'authors' in metadata
+    def test_authors_is_list(self, metadata):
+        """authors should be a non-empty list of strings."""
         assert isinstance(metadata['authors'], list)
         assert len(metadata['authors']) > 0
+        for author in metadata['authors']:
+            assert isinstance(author, str)
 
-    def test_has_arxiv_id(self, metadata):
-        """Metadata should have arxiv_id."""
-        assert 'arxiv_id' in metadata
-        assert metadata['arxiv_id'] == '2407.20147'
+    def test_arxiv_id_format(self, metadata):
+        """arxiv_id should match expected format."""
+        arxiv_id = metadata['arxiv_id']
+        assert isinstance(arxiv_id, str)
+        assert '2407.20147' in arxiv_id
 
-    def test_has_arxiv_url(self, metadata):
-        """Metadata should have arxiv_url."""
-        assert 'arxiv_url' in metadata
-        # Verify this is a valid arXiv URL (not sanitizing user input, just validating metadata)
-        url = metadata['arxiv_url']
-        assert url.startswith('https://arxiv.org/abs/') or url.startswith('http://arxiv.org/abs/')
+    def test_arxiv_url_format(self, metadata):
+        """arxiv_url should be a valid arXiv URL."""
+        arxiv_url = metadata['arxiv_url']
+        assert isinstance(arxiv_url, str)
+        assert 'arxiv.org' in arxiv_url
 
-    def test_has_tasks(self, metadata):
-        """Metadata should have tasks/datasets information."""
-        assert 'tasks' in metadata
-        assert isinstance(metadata['tasks'], list)
-        assert len(metadata['tasks']) > 0
-        
-        # Check each task has required fields
-        for task in metadata['tasks']:
-            assert 'name' in task
-            assert 'description' in task
 
-    def test_has_drl_algorithm(self, metadata):
-        """Metadata should have DRL algorithm information."""
-        assert 'drl_algorithm' in metadata
-        assert 'name' in metadata['drl_algorithm']
-        assert 'DDQN' in metadata['drl_algorithm']['name'] or 'DQN' in metadata['drl_algorithm']['name']
+class TestTasksSection:
+    """Tests for the tasks section of paper metadata."""
 
-    def test_has_policy_network(self, metadata):
-        """Metadata should have policy network architecture."""
-        assert 'policy_network_architecture' in metadata
-        assert 'type' in metadata['policy_network_architecture']
+    def test_tasks_has_required_keys(self, metadata):
+        """tasks section should have required keys."""
+        tasks = metadata['tasks']
+        assert 'task_type' in tasks
+        assert 'datasets' in tasks
+        assert 'preprocessing' in tasks
 
-    def test_has_training_hyperparameters(self, metadata):
-        """Metadata should have training hyperparameters."""
-        assert 'training_hyperparameters' in metadata
-        
-    def test_has_state_representation(self, metadata):
-        """Metadata should have state representation."""
-        assert 'state_representation' in metadata
-        assert 'type' in metadata['state_representation']
-        assert 'shape' in metadata['state_representation']
+    def test_datasets_is_list(self, metadata):
+        """datasets should be a non-empty list."""
+        datasets = metadata['tasks']['datasets']
+        assert isinstance(datasets, list)
+        assert len(datasets) > 0
 
-    def test_has_action_space(self, metadata):
-        """Metadata should have action space information."""
-        assert 'action_space' in metadata
-        assert 'gate_set' in metadata['action_space']
-        gates = metadata['action_space']['gate_set']
-        assert 'RX' in gates or 'RY' in gates or 'RZ' in gates
-        assert 'CNOT' in gates
+    def test_each_dataset_has_name(self, metadata):
+        """Each dataset should have a name field."""
+        for dataset in metadata['tasks']['datasets']:
+            assert 'name' in dataset
+            assert isinstance(dataset['name'], str)
 
-    def test_has_max_depth_termination(self, metadata):
-        """Metadata should have max depth/termination conditions."""
-        assert 'max_depth_termination' in metadata
-        assert 'max_gates' in metadata['max_depth_termination']
 
-    def test_has_inner_loop_optimization(self, metadata):
-        """Metadata should have inner-loop optimization details."""
-        assert 'inner_loop_optimization' in metadata
+class TestDRLControllerSection:
+    """Tests for the drl_controller section of paper metadata."""
+
+    def test_drl_controller_has_algorithm(self, metadata):
+        """drl_controller should specify algorithm."""
+        assert 'algorithm' in metadata['drl_controller']
+        assert isinstance(metadata['drl_controller']['algorithm'], str)
+
+    def test_drl_controller_has_policy_architecture(self, metadata):
+        """drl_controller should specify policy_architecture."""
+        assert 'policy_architecture' in metadata['drl_controller']
+
+    def test_drl_controller_has_gamma(self, metadata):
+        """drl_controller should specify gamma (discount factor)."""
+        assert 'gamma' in metadata['drl_controller']
+
+
+class TestGateSetSection:
+    """Tests for the gate_set_and_constraints section."""
+
+    def test_has_gate_set(self, metadata):
+        """gate_set_and_constraints should have gate_set."""
+        gate_section = metadata['gate_set_and_constraints']
+        assert 'gate_set' in gate_section
+        assert isinstance(gate_section['gate_set'], list)
+
+    def test_gate_set_not_empty(self, metadata):
+        """gate_set should not be empty."""
+        gate_set = metadata['gate_set_and_constraints']['gate_set']
+        assert len(gate_set) > 0
+
+    def test_has_max_depth(self, metadata):
+        """gate_set_and_constraints should have max_depth."""
+        assert 'max_depth' in metadata['gate_set_and_constraints']
+
+
+class TestInnerLoopSection:
+    """Tests for the inner_loop_optimization section."""
+
+    def test_has_loss_function(self, metadata):
+        """inner_loop_optimization should specify loss function."""
         inner_loop = metadata['inner_loop_optimization']
-        assert 'max_epochs_per_step' in inner_loop
-
-    def test_has_reward_function(self, metadata):
-        """Metadata should have reward function information."""
-        assert 'reward_function' in metadata
-        reward = metadata['reward_function']
-        assert 'type' in reward
-
-    def test_has_compute_budget(self, metadata):
-        """Metadata should have compute budget information."""
-        assert 'compute_budget' in metadata
-
-    def test_has_reported_metrics(self, metadata):
-        """Metadata should have reported metrics information."""
-        assert 'reported_metrics' in metadata
-        assert 'primary' in metadata['reported_metrics']
+        assert 'loss' in inner_loop
 
 
-class TestPaperMetadataValues:
-    """Tests for specific values in paper metadata."""
+class TestRewardDesignSection:
+    """Tests for the reward_design section."""
 
-    @pytest.fixture
-    def metadata(self):
-        """Load metadata fixture."""
-        with open(METADATA_PATH, 'r') as f:
-            return json.load(f)
+    def test_has_primary_reward(self, metadata):
+        """reward_design should specify primary_reward."""
+        assert 'primary_reward' in metadata['reward_design']
 
-    def test_task_type_is_classification(self, metadata):
-        """Task type should be classification."""
-        assert 'task_type' in metadata
-        assert metadata['task_type'] == 'classification'
 
-    def test_datasets_are_sklearn(self, metadata):
-        """Datasets should be sklearn classification datasets."""
-        task_names = [t['name'] for t in metadata['tasks']]
-        assert 'make_classification' in task_names or 'make_moons' in task_names
+class TestNotesSection:
+    """Tests for the notes section."""
 
-    def test_gate_set_includes_rotation_gates(self, metadata):
-        """Gate set should include rotation gates."""
-        gates = metadata['action_space']['gate_set']
-        rotation_gates = ['RX', 'RY', 'RZ']
-        assert any(g in gates for g in rotation_gates)
+    def test_notes_is_list(self, metadata):
+        """notes should be a list."""
+        assert isinstance(metadata['notes'], list)
 
-    def test_max_gates_is_reasonable(self, metadata):
-        """Max gates should be in reasonable range."""
-        max_gates = metadata['max_depth_termination']['max_gates']['L_values_used']
-        assert isinstance(max_gates, list)
-        assert all(1 <= g <= 100 for g in max_gates)
-
-    def test_inner_loop_epochs_reasonable(self, metadata):
-        """Inner loop epochs should be reasonable."""
-        epochs = metadata['inner_loop_optimization']['max_epochs_per_step']
-        assert 1 <= epochs <= 100
-
-    def test_has_notes_for_omissions(self, metadata):
-        """Metadata should document omissions and assumptions."""
-        assert 'notes_and_omissions' in metadata
-        omissions = metadata['notes_and_omissions']
-        assert 'omitted_hyperparameters' in omissions
-        assert 'assumptions_for_reproduction' in omissions
+    def test_notes_documents_missing_values(self, metadata):
+        """notes should document any values not found in paper."""
+        notes = metadata['notes']
+        # Should mention learning rate is not specified
+        notes_text = ' '.join(notes).lower()
+        assert 'not specified' in notes_text or 'null' in notes_text
 
 
 if __name__ == '__main__':

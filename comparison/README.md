@@ -6,10 +6,10 @@ This scaffold provides tools for comparing the Deep Reinforcement Learning (DRL)
 
 The comparison workspace does **not** reimplement existing agents. Instead, it provides:
 
+- **Paper Metadata**: Extracted hyperparameters from arXiv:2407.20147 for reproducibility
 - **Diagnostics**: Fidelity computation utilities for verifying unitary comparisons
-- **Analysis**: Tools to aggregate metrics from experiment logs
-- **Configs**: Example YAML configurations for running DRL and EA experiments
-- **Paper Metadata**: Machine-readable JSON with extracted hyperparameters from papers
+- **Analysis**: Tools to aggregate metrics from experiment logs (fidelity and classification)
+- **Configs**: Pre-filled YAML configurations for running DRL and EA experiments
 - **Notebooks**: Jupyter notebooks for visualization and analysis
 - **Tests**: Pytest tests for validation
 - **Schema**: JSON schema for standardized log format
@@ -21,32 +21,32 @@ comparison/
 ├── README.md                           # This file
 ├── requirements.txt                    # Additional dependencies
 ├── paper_metadata/
-│   └── quantum_ml_arch_search_2407.20147.json  # Paper metadata (classification)
+│   └── quantum_ml_arch_search_2407.20147.json  # Extracted paper hyperparameters
 ├── diagnostics/
 │   ├── __init__.py
 │   └── diagnose_fidelity.py           # Fidelity computation functions
 ├── analysis/
 │   ├── __init__.py
-│   ├── compute_metrics.py             # Log aggregation and metrics
+│   ├── compute_metrics.py             # Fidelity-based log aggregation
 │   └── compute_classif_metrics.py     # Classification-specific metrics
 ├── experiments/
 │   ├── __init__.py
 │   └── configs/
-│       ├── drl.yaml                   # DRL agent configuration (general)
-│       ├── ea.yaml                    # EA agent configuration (general)
-│       ├── drl_classification.yaml    # DRL classification config
-│       └── ea_classification.yaml     # EA classification config
+│       ├── drl.yaml                   # DRL fidelity config
+│       ├── ea.yaml                    # EA fidelity config
+│       ├── drl_classification.yaml    # DRL classification config (paper hyperparams)
+│       └── ea_classification.yaml     # EA classification config (matched to DRL)
 ├── notebooks/
-│   ├── compare_paper_vs_ea.ipynb      # General analysis notebook
-│   └── compare_classification.ipynb    # Classification comparison notebook
+│   ├── compare_paper_vs_ea.ipynb      # Fidelity analysis notebook
+│   └── compare_classification.ipynb   # Classification analysis notebook
 ├── tests/
 │   ├── __init__.py
 │   ├── test_diagnose_fidelity.py      # Diagnostics tests
 │   ├── test_log_schema.py             # Schema validation tests
-│   ├── test_paper_metadata.py         # Paper metadata tests
-│   └── test_classif_metrics.py        # Classification metrics tests
+│   ├── test_paper_metadata.py         # Paper metadata validation tests
+│   └── test_compute_classif_metrics.py  # Classification metrics tests
 └── logs/
-    └── schema.json                    # JSON schema for logs
+    └── schema.json                    # JSON schema for logs (fidelity + classification)
 ```
 
 ## Installation
@@ -59,16 +59,20 @@ pip install -r comparison/requirements.txt
 
 ## Quick Start
 
-### 1. Run Sanity Checks
+### 1. Review Paper Metadata
 
-Verify fidelity computations are working:
-
-```bash
-cd /path/to/quantum-arch-search
-python -m comparison.diagnostics.diagnose_fidelity
+The extracted hyperparameters from arXiv:2407.20147 are in:
+```
+comparison/paper_metadata/quantum_ml_arch_search_2407.20147.json
 ```
 
-Expected output: JSON with fidelity metrics for identity and Toffoli matrices.
+This file contains:
+- DRL controller hyperparameters (algorithm, gamma, epsilon, etc.)
+- Gate set and constraints
+- Inner-loop optimization settings
+- Reward design details
+- Compute budget and reported metrics
+- Notes on values not specified in the paper
 
 ### 2. Run Tests
 
@@ -76,35 +80,59 @@ Expected output: JSON with fidelity metrics for identity and Toffoli matrices.
 pytest comparison/tests/ -v
 ```
 
-### 3. Run EA Experiments
+### 3. Configure Entrypoint Commands
 
-Use the main repository pipeline:
+The YAML configs in `experiments/configs/` contain `entrypoint_command` placeholders.
+To use them:
+
+1. For DRL classification (`drl_classification.yaml`):
+   ```yaml
+   entrypoint_command: |
+     python your_drl_agent.py \
+       --config comparison/experiments/configs/drl_classification.yaml \
+       --dataset make_classification \
+       --output comparison/logs/drl/drl_classif_run_{seed}.jsonl \
+       --seed {seed}
+   ```
+
+2. For EA classification (`ea_classification.yaml`):
+   ```yaml
+   entrypoint_command: |
+     python run_experiments.py \
+       --preset quick \
+       --n-qubits 4 \
+       --base-dir comparison/logs/ea \
+       --seed {seed}
+   ```
+
+### 4. Generate Logs
+
+Run your experiments with the configured entrypoints. Logs should follow the schema in `logs/schema.json`.
+
+### 5. Analyze Classification Results
+
+After running experiments, compute classification metrics:
 
 ```bash
-python run_experiments.py --preset quick --n-qubits 3 --seed 42
+python -m comparison.analysis.compute_classif_metrics \
+    --input "comparison/logs/**/*classif*.jsonl" \
+    --out comparison/logs/classif_analysis \
+    --thresholds 0.70 0.80 0.90
 ```
 
-### 4. Analyze Logs
+### 6. Use the Notebook
 
-After running experiments, compute metrics:
-
-```bash
-python -m comparison.analysis.compute_metrics \
-    --input "results/**/logs/*.jsonl" \
-    --out comparison/logs/analysis_output
-```
-
-### 5. Use the Notebook
-
-Open and run the comparison notebook:
+Open and run the classification comparison notebook:
 
 ```bash
-jupyter notebook comparison/notebooks/compare_paper_vs_ea.ipynb
+jupyter notebook comparison/notebooks/compare_classification.ipynb
 ```
 
 ## Log Format
 
-All experiment logs should follow the schema in `logs/schema.json`. Required fields:
+All experiment logs should follow the schema in `logs/schema.json`. The schema supports both fidelity-based (unitary synthesis) and classification tasks.
+
+### Base Required Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -112,91 +140,97 @@ All experiment logs should follow the schema in `logs/schema.json`. Required fie
 | `timestamp` | string | ISO 8601 timestamp |
 | `method` | string | "drl" or "ea" |
 | `seed` | integer | Random seed |
+
+### Fidelity-Based Tasks (must include)
+
+| Field | Type | Description |
+|-------|------|-------------|
 | `best_fidelity` | number | Best fidelity (0-1) |
 | `fidelity_metric` | string | Type of fidelity metric |
 
-Optional fields include `circuit_depth`, `gate_count`, `wall_time_s`, `cum_eval_count`, `unitary_hash`, and `notes`.
+### Classification Tasks (must include)
 
-Example log entry:
+| Field | Type | Description |
+|-------|------|-------------|
+| `best_val_accuracy` | number | Best validation accuracy (0-1) |
+| `best_test_accuracy` | number | Best test accuracy (0-1, optional) |
+
+### Optional Fields
+
+- `circuit_depth`, `gate_count`, `wall_time_s`, `cum_eval_count`
+- `dataset`, `n_qubits`, `episode`, `generation`
+- `unitary_hash`, `notes`
+
+### Example Classification Log Entry
 ```json
 {
   "eval_id": 100,
   "timestamp": "2024-01-15T10:30:00Z",
-  "method": "ea",
+  "method": "drl",
   "seed": 42,
-  "best_fidelity": 0.9876,
-  "fidelity_metric": "trace_overlap",
-  "circuit_depth": 12,
-  "gate_count": 25,
-  "wall_time_s": 3.14,
-  "cum_eval_count": 1000
+  "best_val_accuracy": 0.93,
+  "best_test_accuracy": 0.91,
+  "circuit_depth": 4,
+  "gate_count": 4,
+  "cum_eval_count": 1200,
+  "dataset": "make_classification",
+  "n_qubits": 4
 }
 ```
 
-## Adding a New Agent
+## Alignment Checklist for Fair Comparison
 
-To add a new agent's results to the comparison:
+Before running DRL vs EA comparison experiments, verify:
 
-1. **Create a config file** in `experiments/configs/` following the YAML template
-2. **Ensure log output** follows `logs/schema.json` format
-3. **Place logs** in `logs/` with naming convention: `{method}_run_{seed}.jsonl`
-4. **Update the notebook** to include your method in the analysis
+- [ ] **Gate Set**: Both use RX, RY, RZ, CNOT with same connectivity
+- [ ] **Max Depth**: Same maximum circuit depth/gate count
+- [ ] **Inner-Loop**: Same loss function, epochs, data encoding
+- [ ] **Eval Budget**: Comparable total evaluations (e.g., 1200)
+- [ ] **Seeds**: Same random seeds for reproducibility
+- [ ] **Dataset**: Same dataset with same preprocessing
 
-### Example: Adding a DRL Agent
+The `ea_classification.yaml` is pre-configured to match `drl_classification.yaml` settings from the paper.
 
-1. Copy `experiments/configs/drl.yaml` and modify:
-   ```yaml
-   entrypoint:
-     script: "path/to/your/drl_agent.py"
-   ```
+## Classification Analysis Functions
 
-2. Run your agent and save logs:
-   ```bash
-   python your_drl_agent.py --output comparison/logs/drl/drl_run_0.jsonl
-   ```
-
-3. Compute metrics:
-   ```bash
-   python -m comparison.analysis.compute_metrics \
-       --input "comparison/logs/**/*.jsonl" \
-       --out comparison/logs/analysis_output
-   ```
-
-## Naming Conventions
-
-- **Log files**: `{method}_run_{seed}.jsonl` (e.g., `ea_run_42.jsonl`)
-- **Circuit files**: `circuit_{method}_{seed}.json`
-- **Metrics files**: `metrics_{method}_{seed}.json`
-
-## Diagnostics Functions
-
-The `diagnostics.diagnose_fidelity` module provides:
-
-- `toffoli_matrix()`: Generate 3-qubit Toffoli unitary
-- `trace_overlap_fidelity(U_target, U)`: Compute trace overlap fidelity
-- `compute_fidelities(U_target, U)`: Comprehensive fidelity metrics
-- `run_basic_sanity_checks()`: Verify computations
-
-Example usage:
-```python
-from comparison.diagnostics import compute_fidelities, toffoli_matrix
-import numpy as np
-
-U_target = toffoli_matrix()
-U_candidate = U_target * np.exp(1j * 0.5)  # Phase-shifted
-
-result = compute_fidelities(U_target, U_candidate)
-print(f"Phase-corrected fidelity: {result['phase_corrected_trace_f']:.4f}")
-```
-
-## Analysis Functions
-
-The `analysis.compute_metrics` module provides:
+The `analysis.compute_classif_metrics` module provides:
 
 - `load_logs(paths)`: Load JSON/JSONL log files
-- `validate_logs(logs)`: Validate against schema
-- `aggregate_metrics(logs)`: Compute per-run and cross-run statistics
+- `compute_per_run_classification_metrics(logs)`: Per-run summaries
+- `aggregate_classification_metrics(logs)`: Cross-run statistics
 - `save_summary(metrics, out_path)`: Save JSON and CSV summaries
+
+Computed metrics include:
+- `final_val_accuracy`, `max_val_accuracy`
+- `final_test_accuracy` (if present)
+- `evals_to_70pct`, `evals_to_80pct`, `evals_to_90pct`
+- `num_evals`, `final_gate_count`, `final_depth`
+
+## Paper Metadata Fields
+
+The `paper_metadata/quantum_ml_arch_search_2407.20147.json` contains:
+
+| Field | Description |
+|-------|-------------|
+| `paper_title`, `authors`, `arxiv_id` | Basic paper info |
+| `tasks` | Datasets and preprocessing |
+| `drl_controller` | Algorithm, gamma, epsilon, etc. |
+| `gate_set_and_constraints` | Allowed gates, max depth |
+| `inner_loop_optimization` | Loss, epochs, optimizer |
+| `reward_design` | Reward function details |
+| `compute_budget_and_repeats` | Episodes, seeds |
+| `reported_metrics` | Best results from paper |
+| `notes` | Values not specified (set to null) |
+
+### Fields Set to Null (Not in Paper)
+
+The following fields are `null` in the metadata because they were not explicitly specified in arXiv:2407.20147:
+- Learning rate for DDQN
+- Batch size for RL training
+- Number of seeds/repetitions
+- Train/test split ratio
+- Specific MLP layer sizes
+- Inner-loop optimizer and learning rate
 
 ## Troubleshooting
 
@@ -205,7 +239,7 @@ The `analysis.compute_metrics` module provides:
 Ensure you're running from the repository root:
 ```bash
 cd /path/to/quantum-arch-search
-python -m comparison.diagnostics.diagnose_fidelity
+python -m comparison.analysis.compute_classif_metrics --help
 ```
 
 ### "jsonschema not installed"
@@ -217,9 +251,10 @@ pip install -r comparison/requirements.txt
 
 ### Tests failing
 
-Ensure numpy is installed:
+Ensure numpy and other dependencies are installed:
 ```bash
 pip install -r requirements.txt
+pip install -r comparison/requirements.txt
 ```
 
 ## Contributing
@@ -233,7 +268,7 @@ When adding new comparison tools:
 
 ## References
 
-- [arXiv:2407.20147](https://arxiv.org/abs/2407.20147) - DRL for Quantum Circuit Architecture Search
+- [arXiv:2407.20147](https://arxiv.org/abs/2407.20147) - Quantum Machine Learning Architecture Search via Deep Reinforcement Learning
 - Repository README for coevolutionary agent documentation
 
 ---
