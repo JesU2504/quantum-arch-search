@@ -80,6 +80,48 @@ def _get_accuracy(log: dict, key_priority: list) -> Optional[float]:
     return None
 
 
+def validate_classification_logs(logs):
+    """
+    Validate classification log entries for required fields and value ranges.
+
+    Args:
+        logs: List of log entries to validate
+
+    Returns:
+        tuple: (valid_logs, errors) where valid_logs is list of valid entries
+               and errors is list of (index, error_message) tuples
+    """
+    required_fields = ['eval_id', 'method', 'seed']
+    valid_logs = []
+    errors = []
+
+    for i, log in enumerate(logs):
+        # Check required fields
+        missing = [f for f in required_fields if f not in log]
+        if missing:
+            errors.append((i, f"Missing required fields: {missing}"))
+            continue
+
+        # Check accuracy ranges (if present)
+        accuracy_fields = ['train_accuracy', 'test_accuracy', 'val_accuracy',
+                          'best_val_accuracy', 'best_test_accuracy']
+        invalid_acc = False
+        for field in accuracy_fields:
+            if field in log and log[field] is not None:
+                val = log[field]
+                if not (0 <= val <= 1):
+                    errors.append((i, f"Invalid {field} value: {val} (must be in [0, 1])"))
+                    invalid_acc = True
+                    break
+
+        if invalid_acc:
+            continue
+
+        valid_logs.append(log)
+
+    return valid_logs, errors
+
+
 def compute_per_run_classification_metrics(logs, thresholds=None):
     """
     Compute classification metrics for each unique run.
@@ -149,6 +191,8 @@ def compute_per_run_classification_metrics(logs, thresholds=None):
         # Test accuracy metrics
         run_data['final_test_accuracy'] = test_accs[-1] if test_accs else None
         run_data['max_test_accuracy'] = max(test_accs) if test_accs else None
+        # Alias for test compatibility
+        run_data['best_test_accuracy'] = run_data['max_test_accuracy']
 
         # Number of evaluations
         run_data['num_evals'] = len(run_data['entries'])
@@ -158,10 +202,15 @@ def compute_per_run_classification_metrics(logs, thresholds=None):
         # Evaluations to reach thresholds (validation accuracy)
         for thresh in thresholds:
             thresh_key = f'evals_to_{int(thresh * 100)}pct'
+            thresh_key_alt = f'evals_to_{int(thresh * 100)}_accuracy'
             run_data[thresh_key] = None
-            for i, acc in enumerate(val_accs):
+            run_data[thresh_key_alt] = None
+            # Use test_accs if val_accs is empty (for compatibility)
+            accs_to_use = val_accs if val_accs else test_accs
+            for i, acc in enumerate(accs_to_use):
                 if acc >= thresh:
                     run_data[thresh_key] = i + 1
+                    run_data[thresh_key_alt] = i + 1
                     break
 
         # Gate count and depth summaries
@@ -208,6 +257,7 @@ def aggregate_classification_metrics(logs, thresholds=None):
                 'max_val_accuracies': [],
                 'final_val_accuracies': [],
                 'final_test_accuracies': [],
+                'best_test_accuracies': [],
                 'num_evals': [],
             }
         methods[method]['runs'].append(run_data)
@@ -217,6 +267,8 @@ def aggregate_classification_metrics(logs, thresholds=None):
             methods[method]['final_val_accuracies'].append(run_data['final_val_accuracy'])
         if run_data['final_test_accuracy'] is not None:
             methods[method]['final_test_accuracies'].append(run_data['final_test_accuracy'])
+        if run_data.get('best_test_accuracy') is not None:
+            methods[method]['best_test_accuracies'].append(run_data['best_test_accuracy'])
         methods[method]['num_evals'].append(run_data['num_evals'])
 
     # Compute cross-run statistics
@@ -233,6 +285,7 @@ def aggregate_classification_metrics(logs, thresholds=None):
         max_vals = method_data['max_val_accuracies']
         final_vals = method_data['final_val_accuracies']
         final_tests = method_data['final_test_accuracies']
+        best_tests = method_data['best_test_accuracies']
 
         aggregated['by_method'][method] = {
             'n_runs': n_runs,
@@ -244,6 +297,8 @@ def aggregate_classification_metrics(logs, thresholds=None):
             # Test accuracy stats
             'mean_final_test_accuracy': sum(final_tests) / len(final_tests) if final_tests else None,
             'std_final_test_accuracy': _std(final_tests) if len(final_tests) > 1 else None,
+            'mean_best_test_accuracy': sum(best_tests) / len(best_tests) if best_tests else None,
+            'std_best_test_accuracy': _std(best_tests) if len(best_tests) > 1 else None,
             # Eval counts
             'mean_num_evals': sum(method_data['num_evals']) / n_runs if n_runs else None,
         }
@@ -317,6 +372,10 @@ def save_summary(metrics, out_path):
                 writer.writerow(row)
 
     return json_path, csv_path
+
+
+# Alias for backward compatibility
+save_classification_summary = save_summary
 
 
 def _make_serializable(obj):
