@@ -1,0 +1,168 @@
+# Classification Comparison Pilot Workflow
+# Runs a small pilot for DRL and EA methods with seeds [42, 43]
+# Then aggregates logs and generates plots.
+#
+# Trigger: Manual workflow_dispatch only
+
+name: Comparison Pilot
+
+on:
+  workflow_dispatch:
+    inputs:
+      method:
+        description: 'Method to run (drl, ea, or both)'
+        required: false
+        default: 'both'
+        type: choice
+        options:
+          - drl
+          - ea
+          - both
+      seeds:
+        description: 'Seeds to use (space-separated)'
+        required: false
+        default: '42 43'
+        type: string
+
+# Minimum required permissions
+permissions:
+  contents: read
+
+jobs:
+  run-experiments:
+    name: Run ${{ matrix.method }} experiments
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        method: ${{ github.event.inputs.method == 'both' && fromJSON('["drl", "ea"]') || fromJSON(format('["{0}"]', github.event.inputs.method)) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r comparison/requirements.txt
+
+      - name: Create log directories
+        run: |
+          mkdir -p comparison/logs/${{ matrix.method }}
+
+      - name: Run ${{ matrix.method }} experiments
+        run: |
+          echo "Running ${{ matrix.method }} experiments with seeds: ${{ github.event.inputs.seeds }}"
+          
+          # Run for each seed
+          for seed in ${{ github.event.inputs.seeds }}; do
+            echo "=== Seed $seed ==="
+            
+            # TODO: Replace with actual runner command
+            # This is a placeholder that creates synthetic logs for testing
+            
+            python -c "
+          import json
+          import random
+          from datetime import datetime, timedelta
+          random.seed($seed)
+          
+          logs = []
+          acc = 0.5
+          base_time = datetime.utcnow()
+          for i in range(20):
+              acc = min(acc + random.uniform(0.01, 0.03), 0.95)
+              timestamp = (base_time + timedelta(seconds=i*10)).strftime('%Y-%m-%dT%H:%M:%SZ')
+              logs.append({
+                  'eval_id': i,
+                  'timestamp': timestamp,
+                  'method': '${{ matrix.method }}',
+                  'seed': $seed,
+                  'best_val_accuracy': round(acc, 4),
+                  'best_test_accuracy': round(acc - 0.02, 4),
+                  'gate_count': random.randint(4, 15),
+                  'circuit_depth': random.randint(3, 12),
+                  'cum_eval_count': (i + 1) * 10,
+              })
+          
+          with open('comparison/logs/${{ matrix.method }}/${{ matrix.method }}_classif_seed$seed.jsonl', 'w') as f:
+              for log in logs:
+                  f.write(json.dumps(log) + '\n')
+          print(f'Generated {len(logs)} log entries for ${{ matrix.method }} seed $seed')
+          "
+          done
+        shell: bash
+
+      - name: Upload experiment logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-${{ matrix.method }}
+          path: comparison/logs/${{ matrix.method }}/
+
+  analyze-results:
+    name: Analyze and Plot Results
+    runs-on: ubuntu-latest
+    needs: run-experiments
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r comparison/requirements.txt
+
+      - name: Download DRL logs
+        uses: actions/download-artifact@v4
+        with:
+          name: logs-drl
+          path: comparison/logs/drl/
+        continue-on-error: true
+
+      - name: Download EA logs
+        uses: actions/download-artifact@v4
+        with:
+          name: logs-ea
+          path: comparison/logs/ea/
+        continue-on-error: true
+
+      - name: List downloaded logs
+        run: |
+          echo "=== Downloaded logs ==="
+          find comparison/logs -name "*.jsonl" -type f
+
+      - name: Compute classification metrics
+        run: |
+          python -m comparison.analysis.compute_classif_metrics \
+            --input "comparison/logs/**/*.jsonl" \
+            --out comparison/logs/classif_analysis \
+            --thresholds 0.70 0.80 0.90
+
+      - name: Generate plots
+        run: |
+          python -m comparison.analysis.generate_classif_plots \
+            --input comparison/logs/classif_analysis/classif_metrics_summary.json \
+            --out comparison/logs/plots
+
+      - name: Upload analysis results
+        uses: actions/upload-artifact@v4
+        with:
+          name: analysis-results
+          path: |
+            comparison/logs/classif_analysis/
+            comparison/logs/plots/
+
+      - name: Print summary
+        run: |
+          echo "=== Classification Metrics Summary ==="
+          cat comparison/logs/classif_analysis/classif_metrics_summary.json
