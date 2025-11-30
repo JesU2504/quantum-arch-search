@@ -115,8 +115,6 @@ class AdversarialArchitectEnv(ArchitectEnv):
                 # - Otherwise, use the state fidelity under attack
                 if self.task_mode == 'unitary_preparation' and self.ideal_unitary is not None:
                     try:
-                        import numpy as np
-                        import cirq
                         from utils.metrics import unitary_from_basis_columns, process_fidelity
                         dim = 2 ** len(self.qubits)
                         n_qubits = len(self.qubits)
