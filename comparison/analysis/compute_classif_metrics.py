@@ -374,7 +374,7 @@ def save_summary(metrics, out_path):
     return json_path, csv_path
 
 
-# Alias for backward compatibility
+# Alias for test compatibility: test_classif_metrics.py imports save_classification_summary
 save_classification_summary = save_summary
 
 

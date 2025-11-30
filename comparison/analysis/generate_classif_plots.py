@@ -180,6 +180,9 @@ def plot_pareto(
 
     per_run = metrics.get('per_run', {})
 
+    # Track which methods have been labeled
+    labeled_methods: set = set()
+
     for run_key, run_data in per_run.items():
         method = run_data.get('method', 'unknown')
         acc = run_data.get('max_val_accuracy') or run_data.get('final_val_accuracy')
@@ -191,8 +194,10 @@ def plot_pareto(
         if acc is not None and x_val is not None:
             color = colors.get(method, 'gray')
             marker = markers.get(method, 'x')
-            ax.scatter(x_val, acc, c=color, marker=marker, s=100, alpha=0.7,
-                      label=method.upper() if run_key.endswith('_seed0') else '')
+            # Only label the first occurrence of each method
+            label = method.upper() if method not in labeled_methods else ''
+            ax.scatter(x_val, acc, c=color, marker=marker, s=100, alpha=0.7, label=label)
+            labeled_methods.add(method)
 
     ax.set_xlabel('Circuit Depth / Gate Count')
     ax.set_ylabel('Best Accuracy')

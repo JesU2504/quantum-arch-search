@@ -64,15 +64,18 @@ jobs:
             python -c "
           import json
           import random
+          from datetime import datetime, timedelta
           random.seed($seed)
           
           logs = []
           acc = 0.5
+          base_time = datetime.utcnow()
           for i in range(20):
               acc = min(acc + random.uniform(0.01, 0.03), 0.95)
+              timestamp = (base_time + timedelta(seconds=i*10)).strftime('%Y-%m-%dT%H:%M:%SZ')
               logs.append({
                   'eval_id': i,
-                  'timestamp': '2024-01-15T10:{:02d}:00Z'.format(i),
+                  'timestamp': timestamp,
                   'method': '${{ matrix.method }}',
                   'seed': $seed,
                   'best_val_accuracy': round(acc, 4),
