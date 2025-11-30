@@ -63,7 +63,9 @@ class TestPaperMetadataRequiredFields:
     def test_has_arxiv_url(self, metadata):
         """Metadata should have arxiv_url."""
         assert 'arxiv_url' in metadata
-        assert 'arxiv.org' in metadata['arxiv_url']
+        # Verify this is a valid arXiv URL (not sanitizing user input, just validating metadata)
+        url = metadata['arxiv_url']
+        assert url.startswith('https://arxiv.org/abs/') or url.startswith('http://arxiv.org/abs/')
 
     def test_has_tasks(self, metadata):
         """Metadata should have tasks/datasets information."""
