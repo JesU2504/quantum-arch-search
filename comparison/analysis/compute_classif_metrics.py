@@ -20,6 +20,8 @@ Functions:
     save_classification_summary(metrics, out_path): Save JSON and CSV summaries
 """
 
+from __future__ import annotations
+
 import argparse
 import csv
 import glob
@@ -27,7 +29,7 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 
 # Schema fields required for classification logs
@@ -138,7 +140,7 @@ def compute_per_run_classification_metrics(logs):
     Returns:
         dict: Metrics grouped by run identifier (method + seed)
     """
-    runs: dict[str, dict[str, Any]] = {}
+    runs: Dict[str, Dict[str, Any]] = {}
 
     for log in logs:
         method = log.get('method', 'unknown')
@@ -263,7 +265,7 @@ def aggregate_classification_metrics(logs):
     per_run = compute_per_run_classification_metrics(logs)
 
     # Group by method
-    methods: dict[str, dict[str, Any]] = {}
+    methods: Dict[str, Dict[str, Any]] = {}
     for run_key, run_data in per_run.items():
         method = run_data['method']
         if method not in methods:
@@ -391,7 +393,7 @@ def save_classification_summary(metrics, out_path):
     per_run = metrics.get('per_run', {})
     if per_run:
         # Get all unique keys from runs
-        all_keys: set[str] = set()
+        all_keys: Set[str] = set()
         for run_data in per_run.values():
             all_keys.update(k for k in run_data.keys() if k != 'entries')
 
