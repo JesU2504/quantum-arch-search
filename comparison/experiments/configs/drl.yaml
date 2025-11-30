@@ -1,0 +1,92 @@
+# DRL Agent Configuration (arXiv:2407.20147)
+# ============================================
+# This configuration file provides example settings for running the DRL-based
+# quantum architecture search approach from arXiv:2407.20147.
+#
+# NOTE: This config does NOT reimplement the DRL agent. It provides placeholders
+# for mapping to the repository's existing entrypoints or external implementations.
+#
+# To use this config:
+# 1. Set the entrypoint to your DRL agent script/module
+# 2. Adjust hyperparameters as needed for your experiment
+# 3. Ensure log output follows comparison/logs/schema.json format
+
+experiment:
+  name: "drl_paper_2407.20147"
+  description: "Deep Reinforcement Learning for Quantum Circuit Architecture Search"
+  reference: "arXiv:2407.20147"
+  method: "drl"
+
+# Agent entrypoint configuration
+# TODO: Maintainers should set these paths to their DRL implementation
+entrypoint:
+  # Path to the agent script or module
+  # Example: If using repo's train_architect.py as a baseline:
+  #   script: "experiments/train_architect.py"
+  # For external DRL implementations:
+  #   script: "path/to/your/drl_agent.py"
+  script: "experiments/train_architect.py"  # Placeholder - adjust as needed
+  
+  # Command template for running the agent
+  # {config} will be replaced with this config file path
+  # {output_dir} will be replaced with the results directory
+  command_template: >
+    python {script}
+    --results-dir {output_dir}
+    --n-qubits {n_qubits}
+    --architect-steps {total_timesteps}
+
+# Environment settings
+environment:
+  n_qubits: 3
+  target_gate: "toffoli"  # Options: toffoli, ghz, custom
+  max_timesteps: 20
+  fidelity_threshold: 0.99
+  reward_penalty: 0.01
+
+# Training hyperparameters (PPO defaults from paper)
+training:
+  algorithm: "PPO"
+  total_timesteps: 100000
+  n_steps: 2048
+  batch_size: 64
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  learning_rate: 0.0003
+  ent_coef: 0.01
+  clip_range: 0.2
+  device: "cpu"
+
+# Logging configuration
+logging:
+  # Output format for logs (should match schema.json)
+  format: "jsonl"
+  log_interval: 100  # Log every N evaluations
+  
+  # Fields to log (must include required schema fields)
+  fields:
+    - eval_id
+    - timestamp
+    - method
+    - seed
+    - best_fidelity
+    - fidelity_metric
+    - circuit_depth
+    - gate_count
+    - wall_time_s
+    - cum_eval_count
+
+# Reproducibility
+seeds:
+  # Run multiple seeds for statistical significance
+  values: [0, 1, 2, 3, 4]
+  # Or specify a single seed
+  # seed: 42
+
+# Output paths
+output:
+  base_dir: "comparison/logs/drl"
+  log_file: "drl_run_{seed}.jsonl"
+  circuit_file: "circuit_drl_{seed}.json"
+  metrics_file: "metrics_drl_{seed}.json"
