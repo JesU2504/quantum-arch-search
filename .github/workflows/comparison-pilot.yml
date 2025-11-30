@@ -24,6 +24,10 @@ on:
         default: '42 43'
         type: string
 
+# Minimum required permissions
+permissions:
+  contents: read
+
 jobs:
   run-experiments:
     name: Run ${{ matrix.method }} experiments
