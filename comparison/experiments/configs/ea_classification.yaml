@@ -1,0 +1,166 @@
+# EA (Coevolutionary) Classification Configuration
+# =================================================
+# This configuration file provides parameters for the EA/co-evolution runs
+# matched to the DRL settings from arXiv:2407.20147 for fair comparison.
+#
+# NOTE: This config does NOT reimplement the EA agents. It provides parameters
+# for the existing Architect/Saboteur coevolution pipeline in this repository,
+# aligned with the DRL paper's settings where applicable.
+#
+# To use this config:
+# 1. Use with run_experiments.py or individual experiment scripts
+# 2. Ensure log output follows comparison/logs/schema.json format
+# 3. See paper_metadata/quantum_ml_arch_search_2407.20147.json for DRL details
+
+experiment:
+  name: "ea_classification_matched"
+  description: "Coevolutionary QAS matched to DRL classification settings from arXiv:2407.20147"
+  reference: "quantum-arch-search repository"
+  method: "ea"
+  task_type: "binary_classification"
+
+# Gate set matched to DRL paper
+gate_set:
+  allowed_gates: ["RX", "RY", "RZ", "CNOT"]
+  parameterized_gates: ["RX", "RY", "RZ"]
+  # CNOT connectivity matched to paper: qubit i to (i+1) mod n
+  connectivity: "nearest_neighbor_cyclic"
+
+# Dataset configurations matched to DRL paper
+datasets:
+  make_classification:
+    source: "sklearn.datasets.make_classification"
+    n_features: 4
+    n_qubits: 4
+    max_depth: 20  # Matched to DRL max_gates
+    inner_loop_epochs: 15  # Matched to DRL
+    target_accuracy: 0.85  # Matched to DRL fixed target
+  
+  make_moons:
+    source: "sklearn.datasets.make_moons"
+    n_features: 2
+    n_qubits: 2
+    max_depth: 25  # Matched to DRL max_gates
+    inner_loop_epochs: 25  # Matched to DRL
+    target_accuracy: 0.85  # Matched to DRL fixed target
+
+# Data encoding matched to DRL paper
+encoding:
+  method: "arctan_embedding"
+  description: "theta_i = arctan(f_i), phi_i = arctan(f_i^2)"
+  gates_per_qubit: ["RY(theta_i)", "RZ(phi_i)"]
+
+# Inner-loop optimization matched to DRL paper
+inner_loop:
+  optimizer: "Adam"  # Repository default
+  learning_rate: 0.01  # Repository default
+  batch_size: 32  # Repository default
+  loss: "binary_cross_entropy"
+  epochs_per_step:
+    make_classification: 15  # Matched to DRL
+    make_moons: 25  # Matched to DRL
+
+# Evaluation budget matched to DRL paper
+# DRL paper uses 800-1200 episodes; we match total circuit evaluations
+eval_budget:
+  # Total evaluations should be comparable to DRL
+  # DRL: 800-1200 episodes, each episode builds circuit step-by-step
+  # EA: population_size * generations * inner_evals ≈ DRL total_evals
+  total_circuit_evaluations: 1200  # Matched to DRL adaptive
+  # Alternative: match episodes directly
+  equivalent_episodes: 1200
+
+# EA-specific hyperparameters
+# NOTE: These are repository defaults as not specified by user
+ea_hyperparameters:
+  population_size: 20  # Repository default
+  generations: 60  # Computed to match eval_budget: 20 * 60 = 1200 total
+  mutation_rate: 0.3  # Repository default
+  crossover_rate: 0.7  # Repository default
+  selection_method: "tournament"  # Repository default
+  tournament_size: 3  # Repository default
+  elitism: 2  # Repository default - keep top 2 individuals
+
+# Coevolution-specific settings (repository architecture)
+coevolution:
+  # Architect settings
+  architect:
+    enabled: true
+    ppo_steps_per_generation: 5000  # Repository default
+  
+  # Saboteur settings (adversarial component)
+  saboteur:
+    enabled: true
+    ppo_steps_per_generation: 5000  # Repository default
+    max_error_level: 1  # Repository default
+  
+  # Adversarial training
+  adversarial_generations: 10  # Repository default
+
+# Seeds matched to DRL config for fair comparison
+seeds: [0, 1, 2, 3, 4]
+
+# Entrypoint command placeholder
+# TODO: Maintainers should replace with actual EA runner command
+entrypoint_command: |
+  # Replace with your EA agent command, e.g.:
+  # python run_experiments.py \
+  #   --preset quick \
+  #   --n-qubits 4 \
+  #   --base-dir comparison/logs/ea \
+  #   --seed {seed}
+  # 
+  # Or for classification-specific experiments:
+  # python your_ea_classifier.py \
+  #   --config comparison/experiments/configs/ea_classification.yaml \
+  #   --dataset make_classification \
+  #   --output comparison/logs/ea/ea_classif_run_{seed}.jsonl \
+  #   --seed {seed}
+  echo "TODO: Set entrypoint_command to your EA runner"
+
+# Output paths
+output:
+  base_dir: "comparison/logs/ea"
+  log_file: "ea_classif_run_{seed}.jsonl"
+  metrics_file: "metrics_ea_classif_{seed}.json"
+
+# Logging configuration
+logging:
+  format: "jsonl"
+  log_interval: 10  # Log every N evaluations
+  # Fields to log (must include schema.json required fields)
+  fields:
+    - eval_id
+    - timestamp
+    - method
+    - seed
+    - best_val_accuracy
+    - best_test_accuracy
+    - gate_count
+    - circuit_depth
+    - generation
+    - population_best_fitness
+    - cum_eval_count
+    - wall_time_s
+    - notes
+
+# Comparison alignment checklist
+alignment_checklist:
+  gate_set: "✓ Matched to DRL: RX, RY, RZ, CNOT"
+  max_depth: "✓ Matched: 20 for make_classification, 25 for make_moons"
+  inner_loop_epochs: "✓ Matched: 15 for make_classification, 25 for make_moons"
+  eval_budget: "✓ Matched: 1200 total evaluations (DRL adaptive episodes)"
+  encoding: "✓ Matched: arctan embedding"
+  loss: "✓ Matched: binary cross-entropy"
+  seeds: "✓ Matched: [0, 1, 2, 3, 4]"
+
+# Notes about EA-specific parameter choices
+notes:
+  - "population_size=20: Repository default, not specified by user"
+  - "generations=60: Chosen so population_size * generations ≈ DRL episodes"
+  - "mutation_rate=0.3: Repository default"
+  - "crossover_rate=0.7: Repository default"
+  - "selection_method: tournament with size 3 (repository default)"
+  - "elitism=2: Repository default"
+  - "coevolution settings: Using repository defaults for architect/saboteur"
+  - "For pure EA comparison (no coevolution), disable saboteur"

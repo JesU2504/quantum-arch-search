@@ -1,0 +1,180 @@
+# DRL Classification Configuration (arXiv:2407.20147)
+# =====================================================
+# This configuration file provides hyperparameters from the paper
+# "Quantum Machine Learning Architecture Search via Deep Reinforcement Learning"
+# for classification experiments.
+#
+# NOTE: This config does NOT reimplement the DRL agent. It provides parameters
+# extracted from the paper for reference and potential reproduction.
+#
+# To use this config:
+# 1. Set the entrypoint_command to your DRL agent script/module
+# 2. Ensure log output follows comparison/logs/schema.json format
+# 3. See paper_metadata/quantum_ml_arch_search_2407.20147.json for full details
+
+experiment:
+  name: "drl_classification_2407.20147"
+  description: "RL-QMLAS: Deep Reinforcement Learning for Quantum ML Architecture Search (Classification)"
+  reference: "arXiv:2407.20147"
+  method: "drl"
+  task_type: "binary_classification"
+
+# Paper hyperparameters - DRL Controller
+drl_controller:
+  algorithm: "N-step Double Deep Q-Network"
+  # Learning rate not specified in paper - use typical DDQN defaults
+  learning_rate: null  # Not specified in paper
+  optimizer: null  # Not specified in paper (typically Adam)
+  batch_size: null  # Not specified in paper
+  
+  # Discount factor from paper (Eq. varies with L)
+  gamma_formula: "0.005^(1/L)"  # L = max gates
+  
+  # Network update settings from paper
+  target_network_update_freq: 512
+  experience_replay_buffer_size: 16384
+  
+  # Exploration settings from paper
+  epsilon_greedy:
+    epsilon_start: 1.0
+    epsilon_end: 0.1
+    decay: "over_time"  # Specific schedule not given
+  
+  # Loss function from paper
+  loss_function: "Smooth_L1"
+  
+  # N-step value not specified
+  n_steps: null
+
+# Policy network architecture from paper
+policy_network:
+  type: "MLP"
+  activation: "LeakyReLU"
+  regularization: "dropout"
+  # Specific layer sizes not given in paper
+  hidden_layers: null
+  # Input: flattened 4 x L matrix (state representation)
+  # Output: Q-values for each action
+
+# Gate set and constraints from paper
+gate_set:
+  allowed_gates: ["RX", "RY", "RZ", "CNOT"]
+  parameterized_gates: ["RX", "RY", "RZ"]
+  # CNOT connectivity: qubit i to (i+1) mod n
+  connectivity: "nearest_neighbor_cyclic"
+
+# Dataset configurations from paper
+datasets:
+  make_classification:
+    source: "sklearn.datasets.make_classification"
+    n_features: 4
+    n_qubits: 4
+    max_gates: 20
+    inner_loop_epochs: 15
+    target_accuracy_fixed: 0.85
+  
+  make_moons:
+    source: "sklearn.datasets.make_moons"
+    n_features: 2
+    n_qubits: 2
+    max_gates: 25
+    inner_loop_epochs: 25
+    target_accuracy_fixed: 0.85
+
+# Data encoding from paper
+encoding:
+  method: "arctan_embedding"
+  description: "theta_i = arctan(f_i), phi_i = arctan(f_i^2)"
+  gates_per_qubit: ["RY(theta_i)", "RZ(phi_i)"]
+
+# Inner-loop optimization (quantum circuit training) from paper
+inner_loop:
+  optimizer: null  # Not specified in paper
+  learning_rate: null  # Not specified in paper
+  batch_size: null  # Not specified in paper
+  loss: "binary_cross_entropy"
+  # Epochs per gate addition
+  epochs_per_step:
+    make_classification: 15
+    make_moons: 25
+
+# Reward design from paper (Equation 7)
+reward:
+  primary_metric: "classification_accuracy"
+  # Full reward function from paper:
+  # Case 1: y_l >= y_target and l < L: 0.2 * (y_l/y_target) * (L-l)
+  # Case 2: y_l < y_min and l == L: -0.2 * ((y_target-y_l)/y_target) * l
+  # Case 3: otherwise: clip((y_l - y_{l-1})/(y_{l-1} + 1e-6) - 0.01*l, -1.5, 1.5)
+  scaling_factor: 0.2
+  gate_penalty_coeff: 0.01
+  clip_range: [-1.5, 1.5]
+
+# Adaptive search strategy from paper
+adaptive_search:
+  enabled: true
+  initial_target_accuracy: 0.8
+  target_accuracy_increment: 0.01
+  # Increase y_target after 10 successes in 12 consecutive training episodes
+  train_success_threshold: 10
+  train_window: 12
+  # Increase y_target after 5 consecutive test improvements
+  test_success_threshold: 5
+  epsilon_decay_rate: 0.95
+
+# Evaluation budget from paper
+eval_budget:
+  episodes_fixed_target: 800
+  episodes_adaptive: 1200
+  # Moving average for smoothing results
+  train_smoothing_window: 40
+  test_smoothing_window: 4
+
+# Seeds for reproducibility - not specified in paper
+seeds: [0, 1, 2, 3, 4]
+
+# Entrypoint command placeholder
+# TODO: Maintainers should replace with actual DRL runner command
+entrypoint_command: |
+  # Replace with your DRL agent command, e.g.:
+  # python your_drl_agent.py \
+  #   --config comparison/experiments/configs/drl_classification.yaml \
+  #   --dataset make_classification \
+  #   --output comparison/logs/drl/drl_classif_run_{seed}.jsonl \
+  #   --seed {seed}
+  echo "TODO: Set entrypoint_command to your DRL runner"
+
+# Output paths
+output:
+  base_dir: "comparison/logs/drl"
+  log_file: "drl_classif_run_{seed}.jsonl"
+  metrics_file: "metrics_drl_classif_{seed}.json"
+
+# Logging configuration
+logging:
+  format: "jsonl"
+  log_interval: 10  # Log every N episodes
+  # Fields to log (must include schema.json required fields)
+  fields:
+    - eval_id
+    - timestamp
+    - method
+    - seed
+    - best_val_accuracy
+    - best_test_accuracy
+    - gate_count
+    - circuit_depth
+    - episode_reward
+    - cum_eval_count
+    - wall_time_s
+    - notes
+
+# Notes about values not in paper
+notes:
+  - "learning_rate: Not specified in paper, use typical DDQN defaults (e.g., 1e-4)"
+  - "optimizer: Not specified, typically Adam"
+  - "batch_size: Not specified in paper"
+  - "n_steps: N-step value for DDQN not specified"
+  - "hidden_layers: MLP architecture details not given"
+  - "inner_loop optimizer/lr: Not specified"
+  - "num_seeds: Not reported, using default 5"
+  - "train_test_split: Not specified in paper"

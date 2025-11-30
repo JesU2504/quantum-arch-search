@@ -1,15 +1,28 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Quantum Architecture Search Experiment Log Entry",
-  "description": "Schema for logging experiment results from DRL and EA quantum architecture search methods",
+  "description": "Schema for logging experiment results from DRL and EA quantum architecture search methods. Supports both fidelity-based (unitary synthesis) and classification tasks.",
   "type": "object",
   "required": [
     "eval_id",
     "timestamp",
     "method",
-    "seed",
-    "best_fidelity",
-    "fidelity_metric"
+    "seed"
+  ],
+  "oneOf": [
+    {
+      "required": ["best_fidelity", "fidelity_metric"],
+      "properties": {
+        "best_fidelity": { "type": "number" },
+        "fidelity_metric": { "type": "string" }
+      }
+    },
+    {
+      "required": ["best_val_accuracy"],
+      "properties": {
+        "best_val_accuracy": { "type": "number" }
+      }
+    }
   ],
   "properties": {
     "eval_id": {
@@ -36,12 +49,36 @@
       "type": "number",
       "minimum": 0,
       "maximum": 1,
-      "description": "Best fidelity achieved so far in this run (0 to 1)"
+      "description": "Best fidelity achieved so far in this run (0 to 1). Required for fidelity-based tasks."
     },
     "fidelity_metric": {
       "type": "string",
       "enum": ["trace_overlap", "average_gate", "entanglement", "state_fidelity"],
-      "description": "Type of fidelity metric used"
+      "description": "Type of fidelity metric used. Required for fidelity-based tasks."
+    },
+    "best_val_accuracy": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Best validation accuracy achieved so far in this run (0 to 1). Required for classification tasks."
+    },
+    "best_test_accuracy": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Best test accuracy achieved so far in this run (0 to 1). Optional for classification tasks."
+    },
+    "val_accuracy": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Current validation accuracy (0 to 1). Optional."
+    },
+    "test_accuracy": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Current test accuracy (0 to 1). Optional."
     },
     "circuit_depth": {
       "type": "integer",
@@ -92,6 +129,25 @@
     "circuit_json": {
       "type": "string",
       "description": "JSON-serialized circuit representation (optional)"
+    },
+    "dataset": {
+      "type": "string",
+      "description": "Dataset name for classification tasks (e.g., 'make_classification', 'make_moons')"
+    },
+    "n_qubits": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of qubits in the circuit"
+    },
+    "episode": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Episode number for RL-based methods"
+    },
+    "generation": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Generation number for EA-based methods"
     }
   },
   "additionalProperties": true
