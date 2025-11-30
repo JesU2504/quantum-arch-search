@@ -270,3 +270,154 @@ When adding new comparison tools:
 
 - [arXiv:2407.20147](https://arxiv.org/abs/2407.20147) - Quantum Machine Learning Architecture Search via Deep Reinforcement Learning
 - Repository README for coevolutionary agent documentation
+
+---
+
+## Classification Experiments
+
+This section describes how to run and compare DRL and EA methods on **classification tasks**, as described in arXiv:2407.20147.
+
+### Paper Metadata
+
+The file `paper_metadata/quantum_ml_arch_search_2407.20147.json` contains machine-readable metadata extracted from the paper, including:
+
+- Paper title, authors, and arXiv information
+- Tasks/datasets used (make_classification, make_moons)
+- DRL algorithm (N-step DDQN) and hyperparameters
+- State representation and action space encoding
+- Gate set (RX, RY, RZ, CNOT) and max circuit depth
+- Inner-loop parameter optimization settings
+- Reward function design with complexity penalties
+- Reported metrics and compute budget
+
+Load the metadata in Python:
+```python
+import json
+with open('comparison/paper_metadata/quantum_ml_arch_search_2407.20147.json') as f:
+    metadata = json.load(f)
+print(metadata['paper_title'])
+print(metadata['drl_algorithm']['name'])  # N-step Double Deep Q-Network (DDQN)
+```
+
+### Classification Configs
+
+Two YAML configs are provided for classification experiments:
+
+1. **`experiments/configs/drl_classification.yaml`** — DRL settings from the paper:
+   - N-step DDQN with ε-greedy exploration
+   - Discount factor γ = 0.005^(1/L) where L=20
+   - Reward function with accuracy-based rewards and gate penalties
+   - Adaptive search with incrementing ytarget
+
+2. **`experiments/configs/ea_classification.yaml`** — EA settings matched to DRL:
+   - Same gate set (RX, RY, RZ, CNOT)
+   - Same max circuit depth (L=20)
+   - Same evaluation budget (~800 evaluations)
+   - Same inner-loop optimization (15 epochs, Adam)
+
+### Running Classification Experiments
+
+1. **Set the entrypoint** in each config file to your agent implementation:
+   ```yaml
+   entrypoint:
+     script: "path/to/your/classification_agent.py"
+   ```
+
+2. **Run experiments** (example commands):
+   ```bash
+   # DRL classification (implement or adapt your DRL agent)
+   python your_drl_agent.py --config comparison/experiments/configs/drl_classification.yaml
+   
+   # EA classification (adapt existing VQE environment for classification)
+   python your_ea_agent.py --config comparison/experiments/configs/ea_classification.yaml
+   ```
+
+3. **Place logs** in the appropriate directories:
+   - DRL: `comparison/logs/drl_classification/`
+   - EA: `comparison/logs/ea_classification/`
+
+### Computing Classification Metrics
+
+Use the classification-specific metrics module:
+
+```bash
+python -m comparison.analysis.compute_classif_metrics \
+    --input "comparison/logs/**/*.jsonl" \
+    --out comparison/logs/classification_analysis
+```
+
+This computes:
+- Final and best classification accuracy
+- Evaluations to reach accuracy thresholds (70%, 80%, 90%)
+- Gate count and circuit depth statistics
+- Aggregated statistics by method
+
+### Classification Log Format
+
+Classification logs should include these fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `eval_id` | integer | Evaluation identifier |
+| `method` | string | "drl" or "ea" |
+| `seed` | integer | Random seed |
+| `train_accuracy` | number | Training accuracy (0-1) |
+| `test_accuracy` | number | Test/validation accuracy (0-1) |
+| `gate_count` | integer | Number of gates in circuit |
+| `circuit_depth` | integer | Circuit depth |
+
+Example log entry:
+```json
+{
+  "eval_id": 100,
+  "method": "drl",
+  "seed": 0,
+  "train_accuracy": 0.85,
+  "test_accuracy": 0.82,
+  "gate_count": 15,
+  "circuit_depth": 12,
+  "episode_reward": 1.2
+}
+```
+
+### Classification Notebook
+
+Open the classification comparison notebook:
+
+```bash
+jupyter notebook comparison/notebooks/compare_classification.ipynb
+```
+
+The notebook provides:
+- Loading paper metadata and run summaries
+- Accuracy vs evaluations learning curves
+- ECDF of final accuracies across seeds
+- Pareto plot: accuracy vs circuit depth
+- Box/bar plots comparing methods
+- Fair comparison checklist
+
+### Fair Comparison Checklist
+
+Before comparing DRL and EA results, verify:
+
+- [ ] Same gate set (RX, RY, RZ, CNOT)
+- [ ] Same max circuit depth (L=20)
+- [ ] Same evaluation budget (~800 evaluations)
+- [ ] Same inner-loop optimization (15 epochs max)
+- [ ] Same dataset and train/test split
+- [ ] Same data encoding (arctan embedding)
+- [ ] Same number of seeds (≥5)
+- [ ] Same gate penalty coefficient (0.01)
+
+### Key Insights from the Paper
+
+1. **Reward Design**: The paper uses a three-part reward function:
+   - Success: Reward for reaching target accuracy with fewer gates
+   - Failure: Penalty for not reaching minimum accuracy at max gates
+   - Dynamic: Incremental accuracy improvement minus gate penalty
+
+2. **Adaptive Search**: Target accuracy `ytarget` increases dynamically when the agent consistently succeeds, preventing premature convergence.
+
+3. **Parameter Optimization**: The DRL agent selects gate types and positions; rotation angles are optimized classically after each gate addition (15 epochs max).
+
+4. **Omitted Hyperparameters**: Several hyperparameters are not specified in the paper (learning rate, batch size, MLP architecture). The metadata file documents these omissions and provides reasonable assumptions.
