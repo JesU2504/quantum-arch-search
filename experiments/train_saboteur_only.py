@@ -19,7 +19,6 @@ from stable_baselines3.common.callbacks import BaseCallback
 import logging
 
 from experiments import config
-from qas_gym.utils import get_ghz_state
 
 logging.getLogger('stable_baselines3').setLevel(logging.WARNING)
 
@@ -85,7 +84,7 @@ def train_saboteur_only(results_dir, n_qubits, saboteur_steps, n_steps, max_erro
         print(f"Error: {path_to_load} not found. Please run train_architect_ghz.py first.")
         return
 
-    target_state = get_ghz_state(n_qubits)
+    target_state = config.get_target_state(n_qubits)
 
     print("Architect's Circuit:")
     print(static_circuit)

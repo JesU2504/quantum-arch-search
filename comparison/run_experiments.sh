@@ -219,7 +219,11 @@ run_experiment() {
     local config_file="$3"
     local output_file="$LOG_DIR/$method/${method}_classif_seed${seed}.log"
     
-    echo "Running $method experiment with seed $seed..."
+    if [[ "$DRY_RUN" == "true" ]]; then
+        echo "[DRY RUN] Would run $method experiment with seed $seed..."
+    else
+        echo "Running $method experiment with seed $seed..."
+    fi
     
     # Extract entrypoint_command from config
     local entrypoint_cmd
