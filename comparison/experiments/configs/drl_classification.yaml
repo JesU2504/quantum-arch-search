@@ -132,16 +132,10 @@ eval_budget:
 # Seeds for reproducibility - not specified in paper
 seeds: [0, 1, 2, 3, 4]
 
-# Entrypoint command placeholder
-# TODO: Maintainers should replace with actual DRL runner command
-entrypoint_command: |
-  # Replace with your DRL agent command, e.g.:
-  # python your_drl_agent.py \
-  #   --config comparison/experiments/configs/drl_classification.yaml \
-  #   --dataset make_classification \
-  #   --output comparison/logs/drl/drl_classif_run_{seed}.jsonl \
-  #   --seed {seed}
-  echo "TODO: Set entrypoint_command to your DRL runner"
+# Entrypoint command for running DRL classification experiments
+# This command is executed by comparison/run_experiments.sh
+# Placeholders: {config} = this file, {seed} = random seed, {output} = output log path
+entrypoint_command: "python tools/run_drl_agent.py --config {config} --seed {seed} --output {output}"
 
 # Output paths
 output:
