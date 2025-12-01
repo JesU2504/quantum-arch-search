@@ -1,5 +1,0 @@
-2025-12-01 05:32:11,790 INFO: Loading experimental parameters for 3 qubits from config.py
-2025-12-01 05:32:11,792 INFO: Starting pipeline with metadata: {'timestamp': '20251201-053211', 'n_qubits': 3, 'baseline_steps': 16384, 'saboteur_steps': 81920, 'adversarial_gens': 4, 'adversarial_arch_steps': 4096, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config'}
-2025-12-01 05:32:11,793 INFO: Running baseline architect (noiseless)
-2025-12-01 05:39:46,943 INFO: Skipping lambda sweep as requested
-2025-12-01 05:39:46,944 INFO: Running saboteur-only (attacks baseline circuit)

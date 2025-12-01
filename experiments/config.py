@@ -44,7 +44,7 @@ N_RUNS = 5
 RESULTS_DIR = "results"
 # CRITICAL: This determines the padding size for the Saboteur's input.
 # Must be consistent across env creation in train_adversarial.py
-MAX_CIRCUIT_TIMESTEPS = 30 
+MAX_CIRCUIT_TIMESTEPS = 15 
 
 # --- Default Target Type for Experiments ---
 TARGET_TYPE = "ghz"  # or "toffoli" as needed
@@ -105,7 +105,7 @@ EXPERIMENT_PARAMS = {
         "SABOTEUR_STEPS_PER_GENERATION": 2048,
         "SABOTEUR_N_STEPS": 2048,
         # Saboteur Baseline Total
-        "SABOTEUR_STEPS": 2048 * 40,       # = 81,920 steps
+        "SABOTEUR_STEPS": 2048 * 10,       # = 81,920 steps
     },
     
     # "Full" Implementation (4 Qubits) - Standard Experiment (ExpPlan.md)
@@ -155,6 +155,14 @@ AGENT_PARAMS = {
 # Saboteur-only Training
 SABOTEUR_STEPS = 20000 
 
+# --- Verbosity controls for experiment logs ---
+# Control how chatty the saboteur-only training callback is.
+# Set SABOTEUR_VERBOSE=0 to silence periodic distributions; 1 to enable.
+SABOTEUR_VERBOSE = 0
+# How often (in timesteps) the saboteur callback reports action distribution
+# and average reward. Set very large to effectively disable.
+SABOTEUR_LOG_INTERVAL = 10_000
+
 # --- Analysis Parameters ---
 NOISE_LEVELS = np.linspace(0, 0.01, 20)
 N_PREDICTIONS = 100 
@@ -165,10 +173,10 @@ from qas_gym.utils import get_gates_by_name
 # Default setting for including parameterized rotation gates (Rx, Ry, Rz) in experiments.
 # Set to True to enable VQE-style variational circuits with more expressive action space.
 # Set to False (default) for backward compatibility with Clifford+T gate set.
-INCLUDE_ROTATIONS = True
+INCLUDE_ROTATIONS = False
 # Limit rotation gate types to reduce action space while preserving Toffoli synthesis.
 # Rz(π/4) acts as the T gate (up to global phase), sufficient for Toffoli.
-ROTATION_TYPES = ['Rz']
+ROTATION_TYPES = ['Rz', 'Rx', 'Ry']
 
 
 def get_action_gates(
@@ -193,7 +201,7 @@ def get_action_gates(
         The default gate set is Clifford+T: X, Y, Z, H, T, S (plus CNOT).
         When include_rotations=True, Rx, Ry, Rz gates are added for each qubit.
     """
-    single_qubit_gate_names = ['H', 'T', 'S'] #['X', 'Y', 'Z', 'H', 'T', 'S']
+    single_qubit_gate_names = ['I', 'H', 'T', 'S'] #['X', 'Y', 'Z', 'H', 'T', 'S']
     # Define allowed rotation angles
     # Include both T (π/4) and T† (-π/4) for exact Toffoli synthesis.
     # Cirq interprets angles modulo 2π, so negative angles are valid.

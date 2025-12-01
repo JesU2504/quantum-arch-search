@@ -132,21 +132,25 @@ def train_saboteur_only(results_dir, n_qubits, saboteur_steps, n_steps, max_erro
                 if self.action_log:
                     flat_actions = [str(a) for a in self.action_log]
                     action_counts = Counter(flat_actions)
-                    print(f"[Saboteur PPO] Action distribution at step {self.num_timesteps}: {action_counts}")
+                    if self.verbose:
+                        print(f"[Saboteur PPO] Action distribution at step {self.num_timesteps}: {action_counts}")
                 if self.reward_log:
                     avg_reward = np.mean(self.reward_log[-self.log_interval:]) if len(self.reward_log) >= self.log_interval else np.mean(self.reward_log)
-                    print(f"[Saboteur PPO] Average reward (last {self.log_interval}): {avg_reward:.4f}")
+                    if self.verbose:
+                        print(f"[Saboteur PPO] Average reward (last {self.log_interval}): {avg_reward:.4f}")
             # Print only when the policy is actually updated (changed == True)
             if rewards is not None and hasattr(self.model, 'policy'):
                 current_policy = self.model.policy.state_dict() if hasattr(self.model.policy, 'state_dict') else None
                 if self.last_policy is not None and current_policy is not None:
                     changed = any((self.last_policy[k] != v).any() for k, v in current_policy.items() if k in self.last_policy)
-                    if changed:
+                    if changed and self.verbose:
                         print(f"[Saboteur PPO] Policy updated: True")
                 self.last_policy = current_policy
             return True
 
-    action_logger = ActionLoggerCallback(verbose=1, log_interval=1000)
+    # Use config to control verbosity and logging frequency
+    action_logger = ActionLoggerCallback(verbose=getattr(config, 'SABOTEUR_VERBOSE', 0),
+                                         log_interval=getattr(config, 'SABOTEUR_LOG_INTERVAL', 1000))
     progress_callback = ProgressCallback()
     # In experiments/train_saboteur_only.py
     model = PPO("MultiInputPolicy", env, **config.AGENT_PARAMS)
