@@ -97,9 +97,9 @@ EXPERIMENT_PARAMS = {
     3: {
         "ARCHITECT_N_STEPS": 4096,
         # Baseline Total = Steps/Gen * Generations
-        "ARCHITECT_STEPS": 4096 * 4,      # = 163,840 steps (Matched to Adversarial)
+        "ARCHITECT_STEPS": 4096 * 10,      
         
-        "N_GENERATIONS": 4,
+        "N_GENERATIONS": 10,
         "ARCHITECT_STEPS_PER_GENERATION": 4096,
         
         "SABOTEUR_STEPS_PER_GENERATION": 2048,
@@ -173,7 +173,7 @@ from qas_gym.utils import get_gates_by_name
 # Default setting for including parameterized rotation gates (Rx, Ry, Rz) in experiments.
 # Set to True to enable VQE-style variational circuits with more expressive action space.
 # Set to False (default) for backward compatibility with Clifford+T gate set.
-INCLUDE_ROTATIONS = False
+INCLUDE_ROTATIONS = True
 # Limit rotation gate types to reduce action space while preserving Toffoli synthesis.
 # Rz(π/4) acts as the T gate (up to global phase), sufficient for Toffoli.
 ROTATION_TYPES = ['Rz', 'Rx', 'Ry']
