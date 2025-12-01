@@ -13,6 +13,67 @@ The comparison workspace does **not** reimplement existing agents. Instead, it p
 - **Notebooks**: Jupyter notebooks for visualization and analysis
 - **Tests**: Pytest tests for validation
 - **Schema**: JSON schema for standardized log format
+- **run_experiments.sh**: Script to run experiments with multiple seeds
+
+## Using run_experiments.sh
+
+The `run_experiments.sh` script automates running DRL and EA classification experiments with multiple seeds. It reads the `entrypoint_command` from the YAML configuration files and executes experiments, logging output per-seed.
+
+### Basic Usage
+
+```bash
+# Make the script executable (if not already)
+chmod +x comparison/run_experiments.sh
+
+# Run both DRL and EA with default seeds (42 43)
+./comparison/run_experiments.sh
+
+# Run only DRL experiments
+./comparison/run_experiments.sh --method drl
+
+# Run only EA experiments with custom seeds
+./comparison/run_experiments.sh --method ea --seeds "42 43 44"
+
+# Run both methods with custom log directory
+./comparison/run_experiments.sh --method both --seeds "42 43" --log-dir comparison/logs
+```
+
+### Command-Line Arguments
+
+| Argument    | Description                                         | Default             |
+|-------------|-----------------------------------------------------|---------------------|
+| `--method`  | Method to run: `drl`, `ea`, or `both`               | `both`              |
+| `--seeds`   | Space-separated list of seeds (quoted)              | `"42 43"`           |
+| `--log-dir` | Directory for log files                             | `comparison/logs`   |
+| `--help`    | Show help message                                   |                     |
+
+### Setting entrypoint_command in YAML Files
+
+The script reads the `entrypoint_command` from the YAML configuration files. Each config file should have an `entrypoint_command` line specifying the command to run.
+
+**Placeholders supported:**
+- `{config}` — Path to the YAML config file
+- `{seed}` — Current seed value
+- `{output}` — Output log file path (auto-generated)
+- `$seed` / `${seed}` — Shell-style seed substitution
+
+**Example in `drl_classification.yaml`:**
+```yaml
+entrypoint_command: "python tools/run_drl_agent.py --config {config} --seed {seed} --output {output}"
+```
+
+**Example in `ea_classification.yaml`:**
+```yaml
+entrypoint_command: "python tools/run_ea_agent.py --config {config} --seed {seed} --output {output}"
+```
+
+### Output
+
+Log files are saved to `LOG_DIR/METHOD/METHOD_classif_seed{seed}.log`:
+- DRL logs: `comparison/logs/drl/drl_classif_seed42.log`
+- EA logs: `comparison/logs/ea/ea_classif_seed42.log`
+
+The script returns exit code 0 if all experiments succeed, or 1 if any experiment fails or if `entrypoint_command` is missing.
 
 ## Directory Structure
 
@@ -20,6 +81,7 @@ The comparison workspace does **not** reimplement existing agents. Instead, it p
 comparison/
 ├── README.md                           # This file
 ├── requirements.txt                    # Additional dependencies
+├── run_experiments.sh                  # Script to run experiments
 ├── paper_metadata/
 │   └── quantum_ml_arch_search_2407.20147.json  # Extracted paper hyperparameters
 ├── diagnostics/

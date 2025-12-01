@@ -100,23 +100,10 @@ coevolution:
 # Seeds matched to DRL config for fair comparison
 seeds: [0, 1, 2, 3, 4]
 
-# Entrypoint command placeholder
-# TODO: Maintainers should replace with actual EA runner command
-entrypoint_command: |
-  # Replace with your EA agent command, e.g.:
-  # python run_experiments.py \
-  #   --preset quick \
-  #   --n-qubits 4 \
-  #   --base-dir comparison/logs/ea \
-  #   --seed {seed}
-  # 
-  # Or for classification-specific experiments:
-  # python your_ea_classifier.py \
-  #   --config comparison/experiments/configs/ea_classification.yaml \
-  #   --dataset make_classification \
-  #   --output comparison/logs/ea/ea_classif_run_{seed}.jsonl \
-  #   --seed {seed}
-  echo "TODO: Set entrypoint_command to your EA runner"
+# Entrypoint command for running EA classification experiments
+# This command is executed by comparison/run_experiments.sh
+# Placeholders: {config} = this file, {seed} = random seed, {output} = output log path
+entrypoint_command: "python tools/run_ea_agent.py --config {config} --seed {seed} --output {output}"
 
 # Output paths
 output:
