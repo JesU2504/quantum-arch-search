@@ -33,28 +33,96 @@ from stable_baselines3.common.callbacks import BaseCallback
 from experiments import config
 # Import your custom environments and utilities
 from qas_gym.envs import SaboteurMultiGateEnv, AdversarialArchitectEnv
-from qas_gym.utils import save_circuit
-from qas_gym.utils import get_toffoli_unitary
+from qas_gym.utils import save_circuit, verify_toffoli_unitary, get_ideal_unitary
 
-# --- 1. Improved Logger Callback ---
+# --- 1. Robust Champion Callback (From train_architect.py) ---
+class ChampionCircuitCallback(BaseCallback):
+    """
+    A callback to save the best circuit found during training.
+    Checks ALL parallel environments and prints in real-time.
+    """
+    def __init__(self, circuit_filename, verbose=0):
+        super().__init__(verbose)
+        self.circuit_filename = circuit_filename
+        self.best_saved_fidelity = -1.0
+        self.circuit_saved = False
+        self.verify_unitary = False
+        self.n_qubits = None
+        self.unitary_mode = False
+
+        # Holders for the champion circuit object
+        self.last_champion_circuit = None
+
+    def _on_step(self) -> bool:
+        if 'infos' in self.locals and self.locals['infos'] and self.locals['dones'] is not None:
+            dones = self.locals['dones']
+            infos = self.locals['infos']
+            
+            for i, done in enumerate(dones):
+                if not done:
+                    continue
+                
+                info = infos[i]
+                
+                # Determine mode once
+                if not self.unitary_mode and self.verify_unitary:
+                    self.unitary_mode = True
+
+                # Retrieve circuit
+                candidate_circuit = info.get('circuit')
+                candidate_fid = info.get('fidelity', 0.0)
+
+                # Fallback
+                if candidate_circuit is None:
+                    try:
+                        candidate_circuit = self.training_env.env_method('get_circuit', indices=[i])[0]
+                    except Exception:
+                        continue
+
+                if candidate_circuit:
+                    # Unitary Verification (if enabled)
+                    if self.verify_unitary and self.n_qubits is not None:
+                        try:
+                            # We use silent=True to avoid spamming console every episode
+                            _, process_fid = verify_toffoli_unitary(candidate_circuit, self.n_qubits, silent=True)
+                            metric_to_check = process_fid
+                            metric_name = "Process Fidelity"
+                        except Exception:
+                            metric_to_check = candidate_fid
+                            metric_name = "Fidelity"
+                    else:
+                        metric_to_check = candidate_fid
+                        metric_name = "Fidelity"
+
+                    # Check if this is a new global champion
+                    if (self.best_saved_fidelity < 0) or (metric_to_check > self.best_saved_fidelity):
+                        print(f"\n--- New Champion Circuit Found (Env {i}) ---")
+                        print(f"{metric_name}: {metric_to_check:.6f}")
+                        print(candidate_circuit)
+                        save_circuit(self.circuit_filename, candidate_circuit)
+                        print(f"Saved new champion circuit to {self.circuit_filename}\n")
+                        
+                        self.best_saved_fidelity = metric_to_check
+                        self.last_champion_circuit = candidate_circuit
+                        self.circuit_saved = True
+        return True
+
+# --- 2. Data Logger Callback (Kept for plotting compatibility) ---
 class FidelityLoggerCallback(BaseCallback):
     def __init__(self, trace_list, step_list, offset_steps, verbose=0):
         super().__init__(verbose)
         self.trace_list = trace_list
         self.step_list = step_list
-        self.offset_steps = offset_steps # The total steps from previous generations
+        self.offset_steps = offset_steps 
 
     def _on_step(self) -> bool:
         if self.locals.get('dones') is not None:
             for i, done in enumerate(self.locals['dones']):
                 if done:
-                    # Get fidelity from info
                     info = self.locals['infos'][i]
                     fid = info.get('fidelity', None)
-                    
                     if fid is not None:
                         self.trace_list.append(fid)
-                        # LOGIC FIX: Current global timestep = offset + current_run_steps
                         current_timesteps = self.num_timesteps
                         self.step_list.append(self.offset_steps + current_timesteps)
         return True
@@ -88,8 +156,6 @@ def train_adversarial(
     print(f"Architect Steps/Gen: {architect_steps_per_generation}")
     print(f"Saboteur Steps/Gen: {saboteur_steps_per_generation}")
     print(f"Max Circuit Gates: {max_circuit_gates}")
-    print(f"Fidelity Threshold: {fidelity_threshold}")
-    print(f"Lambda Penalty: {lambda_penalty}")
     print(f"Results Directory: {results_dir}")
     print("=" * 60 + "\n")
     
@@ -98,12 +164,10 @@ def train_adversarial(
     log_dir = os.path.join(results_dir, f"adversarial_training_{datetime.now().strftime('%Y%m%d-%H%M%S')}")
     os.makedirs(log_dir, exist_ok=True)
 
-    # --- Target State using central config ---
-    # Always use toffoli target state (configurable via config.TARGET_TYPE)
+    # --- Target State ---
     target_state = config.get_target_state(n_qubits, effective_target_type)
     
     # --- Ideal unitary for unitary mode ---
-    from qas_gym.utils import get_ideal_unitary
     ideal_U = None
     if effective_task_mode == 'unitary_preparation':
         try:
@@ -115,16 +179,16 @@ def train_adversarial(
     max_saboteur_level = len(SaboteurMultiGateEnv.all_error_rates)
 
     # Architect env args
-    # Build qubits and action gates using centralized config to enforce gate set
     qubits = [cirq.LineQubit(i) for i in range(n_qubits)]
     action_gates = config.get_action_gates(qubits, include_rotations=include_rotations)
+    
     arch_env_kwargs = dict(
         target=target_state,
         fidelity_threshold=fidelity_threshold,
         max_timesteps=max_circuit_gates,
         reward_penalty=0.01,
         complexity_penalty_weight=0.01,
-        include_rotations=include_rotations,  # Enable rotation gates if specified
+        include_rotations=include_rotations,
         action_gates=action_gates,
         qubits=qubits,
         task_mode=effective_task_mode,
@@ -145,17 +209,17 @@ def train_adversarial(
         lambda_penalty=lambda_penalty
     )
 
-    # Initialize Architect Environment
-    # We start with no saboteur agent for the very first initialization
+    # --- Initialize Agents ---
+    # 1. Initialize Saboteur ONCE here (outside the loop) so it remembers previous training [PERSISTENT SABOTEUR]
+    saboteur_agent = PPO('MultiInputPolicy', saboteur_env, **config.AGENT_PARAMS)
+
+    # 2. Initialize Architect
     initial_arch_env = AdversarialArchitectEnv(
-        saboteur_agent=None,
+        saboteur_agent=None, # Start with no adversary for the first gen
         saboteur_max_error_level=max_saboteur_level,
         **arch_env_kwargs
     )
-
-    # --- Initialize Agents ---
     architect_agent = PPO('MlpPolicy', initial_arch_env, **config.AGENT_PARAMS)
-    saboteur_agent = PPO('MultiInputPolicy', saboteur_env, **config.AGENT_PARAMS)
 
     # Data Storage
     architect_fidelities = []
@@ -163,19 +227,20 @@ def train_adversarial(
     saboteur_fidelities = []
     saboteur_steps = []
     
-    best_fidelity = -1.0
     champion_circuit = None
     
-    # Track total steps cumulatively to avoid gaps in plot
+    # Track total steps cumulatively
     total_arch_steps = 0
     total_sab_steps = 0
 
+    # Main Co-Evolution Loop
     for gen in range(n_generations):
         print(f"\n--- Generation {gen+1}/{n_generations} ---")
 
         # -----------------------------
         # 1. Train Architect
         # -----------------------------
+        # Re-create arch env to ensure it has the latest reference to saboteur_agent
         arch_env = AdversarialArchitectEnv(
             saboteur_agent=saboteur_agent,
             saboteur_max_error_level=max_saboteur_level,
@@ -183,49 +248,56 @@ def train_adversarial(
         )
         architect_agent.set_env(arch_env)
         
-        arch_callback = FidelityLoggerCallback(
+        # Callback 1: Real-time champion saving
+        arch_champ_callback = ChampionCircuitCallback(
+            circuit_filename=os.path.join(log_dir, "circuit_robust.json")
+        )
+        arch_champ_callback.verify_unitary = (effective_task_mode == 'unitary_preparation')
+        arch_champ_callback.n_qubits = n_qubits
+        
+        # Callback 2: Data logging
+        arch_log_callback = FidelityLoggerCallback(
             trace_list=architect_fidelities,
             step_list=architect_steps,
-            offset_steps=total_arch_steps # Pass current total
+            offset_steps=total_arch_steps
         )
         
+        # Train Architect
         architect_agent.learn(
             total_timesteps=architect_steps_per_generation, 
             reset_num_timesteps=False, 
-            callback=arch_callback
+            callback=[arch_log_callback, arch_champ_callback]
         )
-        total_arch_steps += architect_steps_per_generation # Update total
+        total_arch_steps += architect_steps_per_generation
 
-        # Check for champion
-        if hasattr(arch_env, 'champion_circuit') and arch_env.champion_circuit is not None:
-            fid = arch_env.best_fidelity
-            if fid > best_fidelity:
-                best_fidelity = fid
-                champion_circuit = arch_env.champion_circuit
-                # Optional: verify unitary behavior across all basis inputs for Toffoli
-                if config.TARGET_TYPE == 'toffoli' and effective_task_mode == 'unitary_preparation':
-                    try:
-                        _verify_unitary_toffoli(champion_circuit, n_qubits)
-                    except Exception as e:
-                        print(f"[Verifier] Skipped unitary verification due to error: {e}")
+        # Retrieve the champion found in this generation
+        if arch_champ_callback.last_champion_circuit is not None:
+            champion_circuit = arch_champ_callback.last_champion_circuit
+            print(f"Gen {gen+1} Architect finished. Best circuit updated.")
+        elif hasattr(arch_env, 'champion_circuit') and arch_env.champion_circuit is not None:
+             # Fallback if callback missed it (unlikely with fix) but env has one
+             champion_circuit = arch_env.champion_circuit
 
         # -----------------------------
         # 2. Train Saboteur
         # -----------------------------
+        # Update the environment to attack the new champion
         if champion_circuit is not None:
             saboteur_env.set_circuit(champion_circuit)
+            print(f"Saboteur now attacking champion with {len(list(champion_circuit.all_operations()))} gates.")
         else:
             saboteur_env.set_circuit(dummy_circuit)
+            print("Saboteur attacking dummy circuit (no champion found yet).")
 
-        # CRITICAL FIX: Dict observations require MultiInputPolicy
-        saboteur_agent = PPO('MultiInputPolicy', saboteur_env, **config.AGENT_PARAMS)
-        
         sab_callback = FidelityLoggerCallback(
             trace_list=saboteur_fidelities,
             step_list=saboteur_steps,
             offset_steps=total_sab_steps
         )
 
+        # Train the EXISTING agent (no reset)
+        saboteur_agent.set_env(saboteur_env)
+        
         saboteur_agent.learn(
             total_timesteps=saboteur_steps_per_generation, 
             reset_num_timesteps=False, 
@@ -240,19 +312,8 @@ def train_adversarial(
         np.savetxt(os.path.join(log_dir, "architect_steps.txt"), architect_steps, fmt='%d')
         np.savetxt(os.path.join(log_dir, "saboteur_trained_on_architect_fidelities.txt"), saboteur_fidelities)
         np.savetxt(os.path.join(log_dir, "saboteur_trained_on_architect_steps.txt"), saboteur_steps, fmt='%d')
-        
-        if champion_circuit is not None:
-            save_circuit(os.path.join(log_dir, "circuit_robust.json"), champion_circuit)
 
     return architect_agent, saboteur_agent, arch_env, log_dir, start_time
-
-def _verify_unitary_toffoli(circuit: cirq.Circuit, n_qubits: int) -> None:
-    """Verify champion circuit implements Toffoli across all basis inputs and print accuracy.
-    
-    Delegates to the shared verify_toffoli_unitary function in qas_gym.utils.
-    """
-    from qas_gym.utils import verify_toffoli_unitary
-    verify_toffoli_unitary(circuit, n_qubits, silent=False)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -267,7 +328,7 @@ if __name__ == "__main__":
     parser.add_argument('--include-rotations', action='store_true',
                         help='Include parameterized rotation gates (Rx, Ry, Rz) in action space')
     parser.add_argument('--task-mode', type=str, default=None, choices=['state_preparation', 'unitary_preparation'],
-        help='Task mode for training: state_preparation or unitary_preparation. Overrides config.TASK_MODE if set.')
+        help='Task mode for training. Overrides config.TASK_MODE if set.')
     args = parser.parse_args()
 
     architect_agent, saboteur_agent, arch_env, log_dir, start_time = train_adversarial(
