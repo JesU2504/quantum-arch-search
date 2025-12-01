@@ -8,9 +8,12 @@ class ArchitectEnv(QuantumArchSearchEnv):
     """
     An environment for the architect agent that uses a sophisticated reward function.
     """
-    def __init__(self, **kwargs):
+    def __init__(self, complexity_penalty_weight: float = 0.01, **kwargs):
         super().__init__(**kwargs)
         self.previous_fidelity = 0.0
+        # NEW: store λ for the sweep
+        self.complexity_penalty_weight = complexity_penalty_weight
+
 
     def reset(self, seed=None, options=None):
         obs, info = super().reset(seed=seed, options=options)
@@ -34,7 +37,7 @@ class ArchitectEnv(QuantumArchSearchEnv):
         reward = delta_fidelity
 
         # Penalty for excessive complexity
-        reward -= 0.01 * l
+        reward -= self.complexity_penalty_weight * l
 
         info['shaped_reward'] = reward
         return obs, reward, terminated, truncated, info

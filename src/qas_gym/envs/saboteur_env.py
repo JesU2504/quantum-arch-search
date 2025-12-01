@@ -65,7 +65,7 @@ class SaboteurMultiGateEnv(gym.Env):
         self.lambda_penalty = lambda_penalty
         
         # MODIFICATION 2: Define the Attack Budget
-        self.max_concurrent_attacks = 2
+        self.max_concurrent_attacks = 3
 
         # --- Fixed Action Space (Padding) ---
         self.num_error_levels = len(self.all_error_rates)
