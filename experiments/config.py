@@ -52,6 +52,45 @@ TARGET_TYPE = "toffoli"  # or "toffoli" as needed
 # --- Default Task Mode for Experiments ---
 TASK_MODE = "unitary_preparation"  # or "unitary_preparation" as needed
 
+# --- Task Mode to Metric Key Mapping ---
+# Maps supported task modes to their corresponding evaluation metric keys.
+_METRIC_FOR_TASK_MODE = {
+    "state_preparation": "state_preparation_metric",
+    "unitary_preparation": "unitary_preparation_metric",
+}
+
+
+def get_metric_key_for_task_mode(task_mode: str | None = None) -> str:
+    """
+    Return the metric key string for a given task mode.
+
+    Use this helper to look up the evaluation metric key corresponding to a
+    task mode instead of hard-coding metric names elsewhere.
+
+    Args:
+        task_mode: The task mode string. If None, defaults to the module-level
+            TASK_MODE value.
+
+    Returns:
+        The metric key string (e.g., 'state_preparation_metric').
+
+    Raises:
+        ValueError: If task_mode is not a supported value.
+
+    Example:
+        >>> from experiments.config import get_metric_key_for_task_mode
+        >>> metric_key = get_metric_key_for_task_mode()
+    """
+    # Use module default if caller passes None
+    mode = task_mode if task_mode is not None else TASK_MODE
+    if mode not in _METRIC_FOR_TASK_MODE:
+        raise ValueError(
+            f"Unknown task_mode '{mode}'. Supported modes: "
+            f"{', '.join(_METRIC_FOR_TASK_MODE.keys())}"
+        )
+    return _METRIC_FOR_TASK_MODE[mode]
+
+
 # --- Per-Qubit Hyperparameter Configurations ---
 EXPERIMENT_PARAMS = {
     3: {

@@ -13,7 +13,6 @@ import gymnasium as gym
 import cirq  # qas_gym is implicitly imported via gym.make
 import numpy as np
 from experiments import config
-from qas_gym.utils import get_ghz_state
 
 def verify_saboteur_noise_application(n_qubits):
     """
@@ -25,24 +24,17 @@ def verify_saboteur_noise_application(n_qubits):
         n_qubits (int): The number of qubits to use for the verification circuit.
     """
     print(f"--- Experiment 1: Verify Saboteur's Noise Application for {n_qubits} Qubits ---")
+    print(f"Target Type: {config.TARGET_TYPE}")
 
-    # 1. Create a simple, fixed quantum circuit
-    qubits = cirq.LineQubit.range(n_qubits)
-    # Use the canonical GHZ state preparation circuit for consistency with the rest of the project.
-    original_circuit = cirq.Circuit()
-    original_circuit.append(cirq.H(qubits[0]))
-    if n_qubits > 1:
-        # Append explicit CNOT operations for qubits 1..n_qubits-1
-        cnot_ops = [cirq.CNOT(qubits[0], qubits[i]) for i in range(1, n_qubits)]
-        original_circuit.append(cnot_ops)
+    # 1. Get the target circuit and state from the central config
+    original_circuit, _ = config.get_target_circuit(n_qubits)
+    target_state = config.get_target_state(n_qubits)
+    
     print("Original Circuit:")
     print(original_circuit)
     print("\n")
 
-    # 2. Get the canonical GHZ target state using the project's utility function.
-    target_state = get_ghz_state(n_qubits)
-
-    # Calculate and print the fidelity of the original circuit (should be 1.0)
+    # 2. Calculate and print the fidelity of the original circuit
     initial_state_vector = cirq.Simulator().simulate(original_circuit).final_state_vector
     original_fidelity = np.abs(np.vdot(target_state, initial_state_vector))**2
     print(f"Fidelity of original circuit: {original_fidelity:.4f}\n")
