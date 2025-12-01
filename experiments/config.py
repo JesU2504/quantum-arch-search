@@ -44,13 +44,13 @@ N_RUNS = 5
 RESULTS_DIR = "results"
 # CRITICAL: This determines the padding size for the Saboteur's input.
 # Must be consistent across env creation in train_adversarial.py
-MAX_CIRCUIT_TIMESTEPS = 20 
+MAX_CIRCUIT_TIMESTEPS = 30 
 
 # --- Default Target Type for Experiments ---
-TARGET_TYPE = "toffoli"  # or "toffoli" as needed
+TARGET_TYPE = "ghz"  # or "toffoli" as needed
 
 # --- Default Task Mode for Experiments ---
-TASK_MODE = "unitary_preparation"  # or "unitary_preparation" as needed
+TASK_MODE = "state_preparation"  # or "unitary_preparation" as needed
 
 # --- Task Mode to Metric Key Mapping ---
 # Maps supported task modes to their corresponding evaluation metric keys.
@@ -176,7 +176,7 @@ def get_action_gates(
         The default gate set is Clifford+T: X, Y, Z, H, T, S (plus CNOT).
         When include_rotations=True, Rx, Ry, Rz gates are added for each qubit.
     """
-    single_qubit_gate_names = ['H'] #['X', 'Y', 'Z', 'H', 'T', 'S']
+    single_qubit_gate_names = ['H', 'T', 'S'] #['X', 'Y', 'Z', 'H', 'T', 'S']
     # Define allowed rotation angles
     # Include both T (π/4) and T† (-π/4) for exact Toffoli synthesis.
     # Cirq interprets angles modulo 2π, so negative angles are valid.

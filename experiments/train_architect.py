@@ -42,6 +42,7 @@ class ChampionCircuitCallback(BaseCallback):
     Champion circuit logic:
     - Triggers if any circuit achieves fidelity > 0 (saves at least one circuit
       if any rollout is better than zero).
+    - Checks ALL parallel environments for champions, not just the first one.
     - If no circuit is saved, logs the reason at the end of training.
     """
     def __init__(self, circuit_filename, verbose=0, print_freq=4096):
@@ -70,76 +71,79 @@ class ChampionCircuitCallback(BaseCallback):
                 print(f"Step: {self.num_timesteps}, Best Fidelity So Far: {self.best_fidelity:.4f}")
 
         # Check for new champion circuit at the end of an episode
-        if 'infos' in self.locals and self.locals['infos'] and self.locals['dones'][0]:
-            info = self.locals['infos'][0]
-
-            # Determine if we are in unitary mode (set once)
-            if not self.unitary_mode and self.verify_unitary:
-                self.unitary_mode = True
-
-            # The environment may set 'is_champion' on the step where the improvement
-            # occurred, which can be mid-episode. Relying on the terminal-step 'info'
-            # means we can miss champions discovered earlier in the episode. Instead
-            # query the env's stored champion directly and save whenever it improves
-            # beyond what we've already recorded in this callback.
-            try:
-                champion_circuit = self.training_env.get_attr('champion_circuit')[0]
-                champion_fid = self.training_env.get_attr('best_fidelity')[0]
-            except Exception:
-                champion_circuit = None
-                champion_fid = None
-
-            if champion_circuit:
-                self.circuits_evaluated += 1
+        # FIXED: Iterate over ALL environments, not just index 0
+        if 'infos' in self.locals and self.locals['infos'] and self.locals['dones'] is not None:
+            dones = self.locals['dones']
+            infos = self.locals['infos']
+            
+            for i, done in enumerate(dones):
+                if not done:
+                    continue
                 
-                if self.verify_unitary and self.n_qubits is not None:
-                    # Unitary verification mode
+                info = infos[i]
+
+                # Determine if we are in unitary mode (set once)
+                if not self.unitary_mode and self.verify_unitary:
+                    self.unitary_mode = True
+
+                # Retrieve circuit and fidelity directly from the info dict of the completed episode
+                candidate_circuit = info.get('circuit')
+                # If not present in info, try falling back to env attr (less reliable in vec envs)
+                if candidate_circuit is None:
                     try:
-                        accuracy, process_fid = verify_toffoli_unitary(champion_circuit, self.n_qubits, silent=True)
-                        
+                        # Attempt to get from specific env index
+                        candidate_circuit = self.training_env.env_method('get_circuit', indices=[i])[0]
+                    except Exception:
+                        continue
+
+                # Get the fidelity reported by the environment
+                candidate_fid = info.get('fidelity', 0.0)
+
+                if candidate_circuit:
+                    self.circuits_evaluated += 1
+                    
+                    if self.verify_unitary and self.n_qubits is not None:
+                        # Unitary verification mode
+                        try:
+                            accuracy, process_fid = verify_toffoli_unitary(candidate_circuit, self.n_qubits, silent=True)
+                            
+                            # Track for reporting
+                            self.fidelities.append(process_fid)
+                            self.steps.append(self.num_timesteps)
+                            if process_fid > self.best_fidelity:
+                                self.best_fidelity = process_fid
+                            
+                            # Save if: first circuit ever OR improved over last saved fidelity
+                            should_save = (self.best_saved_fidelity < 0) or (process_fid > self.best_saved_fidelity)
+                            if should_save:
+                                print(f"\n--- New Champion Circuit Found at Step {self.num_timesteps} (Env {i}) ---")
+                                print(f"Process Fidelity: {process_fid:.6f}")
+                                print(candidate_circuit)
+                                save_circuit(self.circuit_filename, candidate_circuit)
+                                print(f"Saved new champion circuit to {self.circuit_filename}\n")
+                                self.best_saved_fidelity = process_fid
+                                self.circuit_saved = True
+                        except Exception as e:
+                            print(f"[Verifier] Skipped unitary verification due to error: {e}")
+                    else:
+                        # State fidelity mode
                         # Track for reporting
-                        self.fidelities.append(process_fid)
-                        self.steps.append(self.num_timesteps)
-                        if process_fid > self.best_fidelity:
-                            self.best_fidelity = process_fid
+                        if candidate_fid is not None:
+                            self.fidelities.append(candidate_fid)
+                            self.steps.append(self.num_timesteps)
+                            if candidate_fid > self.best_fidelity:
+                                self.best_fidelity = candidate_fid
                         
                         # Save if: first circuit ever OR improved over last saved fidelity
-                        # This ensures at least one circuit is saved if any fidelity >= 0
-                        should_save = (self.best_saved_fidelity < 0) or (process_fid > self.best_saved_fidelity)
-                        if should_save:
-                            print(f"\n--- New Champion Circuit Found at Step {self.num_timesteps} ---")
-                            print(f"Process Fidelity: {process_fid:.6f}")
-                            print(champion_circuit)
-                            save_circuit(self.circuit_filename, champion_circuit)
+                        should_save = (self.best_saved_fidelity < 0) or (candidate_fid is not None and candidate_fid > self.best_saved_fidelity)
+                        if should_save and candidate_fid is not None:
+                            print(f"\n--- New Champion Circuit Found at Step {self.num_timesteps} (Env {i}) ---")
+                            print(f"Fidelity: {candidate_fid:.6f}")
+                            print(candidate_circuit)
+                            save_circuit(self.circuit_filename, candidate_circuit)
                             print(f"Saved new champion circuit to {self.circuit_filename}\n")
-                            self.best_saved_fidelity = process_fid
+                            self.best_saved_fidelity = candidate_fid
                             self.circuit_saved = True
-                    except Exception as e:
-                        print(f"[Verifier] Skipped unitary verification due to error: {e}")
-                else:
-                    # State fidelity mode
-                    if 'fidelity' in info:
-                        fidelity = info['fidelity']
-                    else:
-                        fidelity = champion_fid
-                    
-                    # Track for reporting
-                    if fidelity is not None:
-                        self.fidelities.append(fidelity)
-                        self.steps.append(self.num_timesteps)
-                        if fidelity > self.best_fidelity:
-                            self.best_fidelity = fidelity
-                    
-                    # Save if: first circuit ever OR improved over last saved fidelity
-                    should_save = (self.best_saved_fidelity < 0) or (fidelity is not None and fidelity > self.best_saved_fidelity)
-                    if should_save and fidelity is not None:
-                        print(f"\n--- New Champion Circuit Found at Step {self.num_timesteps} ---")
-                        print(f"Fidelity: {fidelity:.6f}")
-                        print(champion_circuit)
-                        save_circuit(self.circuit_filename, champion_circuit)
-                        print(f"Saved new champion circuit to {self.circuit_filename}\n")
-                        self.best_saved_fidelity = fidelity
-                        self.circuit_saved = True
         return True
 
     def _verify_champion_unitary(self, circuit: cirq.Circuit, n_qubits: int) -> None:
