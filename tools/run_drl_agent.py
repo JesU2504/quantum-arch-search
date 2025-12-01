@@ -1,135 +1,163 @@
 #!/usr/bin/env python3
 """
-Demo DRL (Deep Reinforcement Learning) agent runner for local testing.
+Demo DRL agent runner for exercising the comparison pipeline end-to-end.
 
-This lightweight script simulates a DRL agent for classification tasks,
-outputting synthetic logs in the expected JSONL format. It is intended
-for testing the comparison pipeline locally without requiring a full DRL
-implementation.
+This is a minimal demonstration runner that generates synthetic log data
+matching the expected schema. It is NOT a full DRL implementation, but
+allows testing the comparison infrastructure without running actual training.
 
 Usage:
-    python tools/run_drl_agent.py --config <config.yaml> --seed <seed> --output <output.log>
+    python tools/run_drl_agent.py --config CONFIG --seed SEED --output OUTPUT
 
 Arguments:
-    --config    Path to the YAML configuration file
-    --seed      Random seed for reproducibility
-    --output    Output log file path (JSONL format)
-    --episodes  Number of episodes to simulate (default: 100)
-    --dry-run   Print actions without writing files
-
-Example:
-    python tools/run_drl_agent.py \\
-        --config comparison/experiments/configs/drl_classification.yaml \\
-        --seed 42 \\
-        --output comparison/logs/drl/drl_classif_seed42.log
+    --config: Path to YAML config file (used for metadata)
+    --seed: Random seed for reproducibility
+    --output: Path to output log file (JSONL format)
 """
 
 import argparse
 import json
-import os
 import random
 import sys
-from datetime import datetime, timezone
+import time
+from datetime import datetime
+from pathlib import Path
 
 
-def simulate_drl_training(seed: int, num_episodes: int = 100):
-    """
-    Simulate DRL training and yield log entries.
-    
-    This generates synthetic data that follows the log schema expected
-    by the comparison analysis tools.
-    """
-    random.seed(seed)
-    
-    # Initial accuracy starts low and improves over episodes
-    val_accuracy = 0.5 + random.uniform(0, 0.1)
-    test_accuracy = 0.5 + random.uniform(0, 0.1)
-    gate_count = 1
-    circuit_depth = 1
-    
-    for episode in range(1, num_episodes + 1):
-        # Simulate improvement over time with noise
-        improvement = random.uniform(0, 0.02) * (1 - val_accuracy)
-        val_accuracy = min(val_accuracy + improvement, 1.0)
-        test_accuracy = min(test_accuracy + improvement * random.uniform(0.9, 1.1), 1.0)
-        
-        # Occasionally add gates (simulating architecture search)
-        if random.random() < 0.2 and gate_count < 20:
-            gate_count += 1
-            circuit_depth = min(circuit_depth + 1, gate_count)
-        
-        # Calculate episode reward based on accuracy and gate penalty
-        reward = val_accuracy - 0.01 * gate_count
-        
-        yield {
-            "eval_id": episode,
-            "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-            "method": "drl",
-            "seed": seed,
-            "best_val_accuracy": round(val_accuracy, 4),
-            "best_test_accuracy": round(test_accuracy, 4),
-            "gate_count": gate_count,
-            "circuit_depth": circuit_depth,
-            "episode_reward": round(reward, 4),
-            "cum_eval_count": episode,
-            "wall_time_s": round(episode * 0.1, 2),
-            "notes": "Demo DRL run"
-        }
-
-
-def main():
+def parse_args() -> argparse.Namespace:
+    """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description="Demo DRL agent runner for local testing",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=__doc__
+        description="Demo DRL agent runner for comparison pipeline testing"
     )
-    parser.add_argument("--config", required=True, help="Path to YAML config file")
-    parser.add_argument("--seed", type=int, required=True, help="Random seed")
-    parser.add_argument("--output", required=True, help="Output log file path")
-    parser.add_argument("--episodes", type=int, default=100, help="Number of episodes")
-    parser.add_argument("--dry-run", action="store_true", help="Print without writing")
+    parser.add_argument(
+        "--config",
+        type=str,
+        required=True,
+        help="Path to YAML configuration file",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        required=True,
+        help="Random seed for reproducibility",
+    )
+    parser.add_argument(
+        "--output",
+        type=str,
+        required=True,
+        help="Path to output log file (JSONL format)",
+    )
+    parser.add_argument(
+        "--episodes",
+        type=int,
+        default=10,
+        help="Number of episodes to simulate (default: 10)",
+    )
+    return parser.parse_args()
+
+
+def generate_demo_metrics(seed: int, episode: int, total_episodes: int) -> dict:
+    """
+    Generate synthetic metrics that simulate DRL agent training progress.
     
-    args = parser.parse_args()
+    Metrics follow a realistic improvement curve with noise.
     
-    # Verify config file exists (informational only in demo mode)
-    if not os.path.exists(args.config):
+    Args:
+        seed: Random seed for reproducibility
+        episode: Current episode number
+        total_episodes: Total number of episodes
+    
+    Returns:
+        Dictionary with metrics matching the log schema
+    """
+    # Set seed for reproducibility
+    random.seed(seed + episode)
+    
+    # Simulate accuracy improvement with diminishing returns
+    progress = episode / total_episodes
+    base_accuracy = 0.5 + 0.4 * (1 - (1 - progress) ** 2)  # Starts at 0.5, approaches 0.9
+    noise = random.gauss(0, 0.02)
+    test_accuracy = max(0.0, min(1.0, base_accuracy + noise))
+    train_accuracy = test_accuracy + random.gauss(0.01, 0.01)  # Train usually slightly higher
+    train_accuracy = max(0.0, min(1.0, train_accuracy))
+    
+    # Simulate gate count - starts low, grows then stabilizes
+    base_gates = 5 + int(progress * 10)
+    gate_noise = random.randint(-1, 2)
+    gate_count = max(1, base_gates + gate_noise)
+    
+    # Circuit depth correlates with gate count but not always equal
+    circuit_depth = max(1, gate_count - random.randint(0, 2))
+    
+    # Episode reward follows accuracy improvement
+    episode_reward = (test_accuracy - 0.5) * 2 - 0.01 * gate_count
+    
+    return {
+        "eval_id": episode,
+        "timestamp": datetime.now().isoformat(),
+        "method": "drl",
+        "seed": seed,
+        "train_accuracy": round(train_accuracy, 4),
+        "test_accuracy": round(test_accuracy, 4),
+        "best_val_accuracy": round(test_accuracy, 4),
+        "best_test_accuracy": round(test_accuracy, 4),
+        "gate_count": gate_count,
+        "circuit_depth": circuit_depth,
+        "episode_reward": round(episode_reward, 4),
+        "cum_eval_count": episode + 1,
+        "wall_time_s": round((episode + 1) * 0.5, 2),  # Simulate 0.5s per episode
+        "notes": "demo_run",
+    }
+
+
+def main() -> int:
+    """Run the demo DRL agent."""
+    args = parse_args()
+    
+    # Verify config file exists
+    config_path = Path(args.config)
+    if not config_path.exists():
         print(f"Warning: Config file not found: {args.config}", file=sys.stderr)
-        print("Continuing with demo mode (synthetic data)...", file=sys.stderr)
-    else:
-        print(f"Config: {args.config}")
     
+    # Create output directory if needed
+    output_path = Path(args.output)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    print(f"=== Demo DRL Agent ===")
+    print(f"Config: {args.config}")
     print(f"Seed: {args.seed}")
     print(f"Output: {args.output}")
     print(f"Episodes: {args.episodes}")
     print()
     
-    if args.dry_run:
-        print("[DRY RUN] Would generate synthetic DRL training logs")
-        return 0
-    
-    # Create output directory if needed
-    output_dir = os.path.dirname(args.output)
-    if output_dir and not os.path.exists(output_dir):
-        os.makedirs(output_dir, exist_ok=True)
-    
     # Generate and write log entries
-    print(f"Starting demo DRL training simulation...")
-    entries_written = 0
+    logs = []
+    for episode in range(args.episodes):
+        metrics = generate_demo_metrics(args.seed, episode, args.episodes)
+        logs.append(metrics)
+        print(f"Episode {episode + 1}/{args.episodes}: "
+              f"test_acc={metrics['test_accuracy']:.3f}, "
+              f"gates={metrics['gate_count']}, "
+              f"reward={metrics['episode_reward']:.3f}")
+        
+        # Small delay to simulate training time
+        time.sleep(0.01)
     
-    with open(args.output, "w") as f:
-        for entry in simulate_drl_training(args.seed, args.episodes):
-            f.write(json.dumps(entry) + "\n")
-            entries_written += 1
-            
-            # Progress reporting
-            if entries_written % 10 == 0:
-                print(f"  Episode {entry['eval_id']}: val_acc={entry['best_val_accuracy']:.4f}, "
-                      f"test_acc={entry['best_test_accuracy']:.4f}, gates={entry['gate_count']}")
+    # Write JSONL output
+    with open(output_path, 'w') as f:
+        for entry in logs:
+            f.write(json.dumps(entry) + '\n')
     
     print()
-    print(f"Demo DRL training complete!")
-    print(f"  Total episodes: {entries_written}")
-    print(f"  Log file: {args.output}")
+    print(f"Results written to: {args.output}")
+    
+    # Also write to stdout for the tee'd log file (comparison/logs/drl/...)
+    final_metrics = logs[-1]
+    print()
+    print(f"=== Final Results ===")
+    print(f"Best test accuracy: {max(m['test_accuracy'] for m in logs):.4f}")
+    print(f"Final gate count: {final_metrics['gate_count']}")
+    print(f"Total episodes: {args.episodes}")
     
     return 0
 

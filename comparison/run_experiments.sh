@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # ============================================================================
 # run_experiments.sh — Run classification experiments for DRL vs EA comparison
 # ============================================================================
@@ -14,7 +14,7 @@
 #   --method    Method to run: "drl", "ea", or "both" (default: both)
 #   --seeds     Space-separated list of seeds, e.g. "42 43 44" (default: "42 43")
 #   --log-dir   Directory for log files (default: comparison/logs)
-#   --dry-run   Print planned commands without executing them
+#   --dry-run   Print commands without executing them
 #
 # Prerequisites:
 #   - Set entrypoint_command in configs/drl_classification.yaml and/or ea_classification.yaml
@@ -25,6 +25,8 @@
 #   {seed}    — Current seed value
 #   {output}  — Output log file path (auto-generated: LOG_DIR/METHOD/METHOD_classif_seed{seed}.log)
 #   $seed / ${seed} — Shell-style seed substitution (also supported)
+#   $output / ${output} — Shell-style output substitution (also supported)
+#   $config / ${config} — Shell-style config substitution (also supported)
 #
 # Example entrypoint_command in YAML:
 #   entrypoint_command: "python tools/run_drl_agent.py --config {config} --seed {seed} --output {output}"
@@ -65,7 +67,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         -h|--help)
-            head -n 36 "$0" | tail -n +2 | sed 's/^# //' | sed 's/^#//'
+            head -n 40 "$0" | tail -n +2 | sed 's/^# //' | sed 's/^#//'
             exit 0
             ;;
         *)
@@ -81,8 +83,8 @@ echo "=== Classification Comparison Experiments ==="
 echo "Method: $METHOD"
 echo "Seeds: $SEEDS"
 echo "Log directory: $LOG_DIR"
-if [[ "$DRY_RUN" == "true" ]]; then
-    echo "Mode: DRY RUN (commands will be printed but not executed)"
+if [[ "$DRY_RUN" == true ]]; then
+    echo "Mode: DRY RUN (commands will be shown but not executed)"
 fi
 echo ""
 
@@ -150,9 +152,15 @@ substitute_placeholders() {
     cmd="${cmd//\{seed\}/$seed}"
     cmd="${cmd//\{output\}/$output}"
     
-    # Substitute shell-style $seed and ${seed}
+    # Substitute shell-style ${seed}, ${output}, ${config} (braced form)
     cmd="${cmd//\$\{seed\}/$seed}"
+    cmd="${cmd//\$\{output\}/$output}"
+    cmd="${cmd//\$\{config\}/$config}"
+    
+    # Substitute shell-style $seed, $output, $config (unbraced form)
     cmd="${cmd//\$seed/$seed}"
+    cmd="${cmd//\$output/$output}"
+    cmd="${cmd//\$config/$config}"
     
     echo "$cmd"
 }
@@ -180,53 +188,27 @@ print_missing_entrypoint_guidance() {
     echo ""
 }
 
-# Check if a python script referenced in a command exists
-# Args: $1 = command string
-# Returns: 0 if script exists or not a local python script, 1 if missing
-check_python_script_exists() {
+# Check if a command is a simple Python command
+# A simple Python command starts with 'python' or 'python3' and doesn't contain
+# shell operators like pipes, redirects, or chained commands
+# Args: $1 = command
+# Returns: 0 (true) if simple, 1 (false) if complex
+is_simple_python_command() {
     local cmd="$1"
-    local script_path=""
     
-    # Check if command starts with "python " or "python3 "
-    if [[ "$cmd" =~ ^python[3]?[[:space:]]+([^[:space:]]+) ]]; then
-        script_path="${BASH_REMATCH[1]}"
-        
-        # Skip if it looks like a module call (e.g., -m module)
-        if [[ "$script_path" == "-m" ]] || [[ "$script_path" == "-c" ]]; then
-            return 0
-        fi
-        
-        # Check if the script path exists
-        if [[ ! -f "$script_path" ]]; then
-            return 1
-        fi
+    # Check if it starts with python or python3
+    if [[ ! "$cmd" =~ ^[[:space:]]*(python3?|python[0-9.]+)[[:space:]] ]]; then
+        return 1
+    fi
+    
+    # Check for shell operators (pipes, redirects, chained commands, subshells)
+    # This is a heuristic - a complex command would use |, ||, &&, ;, >, <, $( )
+    # shellcheck disable=SC2016
+    if [[ "$cmd" == *"|"* ]] || [[ "$cmd" == *";"* ]] || [[ "$cmd" == *">"* ]] || [[ "$cmd" == *"<"* ]] || [[ "$cmd" == *"&&"* ]] || [[ "$cmd" == *'$('* ]]; then
+        return 1
     fi
     
     return 0
-}
-
-# Print guidance when a python script is missing
-# Args: $1 = method, $2 = script_path, $3 = command
-print_missing_script_guidance() {
-    local method="$1"
-    local script_path="$2"
-    local cmd="$3"
-    
-    echo ""
-    echo "ERROR: Python script not found: $script_path"
-    echo ""
-    echo "The entrypoint_command references a script that does not exist:"
-    echo "  $cmd"
-    echo ""
-    echo "To fix this, either:"
-    echo "  1. Create the missing script at: $script_path"
-    echo "  2. Update the entrypoint_command in the YAML config to use an existing script"
-    echo "  3. Use --dry-run to preview commands without executing them"
-    echo ""
-    echo "Example demo runner scripts are available in tools/:"
-    echo "  - tools/run_drl_agent.py (demo DRL runner)"
-    echo "  - tools/run_ea_agent.py (demo EA runner)"
-    echo ""
 }
 
 # Run an experiment for a specific method and seed
@@ -259,32 +241,37 @@ run_experiment() {
     echo "  Config: $config_file"
     echo "  Output: $output_file"
     echo "  Command: $cmd"
+    
+    # Detect command type and inform user
+    if is_simple_python_command "$cmd"; then
+        echo "  Type: Simple Python command"
+    else
+        echo "  Type: Complex shell command (will use eval)"
+    fi
     echo ""
     
-    # In dry-run mode, just print the command without executing
-    if [[ "$DRY_RUN" == "true" ]]; then
-        echo "[DRY RUN] $method experiment with seed $seed would be executed."
+    # If dry-run mode, don't execute
+    if [[ "$DRY_RUN" == true ]]; then
+        echo "[DRY RUN] Would execute: $cmd"
         echo ""
         return 0
     fi
     
-    # Check if the python script exists before executing
-    if ! check_python_script_exists "$cmd"; then
-        # Extract the script path from the command
-        local script_path=""
-        if [[ "$cmd" =~ ^python[3]?[[:space:]]+([^[:space:]]+) ]]; then
-            script_path="${BASH_REMATCH[1]}"
+    # Execute the command and tee output to log file
+    # For simple Python commands, we can run directly without eval
+    # For complex commands with shell operators, we need eval
+    if is_simple_python_command "$cmd"; then
+        # Simple Python command - can run directly with proper word splitting
+        if ! $cmd 2>&1 | tee "$output_file"; then
+            echo "ERROR: $method experiment with seed $seed failed!"
+            return 1
         fi
-        print_missing_script_guidance "$method" "$script_path" "$cmd"
-        return 1
-    fi
-    
-    # Execute the command
-    # Note: The entrypoint command is expected to handle its own logging to the output file.
-    # We redirect stdout/stderr to the log file for commands that write to stdout.
-    if ! eval "$cmd"; then
-        echo "ERROR: $method experiment with seed $seed failed!"
-        return 1
+    else
+        # Complex shell command - use eval
+        if ! eval "$cmd" 2>&1 | tee "$output_file"; then
+            echo "ERROR: $method experiment with seed $seed failed!"
+            return 1
+        fi
     fi
     
     echo "$method experiment with seed $seed completed successfully."
