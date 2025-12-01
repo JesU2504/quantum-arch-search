@@ -47,19 +47,26 @@ def save_metadata(path, metadata):
         json.dump(metadata, f, indent=2, sort_keys=True)
 
 
+def set_global_seed(seed, logger=None):
+    """Best-effort global seeding for reproducibility."""
+    if logger is not None:
+        logger.info(f"Setting global seed = {seed}")
+    import random
+    import numpy as _np
+    random.seed(seed)
+    _np.random.seed(seed)
+    try:
+        import torch as _torch
+        _torch.manual_seed(seed)
+        if _torch.cuda.is_available():
+            _torch.cuda.manual_seed_all(seed)
+    except Exception:
+        if logger is not None:
+            logger.warning("Torch not available; skipping torch seeding.")
+
+
 def run_pipeline(args):
     # Lazy imports of experiment entrypoints
-    # Global reproducibility seeding
-    if args.seed is not None:
-        import random, numpy as _np
-        random.seed(args.seed)
-        _np.random.seed(args.seed)
-        try:
-            import torch as _torch
-            _torch.manual_seed(args.seed)
-        except Exception:
-            pass
-
     from experiments.train_architect import train_baseline_architect
     from experiments.train_saboteur_only import train_saboteur_only
     from experiments.train_adversarial import train_adversarial
@@ -80,9 +87,6 @@ def run_pipeline(args):
     logger = setup_logger(log_file)
 
     # --- LOAD PARAMETERS FROM CONFIG.PY ---
-    # We ignore the 'preset' argument's hardcoded values and look up
-    # the correct params based on n_qubits directly.
-    
     n_qubits = args.n_qubits
     if n_qubits not in exp_config.EXPERIMENT_PARAMS:
         logger.warning(f"No specific config found for {n_qubits} qubits. Defaulting to 4-qubit settings.")
@@ -109,9 +113,13 @@ def run_pipeline(args):
     if args.saboteur_steps is not None:
         saboteur_steps = args.saboteur_steps
 
-    # Get effective n_seeds
+    # Effective n_seeds (for lambda sweep, adversarial multi-seed, parameter recovery)
     effective_n_seeds = args.n_seeds if args.n_seeds is not None else exp_config.N_SEEDS
-    
+
+    # Base seed for reproducibility
+    base_seed = args.seed if args.seed is not None else 42
+
+    # Top-level metadata
     metadata = {
         'timestamp': timestamp,
         'n_qubits': args.n_qubits,
@@ -119,7 +127,7 @@ def run_pipeline(args):
         'saboteur_steps': saboteur_steps,
         'adversarial_gens': adversarial_gens,
         'adversarial_arch_steps': adversarial_arch_steps,
-        'seed': args.seed,
+        'seed': base_seed if args.seed is not None else None,
         'n_seeds': effective_n_seeds,
         'source': 'experiments.config',
     }
@@ -131,6 +139,9 @@ def run_pipeline(args):
     os.makedirs(baseline_dir, exist_ok=True)
     if not args.skip_baseline:
         logger.info('Running baseline architect (noiseless)')
+        # Seed once for baseline
+        if args.seed is not None:
+            set_global_seed(base_seed, logger=logger)
         train_baseline_architect(
             results_dir=baseline_dir,
             n_qubits=args.n_qubits,
@@ -147,8 +158,13 @@ def run_pipeline(args):
     os.makedirs(lambda_sweep_dir, exist_ok=True)
     if not args.skip_lambda_sweep:
         logger.info('Running lambda sweep experiment (ExpPlan Part 1, Exp 1.1) with n_seeds=%d', effective_n_seeds)
-        run_lambda_sweep(results_dir=lambda_sweep_dir, logger=logger, training_steps=baseline_steps, 
-                         n_seeds=effective_n_seeds, n_qubits=args.n_qubits)
+        run_lambda_sweep(
+            results_dir=lambda_sweep_dir,
+            logger=logger,
+            training_steps=baseline_steps, 
+            n_seeds=effective_n_seeds,
+            n_qubits=args.n_qubits
+        )
         logger.info('Lambda sweep complete. Results saved to %s', lambda_sweep_dir)
     else:
         logger.info('Skipping lambda sweep as requested')
@@ -168,51 +184,80 @@ def run_pipeline(args):
                 if not static_circuit.all_operations():
                     logger.error(f'Loaded circuit from {vanilla_src} is empty. Cannot run saboteur-only.')
                 else:
-                    train_saboteur_only(results_dir=saboteur_dir, n_qubits=args.n_qubits, 
-                                      saboteur_steps=saboteur_steps, n_steps=saboteur_n_steps, 
-                                      max_error_level=1, baseline_circuit_path=vanilla_src)
+                    # Optional: seed for saboteur-only
+                    if args.seed is not None:
+                        set_global_seed(base_seed + 1000, logger=logger)
+                    train_saboteur_only(
+                        results_dir=saboteur_dir,
+                        n_qubits=args.n_qubits, 
+                        saboteur_steps=saboteur_steps,
+                        n_steps=saboteur_n_steps, 
+                        max_error_level=1,
+                        baseline_circuit_path=vanilla_src
+                    )
             except Exception as e:
                 logger.error(f'Error loading circuit from {vanilla_src}: {e}. Cannot run saboteur-only.')
     else:
         logger.info('Skipping saboteur-only as requested')
 
-    # 3) Adversarial co-evolution
+    # 3) Adversarial co-evolution (MULTI-SEED)
     adversarial_dir = os.path.join(base, 'adversarial')
     os.makedirs(adversarial_dir, exist_ok=True)
-    adv_training_dir = None
+    adv_training_dirs = []
+    canonical_adv_training_dir = None
+
     if not args.skip_adversarial:
-        logger.info(f'Running adversarial co-evolution ({adversarial_gens} generations)')
-        train_adversarial(
-            results_dir=adversarial_dir,
-            n_qubits=args.n_qubits,
-            n_generations=adversarial_gens,
-            architect_steps_per_generation=adversarial_arch_steps,
-            saboteur_steps_per_generation=adversarial_sab_steps,
-            max_circuit_gates=args.max_circuit_gates,
-            fidelity_threshold=args.fidelity_threshold,
-            include_rotations=exp_config.INCLUDE_ROTATIONS,
-            task_mode=args.task_mode
+        logger.info(
+            'Running adversarial co-evolution for %d seeds (%d generations each)',
+            effective_n_seeds, adversarial_gens
         )
-        
-        # Plotting trigger
-        from glob import glob
-        import re
-        import subprocess
-        adv_subdirs = glob(os.path.join(adversarial_dir, 'adversarial_training_*'))
-        if adv_subdirs:
-            # Sort by timestamp
-            adv_subdirs.sort(key=lambda x: re.findall(r'adversarial_training_(\d+)-(\d+)', x)[0] if re.findall(r'adversarial_training_(\d+)-(\d+)', x) else x)
-            adv_training_dir = adv_subdirs[-1]
-            logger.info(f'Plotting coevolutionary process from {adv_training_dir}')
-            try:
-                result = subprocess.run([
-                    'python', 'experiments/plot_coevolution.py',
-                    '--run-dir', adv_training_dir
-                ], capture_output=True, text=True)
-                if result.stdout: logger.info(result.stdout)
-                if result.stderr: logger.warning(result.stderr)
-            except Exception as e:
-                logger.error(f'Error running plot_coevolution.py: {e}')
+
+        # For each seed, run a full adversarial training
+        for k in range(effective_n_seeds):
+            seed_val = base_seed + 2000 + k  # offset to avoid overlap with baseline/sab-only
+            logger.info(f'Adversarial training: seed index {k} (global seed={seed_val})')
+            set_global_seed(seed_val, logger=logger)
+
+            seed_dir = os.path.join(adversarial_dir, f'seed_{k}')
+            os.makedirs(seed_dir, exist_ok=True)
+
+            _, _, log_dir = train_adversarial(
+                results_dir=seed_dir,
+                n_qubits=args.n_qubits,
+                n_generations=adversarial_gens,
+                architect_steps_per_generation=adversarial_arch_steps,
+                saboteur_steps_per_generation=adversarial_sab_steps,
+                max_circuit_gates=args.max_circuit_gates,
+                fidelity_threshold=args.fidelity_threshold,
+                include_rotations=exp_config.INCLUDE_ROTATIONS,
+                task_mode=args.task_mode
+            )
+            adv_training_dirs.append(log_dir)
+
+        # Choose the first seed's run as canonical for downstream (compare, cross-noise)
+        if adv_training_dirs:
+            canonical_adv_training_dir = adv_training_dirs[0]
+            logger.info(f'Canonical adversarial run (for comparison): {canonical_adv_training_dir}')
+
+        # Multi-seed plotting
+        try:
+            import subprocess
+            logger.info('Plotting multi-seed coevolution from %s', adversarial_dir)
+            result = subprocess.run(
+                [
+                    'python', 'experiments/plot_coevolution_multiseed.py',
+                    '--root-dir', adversarial_dir,
+                    '--out', os.path.join(adversarial_dir, 'coevolution_multiseed.png')
+                ],
+                capture_output=True,
+                text=True
+            )
+            if result.stdout:
+                logger.info(result.stdout)
+            if result.stderr:
+                logger.warning(result.stderr)
+        except Exception as e:
+            logger.error(f'Error running plot_coevolution_multiseed.py: {e}')
     else:
         logger.info('Skipping adversarial as requested')
 
@@ -225,17 +270,29 @@ def run_pipeline(args):
     if os.path.exists(vanilla_src):
         shutil.copy(vanilla_src, os.path.join(run0, 'circuit_vanilla.json'))
     
-    # Locate robust circuit
+    # Locate canonical robust circuit:
+    # 1) Prefer base/adversarial/circuit_robust.json (if we copy it there)
+    # 2) Otherwise, fall back to canonical_adv_training_dir/circuit_robust.json
     robust_src = os.path.join(adversarial_dir, 'circuit_robust.json')
-    if not os.path.exists(robust_src) and adv_training_dir:
-         # Fallback to the specific training dir if the main link isn't there
-         robust_src = os.path.join(adv_training_dir, 'circuit_robust.json')
+    if not os.path.exists(robust_src) and canonical_adv_training_dir:
+        robust_src = os.path.join(canonical_adv_training_dir, 'circuit_robust.json')
+
+    # If we found a robust circuit in the canonical training dir but not at root,
+    # copy it to the adversarial root and to compare/run_0.
+    if canonical_adv_training_dir:
+        cand = os.path.join(canonical_adv_training_dir, 'circuit_robust.json')
+        if os.path.exists(cand):
+            # Copy to adversarial root for convenience
+            target_root_robust = os.path.join(adversarial_dir, 'circuit_robust.json')
+            shutil.copy(cand, target_root_robust)
+            robust_src = target_root_robust
+            logger.info(f'Canonical robust circuit copied to {target_root_robust}')
 
     if os.path.exists(robust_src):
-         shutil.copy(robust_src, os.path.join(run0, 'circuit_robust.json'))
-         logger.info(f'Robust circuit copied to comparison folder')
+        shutil.copy(robust_src, os.path.join(run0, 'circuit_robust.json'))
+        logger.info('Robust circuit copied to comparison folder')
     else:
-         logger.warning('Robust circuit not found for comparison.')
+        logger.warning('Robust circuit not found for comparison.')
 
     # 5) Compare
     if not args.skip_compare:
@@ -255,7 +312,7 @@ def run_pipeline(args):
                 baseline_circuit_path=vanilla_src,
                 robust_circuit_path=robust_to_use,
                 n_repetitions=effective_n_seeds,
-                base_seed=args.seed if args.seed is not None else 42,
+                base_seed=base_seed,
                 logger=logger
             )
 
@@ -266,21 +323,20 @@ def run_pipeline(args):
         vanilla_circuit_path = os.path.join(run0, 'circuit_vanilla.json')
         robust_circuit_path = os.path.join(run0, 'circuit_robust.json')
         if os.path.exists(vanilla_circuit_path) and os.path.exists(robust_circuit_path):
-             logger.info('Running cross-noise robustness experiment')
-             run_cross_noise_robustness(
+            logger.info('Running cross-noise robustness experiment')
+            run_cross_noise_robustness(
                 baseline_circuit_path=vanilla_circuit_path,
                 robust_circuit_path=robust_circuit_path,
                 output_dir=cross_noise_dir,
                 n_qubits=args.n_qubits,
                 logger=logger
-             )
+            )
 
     logger.info('Pipeline finished. Results in %s', base)
 
 
 def parse_args():
     p = argparse.ArgumentParser(description='Run the experiment pipeline')
-    # Preset arg removed or ignored in favor of config.py + n_qubits
     p.add_argument('--n-qubits', type=int, default=4, help="Number of qubits (3=Quick, 4=Full, 5=Long)")
     p.add_argument('--base-dir', type=str, default=None)
     p.add_argument('--skip-baseline', action='store_true')
@@ -293,10 +349,15 @@ def parse_args():
     p.add_argument('--baseline-steps', type=int, default=None)
     p.add_argument('--saboteur-steps', type=int, default=None)
     p.add_argument('--max-circuit-gates', type=int, default=20)
-    p.add_argument('--fidelity-threshold', type=float, default=1.1) # Train by improvement
+    p.add_argument('--fidelity-threshold', type=float, default=1.1)  # Train by improvement
     p.add_argument('--seed', type=int, default=None)
     p.add_argument('--n-seeds', type=int, default=None)
-    p.add_argument('--task-mode', type=str, default=None, choices=['state_preparation', 'unitary_preparation'])
+    p.add_argument(
+        '--task-mode',
+        type=str,
+        default=None,
+        choices=['state_preparation', 'unitary_preparation']
+    )
     return p.parse_args()
 
 

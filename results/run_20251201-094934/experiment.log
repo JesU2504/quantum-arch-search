@@ -1,3 +1,87 @@
 2025-12-01 09:49:34,282 INFO: Loading experimental parameters for 3 qubits from config.py
 2025-12-01 09:49:34,283 INFO: Starting pipeline with metadata: {'timestamp': '20251201-094934', 'n_qubits': 3, 'baseline_steps': 40960, 'saboteur_steps': 20480, 'adversarial_gens': 10, 'adversarial_arch_steps': 4096, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config'}
 2025-12-01 09:49:34,283 INFO: Running baseline architect (noiseless)
+2025-12-01 10:02:05,257 INFO: Running lambda sweep experiment (ExpPlan Part 1, Exp 1.1) with n_seeds=5
+2025-12-01 10:02:05,257 INFO: === Lambda Sweep Experiment (ExpPlan Part 1, Exp 1.1) ===
+2025-12-01 10:02:05,257 INFO: Target: ghz, Mode: state_preparation
+2025-12-01 10:02:05,257 INFO: Experiment label: ghz_state_preparation
+2025-12-01 10:02:05,258 INFO: Lambda values: [0.001, 0.005, 0.01, 0.05, 0.1]
+2025-12-01 10:02:05,258 INFO: Seeds per lambda: 5
+2025-12-01 10:02:05,258 INFO: Qubits: 3
+2025-12-01 10:02:05,258 INFO: Training steps per trial: 40960
+2025-12-01 10:02:05,258 INFO: Results directory: results/run_20251201-094934/lambda_sweep
+2025-12-01 10:02:05,258 INFO: 
+--- Lambda = 0.001 ---
+2025-12-01 10:02:05,258 INFO:   Seed 1/5...
+2025-12-01 10:12:39,883 INFO:     Best fidelity: 1.0000, CNOT count: 9, Success: True
+2025-12-01 10:12:39,884 INFO:   Seed 2/5...
+2025-12-01 10:23:17,037 INFO:     Best fidelity: 1.0000, CNOT count: 9, Success: True
+2025-12-01 10:23:17,037 INFO:   Seed 3/5...
+2025-12-01 10:33:46,378 INFO:     Best fidelity: 1.0000, CNOT count: 9, Success: True
+2025-12-01 10:33:46,378 INFO:   Seed 4/5...
+2025-12-01 10:44:23,821 INFO:     Best fidelity: 1.0000, CNOT count: 4, Success: True
+2025-12-01 10:44:23,821 INFO:   Seed 5/5...
+2025-12-01 10:56:41,786 INFO:     Best fidelity: 1.0000, CNOT count: 11, Success: True
+2025-12-01 10:56:41,787 INFO:   Summary for λ=0.001:
+2025-12-01 10:56:41,787 INFO:     Success rate: 100.00% (n=5)
+2025-12-01 10:56:41,787 INFO:     Fidelity: 1.0000 ± 0.0000 (n=5)
+2025-12-01 10:56:41,787 INFO:     CNOT count: 8.4000 ± 2.6077 (n=5)
+2025-12-01 10:56:41,787 INFO: 
+--- Lambda = 0.005 ---
+2025-12-01 10:56:41,787 INFO:   Seed 1/5...
+2025-12-01 11:08:52,746 INFO:     Best fidelity: 1.0000, CNOT count: 9, Success: True
+2025-12-01 11:08:52,746 INFO:   Seed 2/5...
+2025-12-01 11:21:39,061 INFO:     Best fidelity: 1.0000, CNOT count: 9, Success: True
+2025-12-01 11:21:39,061 INFO:   Seed 3/5...
+2025-12-01 11:35:22,817 INFO:     Best fidelity: 1.0000, CNOT count: 9, Success: True
+2025-12-01 11:35:22,817 INFO:   Seed 4/5...
+2025-12-01 11:52:33,549 INFO:     Best fidelity: 1.0000, CNOT count: 4, Success: True
+2025-12-01 11:52:33,549 INFO:   Seed 5/5...
+2025-12-01 12:11:50,139 INFO:     Best fidelity: 1.0000, CNOT count: 11, Success: True
+2025-12-01 12:11:50,139 INFO:   Summary for λ=0.005:
+2025-12-01 12:11:50,139 INFO:     Success rate: 100.00% (n=5)
+2025-12-01 12:11:50,140 INFO:     Fidelity: 1.0000 ± 0.0000 (n=5)
+2025-12-01 12:11:50,140 INFO:     CNOT count: 8.4000 ± 2.6077 (n=5)
+2025-12-01 12:11:50,140 INFO: 
+--- Lambda = 0.01 ---
+2025-12-01 12:11:50,140 INFO:   Seed 1/5...
+2025-12-01 12:26:12,935 INFO:     Best fidelity: 1.0000, CNOT count: 9, Success: True
+2025-12-01 12:26:12,935 INFO:   Seed 2/5...
+2025-12-01 12:36:51,490 INFO:     Best fidelity: 1.0000, CNOT count: 9, Success: True
+2025-12-01 12:36:51,490 INFO:   Seed 3/5...
+2025-12-01 12:47:24,872 INFO:     Best fidelity: 1.0000, CNOT count: 9, Success: True
+2025-12-01 12:47:24,872 INFO:   Seed 4/5...
+2025-12-01 12:58:01,797 INFO:     Best fidelity: 1.0000, CNOT count: 4, Success: True
+2025-12-01 12:58:01,797 INFO:   Seed 5/5...
+2025-12-01 13:08:35,631 INFO:     Best fidelity: 1.0000, CNOT count: 11, Success: True
+2025-12-01 13:08:35,632 INFO:   Summary for λ=0.01:
+2025-12-01 13:08:35,632 INFO:     Success rate: 100.00% (n=5)
+2025-12-01 13:08:35,632 INFO:     Fidelity: 1.0000 ± 0.0000 (n=5)
+2025-12-01 13:08:35,632 INFO:     CNOT count: 8.4000 ± 2.6077 (n=5)
+2025-12-01 13:08:35,632 INFO: 
+--- Lambda = 0.05 ---
+2025-12-01 13:08:35,632 INFO:   Seed 1/5...
+2025-12-01 13:19:09,646 INFO:     Best fidelity: 1.0000, CNOT count: 9, Success: True
+2025-12-01 13:19:09,646 INFO:   Seed 2/5...
+2025-12-01 13:29:50,543 INFO:     Best fidelity: 1.0000, CNOT count: 9, Success: True
+2025-12-01 13:29:50,543 INFO:   Seed 3/5...
+2025-12-01 13:40:23,849 INFO:     Best fidelity: 1.0000, CNOT count: 9, Success: True
+2025-12-01 13:40:23,849 INFO:   Seed 4/5...
+2025-12-01 13:51:00,897 INFO:     Best fidelity: 1.0000, CNOT count: 4, Success: True
+2025-12-01 13:51:00,897 INFO:   Seed 5/5...
+2025-12-01 14:01:38,851 INFO:     Best fidelity: 1.0000, CNOT count: 8, Success: True
+2025-12-01 14:01:38,852 INFO:   Summary for λ=0.05:
+2025-12-01 14:01:38,852 INFO:     Success rate: 100.00% (n=5)
+2025-12-01 14:01:38,852 INFO:     Fidelity: 1.0000 ± 0.0000 (n=5)
+2025-12-01 14:01:38,852 INFO:     CNOT count: 7.8000 ± 2.1679 (n=5)
+2025-12-01 14:01:38,852 INFO: 
+--- Lambda = 0.1 ---
+2025-12-01 14:01:38,852 INFO:   Seed 1/5...
+2025-12-01 14:12:14,150 INFO:     Best fidelity: 1.0000, CNOT count: 9, Success: True
+2025-12-01 14:12:14,150 INFO:   Seed 2/5...
+2025-12-01 14:22:49,888 INFO:     Best fidelity: 1.0000, CNOT count: 9, Success: True
+2025-12-01 14:22:49,888 INFO:   Seed 3/5...
+2025-12-01 14:33:21,890 INFO:     Best fidelity: 1.0000, CNOT count: 9, Success: True
+2025-12-01 14:33:21,890 INFO:   Seed 4/5...
+2025-12-01 14:44:21,300 INFO:     Best fidelity: 1.0000, CNOT count: 4, Success: True
+2025-12-01 14:44:21,300 INFO:   Seed 5/5...
