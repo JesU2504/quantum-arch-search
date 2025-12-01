@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # ============================================================================
 # run_experiments.sh — Run classification experiments for DRL vs EA comparison
 # ============================================================================
@@ -8,12 +8,13 @@
 # placeholders and logs output per-seed.
 #
 # Usage:
-#   ./comparison/run_experiments.sh [--method drl|ea|both] [--seeds "42 43 44"] [--log-dir path]
+#   ./comparison/run_experiments.sh [--method drl|ea|both] [--seeds "42 43 44"] [--log-dir path] [--dry-run]
 #
 # Arguments:
 #   --method    Method to run: "drl", "ea", or "both" (default: both)
 #   --seeds     Space-separated list of seeds, e.g. "42 43 44" (default: "42 43")
 #   --log-dir   Directory for log files (default: comparison/logs)
+#   --dry-run   Print commands without executing them
 #
 # Prerequisites:
 #   - Set entrypoint_command in configs/drl_classification.yaml and/or ea_classification.yaml
@@ -24,6 +25,8 @@
 #   {seed}    — Current seed value
 #   {output}  — Output log file path (auto-generated: LOG_DIR/METHOD/METHOD_classif_seed{seed}.log)
 #   $seed / ${seed} — Shell-style seed substitution (also supported)
+#   $output / ${output} — Shell-style output substitution (also supported)
+#   $config / ${config} — Shell-style config substitution (also supported)
 #
 # Example entrypoint_command in YAML:
 #   entrypoint_command: "python tools/run_drl_agent.py --config {config} --seed {seed} --output {output}"
@@ -42,6 +45,7 @@ SEEDS="${SEEDS:-42 43}"
 DRL_CONFIG="comparison/experiments/configs/drl_classification.yaml"
 EA_CONFIG="comparison/experiments/configs/ea_classification.yaml"
 LOG_DIR="comparison/logs"
+DRY_RUN=false
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -58,13 +62,17 @@ while [[ $# -gt 0 ]]; do
             LOG_DIR="$2"
             shift 2
             ;;
+        --dry-run)
+            DRY_RUN=true
+            shift
+            ;;
         -h|--help)
-            head -n 35 "$0" | tail -n +2 | sed 's/^# //' | sed 's/^#//'
+            head -n 40 "$0" | tail -n +2 | sed 's/^# //' | sed 's/^#//'
             exit 0
             ;;
         *)
             echo "Unknown option: $1"
-            echo "Usage: $0 [--method drl|ea|both] [--seeds \"42 43 44\"] [--log-dir path]"
+            echo "Usage: $0 [--method drl|ea|both] [--seeds \"42 43 44\"] [--log-dir path] [--dry-run]"
             echo "Run with --help for more information."
             exit 1
             ;;
@@ -75,6 +83,9 @@ echo "=== Classification Comparison Experiments ==="
 echo "Method: $METHOD"
 echo "Seeds: $SEEDS"
 echo "Log directory: $LOG_DIR"
+if [[ "$DRY_RUN" == true ]]; then
+    echo "Mode: DRY RUN (commands will be shown but not executed)"
+fi
 echo ""
 
 # Create log directories
@@ -141,9 +152,15 @@ substitute_placeholders() {
     cmd="${cmd//\{seed\}/$seed}"
     cmd="${cmd//\{output\}/$output}"
     
-    # Substitute shell-style $seed and ${seed}
+    # Substitute shell-style ${seed}, ${output}, ${config} (braced form)
     cmd="${cmd//\$\{seed\}/$seed}"
+    cmd="${cmd//\$\{output\}/$output}"
+    cmd="${cmd//\$\{config\}/$config}"
+    
+    # Substitute shell-style $seed, $output, $config (unbraced form)
     cmd="${cmd//\$seed/$seed}"
+    cmd="${cmd//\$output/$output}"
+    cmd="${cmd//\$config/$config}"
     
     echo "$cmd"
 }
@@ -169,6 +186,29 @@ print_missing_entrypoint_guidance() {
     echo "  {seed}   — Current seed value"
     echo "  {output} — Output log file path"
     echo ""
+}
+
+# Check if a command is a simple Python command
+# A simple Python command starts with 'python' or 'python3' and doesn't contain
+# shell operators like pipes, redirects, or chained commands
+# Args: $1 = command
+# Returns: 0 (true) if simple, 1 (false) if complex
+is_simple_python_command() {
+    local cmd="$1"
+    
+    # Check if it starts with python or python3
+    if [[ ! "$cmd" =~ ^[[:space:]]*(python3?|python[0-9.]+)[[:space:]] ]]; then
+        return 1
+    fi
+    
+    # Check for shell operators (pipes, redirects, chained commands, subshells)
+    # This is a heuristic - a complex command would use |, ||, &&, ;, >, <, $( )
+    # shellcheck disable=SC2016
+    if [[ "$cmd" == *"|"* ]] || [[ "$cmd" == *";"* ]] || [[ "$cmd" == *">"* ]] || [[ "$cmd" == *"<"* ]] || [[ "$cmd" == *"&&"* ]] || [[ "$cmd" == *'$('* ]]; then
+        return 1
+    fi
+    
+    return 0
 }
 
 # Run an experiment for a specific method and seed
@@ -197,12 +237,37 @@ run_experiment() {
     echo "  Config: $config_file"
     echo "  Output: $output_file"
     echo "  Command: $cmd"
+    
+    # Detect command type and inform user
+    if is_simple_python_command "$cmd"; then
+        echo "  Type: Simple Python command"
+    else
+        echo "  Type: Complex shell command (will use eval)"
+    fi
     echo ""
     
+    # If dry-run mode, don't execute
+    if [[ "$DRY_RUN" == true ]]; then
+        echo "[DRY RUN] Would execute: $cmd"
+        echo ""
+        return 0
+    fi
+    
     # Execute the command and tee output to log file
-    if ! eval "$cmd" 2>&1 | tee "$output_file"; then
-        echo "ERROR: $method experiment with seed $seed failed!"
-        return 1
+    # For simple Python commands, we can run directly without eval
+    # For complex commands with shell operators, we need eval
+    if is_simple_python_command "$cmd"; then
+        # Simple Python command - can run directly with proper word splitting
+        if ! $cmd 2>&1 | tee "$output_file"; then
+            echo "ERROR: $method experiment with seed $seed failed!"
+            return 1
+        fi
+    else
+        # Complex shell command - use eval
+        if ! eval "$cmd" 2>&1 | tee "$output_file"; then
+            echo "ERROR: $method experiment with seed $seed failed!"
+            return 1
+        fi
     fi
     
     echo "$method experiment with seed $seed completed successfully."
