@@ -87,9 +87,13 @@ EXIT_CODE=0
 # Extract entrypoint_command from a YAML config file (line-based extraction)
 # Args: $1 = config file path
 # Returns: the entrypoint_command value (single line expected)
+# Note: Supports both double and single quotes, e.g.:
+#   entrypoint_command: "python foo.py --seed {seed}"
+#   entrypoint_command: 'python foo.py --seed {seed}'
 extract_entrypoint_command() {
     local config_file="$1"
     local entrypoint_line=""
+    local extracted_cmd=""
     
     if [[ ! -f "$config_file" ]]; then
         echo ""
@@ -97,12 +101,27 @@ extract_entrypoint_command() {
     fi
     
     # Extract the line containing entrypoint_command that has an actual command
-    # Look for lines like: entrypoint_command: "python ..."
-    entrypoint_line=$(grep -E '^entrypoint_command:\s*"' "$config_file" 2>/dev/null | head -n 1 || true)
+    # Look for lines like: entrypoint_command: "python ..." or entrypoint_command: 'python ...'
+    # Note: Using character class ["'] to match both double and single quotes
+    entrypoint_line=$(grep -E "^entrypoint_command:\s*[\"']" "$config_file" 2>/dev/null | head -n 1 || true)
     
     if [[ -n "$entrypoint_line" ]]; then
-        # Extract the command from within quotes
-        echo "$entrypoint_line" | sed 's/^entrypoint_command:\s*"//' | sed 's/"$//'
+        # Extract the command from within quotes (double or single)
+        # First remove the key and any whitespace
+        extracted_cmd="${entrypoint_line#entrypoint_command:}"
+        # Trim leading whitespace
+        extracted_cmd="${extracted_cmd#"${extracted_cmd%%[![:space:]]*}"}"
+        # Remove surrounding quotes (double or single) and any trailing whitespace/comments
+        if [[ "$extracted_cmd" == \"* ]]; then
+            # Double quotes
+            extracted_cmd="${extracted_cmd#\"}"
+            extracted_cmd="${extracted_cmd%%\"*}"
+        elif [[ "$extracted_cmd" == \'* ]]; then
+            # Single quotes
+            extracted_cmd="${extracted_cmd#\'}"
+            extracted_cmd="${extracted_cmd%%\'*}"
+        fi
+        echo "$extracted_cmd"
         return
     fi
     
