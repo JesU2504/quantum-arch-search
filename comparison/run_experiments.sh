@@ -8,12 +8,13 @@
 # placeholders and logs output per-seed.
 #
 # Usage:
-#   ./comparison/run_experiments.sh [--method drl|ea|both] [--seeds "42 43 44"] [--log-dir path]
+#   ./comparison/run_experiments.sh [--method drl|ea|both] [--seeds "42 43 44"] [--log-dir path] [--dry-run]
 #
 # Arguments:
 #   --method    Method to run: "drl", "ea", or "both" (default: both)
 #   --seeds     Space-separated list of seeds, e.g. "42 43 44" (default: "42 43")
 #   --log-dir   Directory for log files (default: comparison/logs)
+#   --dry-run   Print planned commands without executing them
 #
 # Prerequisites:
 #   - Set entrypoint_command in configs/drl_classification.yaml and/or ea_classification.yaml
@@ -42,6 +43,7 @@ SEEDS="${SEEDS:-42 43}"
 DRL_CONFIG="comparison/experiments/configs/drl_classification.yaml"
 EA_CONFIG="comparison/experiments/configs/ea_classification.yaml"
 LOG_DIR="comparison/logs"
+DRY_RUN=false
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -58,13 +60,17 @@ while [[ $# -gt 0 ]]; do
             LOG_DIR="$2"
             shift 2
             ;;
+        --dry-run)
+            DRY_RUN=true
+            shift
+            ;;
         -h|--help)
-            head -n 35 "$0" | tail -n +2 | sed 's/^# //' | sed 's/^#//'
+            head -n 36 "$0" | tail -n +2 | sed 's/^# //' | sed 's/^#//'
             exit 0
             ;;
         *)
             echo "Unknown option: $1"
-            echo "Usage: $0 [--method drl|ea|both] [--seeds \"42 43 44\"] [--log-dir path]"
+            echo "Usage: $0 [--method drl|ea|both] [--seeds \"42 43 44\"] [--log-dir path] [--dry-run]"
             echo "Run with --help for more information."
             exit 1
             ;;
@@ -75,6 +81,9 @@ echo "=== Classification Comparison Experiments ==="
 echo "Method: $METHOD"
 echo "Seeds: $SEEDS"
 echo "Log directory: $LOG_DIR"
+if [[ "$DRY_RUN" == "true" ]]; then
+    echo "Mode: DRY RUN (commands will be printed but not executed)"
+fi
 echo ""
 
 # Create log directories
@@ -171,6 +180,55 @@ print_missing_entrypoint_guidance() {
     echo ""
 }
 
+# Check if a python script referenced in a command exists
+# Args: $1 = command string
+# Returns: 0 if script exists or not a local python script, 1 if missing
+check_python_script_exists() {
+    local cmd="$1"
+    local script_path=""
+    
+    # Check if command starts with "python " or "python3 "
+    if [[ "$cmd" =~ ^python[3]?[[:space:]]+([^[:space:]]+) ]]; then
+        script_path="${BASH_REMATCH[1]}"
+        
+        # Skip if it looks like a module call (e.g., -m module)
+        if [[ "$script_path" == "-m" ]] || [[ "$script_path" == "-c" ]]; then
+            return 0
+        fi
+        
+        # Check if the script path exists
+        if [[ ! -f "$script_path" ]]; then
+            return 1
+        fi
+    fi
+    
+    return 0
+}
+
+# Print guidance when a python script is missing
+# Args: $1 = method, $2 = script_path, $3 = command
+print_missing_script_guidance() {
+    local method="$1"
+    local script_path="$2"
+    local cmd="$3"
+    
+    echo ""
+    echo "ERROR: Python script not found: $script_path"
+    echo ""
+    echo "The entrypoint_command references a script that does not exist:"
+    echo "  $cmd"
+    echo ""
+    echo "To fix this, either:"
+    echo "  1. Create the missing script at: $script_path"
+    echo "  2. Update the entrypoint_command in the YAML config to use an existing script"
+    echo "  3. Use --dry-run to preview commands without executing them"
+    echo ""
+    echo "Example demo runner scripts are available in tools/:"
+    echo "  - tools/run_drl_agent.py (demo DRL runner)"
+    echo "  - tools/run_ea_agent.py (demo EA runner)"
+    echo ""
+}
+
 # Run an experiment for a specific method and seed
 # Args: $1 = method (drl|ea), $2 = seed, $3 = config file
 run_experiment() {
@@ -179,7 +237,11 @@ run_experiment() {
     local config_file="$3"
     local output_file="$LOG_DIR/$method/${method}_classif_seed${seed}.log"
     
-    echo "Running $method experiment with seed $seed..."
+    if [[ "$DRY_RUN" == "true" ]]; then
+        echo "[DRY RUN] Would run $method experiment with seed $seed..."
+    else
+        echo "Running $method experiment with seed $seed..."
+    fi
     
     # Extract entrypoint_command from config
     local entrypoint_cmd
@@ -199,8 +261,28 @@ run_experiment() {
     echo "  Command: $cmd"
     echo ""
     
-    # Execute the command and tee output to log file
-    if ! eval "$cmd" 2>&1 | tee "$output_file"; then
+    # In dry-run mode, just print the command without executing
+    if [[ "$DRY_RUN" == "true" ]]; then
+        echo "[DRY RUN] $method experiment with seed $seed would be executed."
+        echo ""
+        return 0
+    fi
+    
+    # Check if the python script exists before executing
+    if ! check_python_script_exists "$cmd"; then
+        # Extract the script path from the command
+        local script_path=""
+        if [[ "$cmd" =~ ^python[3]?[[:space:]]+([^[:space:]]+) ]]; then
+            script_path="${BASH_REMATCH[1]}"
+        fi
+        print_missing_script_guidance "$method" "$script_path" "$cmd"
+        return 1
+    fi
+    
+    # Execute the command
+    # Note: The entrypoint command is expected to handle its own logging to the output file.
+    # We redirect stdout/stderr to the log file for commands that write to stdout.
+    if ! eval "$cmd"; then
         echo "ERROR: $method experiment with seed $seed failed!"
         return 1
     fi
