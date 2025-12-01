@@ -13,7 +13,8 @@ def test_unitary_preparation_metric():
 
 def test_default_task_mode_returns_correct_metric():
     # When called without an argument, should use the module-level TASK_MODE
-    expected_metric = config._METRIC_FOR_TASK_MODE[config.TASK_MODE]
+    # Test through public API: result should match calling with explicit TASK_MODE
+    expected_metric = get_metric_key_for_task_mode(config.TASK_MODE)
     assert get_metric_key_for_task_mode() == expected_metric
 
 

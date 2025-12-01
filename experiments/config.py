@@ -86,7 +86,7 @@ def get_metric_key_for_task_mode(task_mode: str | None = None) -> str:
     if mode not in _METRIC_FOR_TASK_MODE:
         raise ValueError(
             f"Unknown task_mode '{mode}'. Supported modes: "
-            f"{list(_METRIC_FOR_TASK_MODE.keys())}"
+            f"{', '.join(_METRIC_FOR_TASK_MODE.keys())}"
         )
     return _METRIC_FOR_TASK_MODE[mode]
 
