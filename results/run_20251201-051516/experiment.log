@@ -1,0 +1,12 @@
+2025-12-01 05:15:16,203 INFO: Starting pipeline with metadata: {'timestamp': '20251201-051516', 'preset': 'quick', 'n_qubits': 3, 'baseline_steps': 2000, 'saboteur_steps': 2000, 'adversarial_gens': 4, 'seed': None, 'n_seeds': 5, 'statistical_protocol': {'n_seeds_per_setting': 5, 'aggregation_method': 'mean ± std', 'error_bars': True}}
+2025-12-01 05:15:16,204 INFO: Running baseline architect (noiseless)
+2025-12-01 05:16:13,889 INFO: Skipping lambda sweep as requested
+2025-12-01 05:16:13,890 INFO: Running saboteur-only (attacks baseline circuit)
+2025-12-01 05:16:47,535 INFO: Running adversarial co-evolution
+2025-12-01 05:20:33,479 INFO: Plotting coevolutionary process from results/run_20251201-051516/adversarial/adversarial_training_20251201-051647
+2025-12-01 05:20:37,533 INFO: --- Generating Co-Evolution Dashboard for results/run_20251201-051516/adversarial/adversarial_training_20251201-051647 ---
+Dashboard saved to: results/run_20251201-051516/adversarial/adversarial_training_20251201-051647/coevolution_dashboard.png
+
+2025-12-01 05:20:37,536 INFO: Copied vanilla circuit to compare/run_0
+2025-12-01 05:20:37,539 INFO: Copied robust circuit from results/run_20251201-051516/adversarial/adversarial_training_20251201-051647/circuit_robust.json to compare/run_0
+2025-12-01 05:20:37,539 INFO: Running comparison across runs in results/run_20251201-051516/compare

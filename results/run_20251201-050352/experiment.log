@@ -1,0 +1,73 @@
+2025-12-01 05:03:52,014 INFO: Starting pipeline with metadata: {'timestamp': '20251201-050352', 'preset': 'quick', 'n_qubits': 3, 'baseline_steps': 2000, 'saboteur_steps': 2000, 'adversarial_gens': 4, 'seed': None, 'n_seeds': 5, 'statistical_protocol': {'n_seeds_per_setting': 5, 'aggregation_method': 'mean ± std', 'error_bars': True}}
+2025-12-01 05:03:52,014 INFO: Running baseline architect (noiseless)
+2025-12-01 05:04:50,576 INFO: Skipping lambda sweep as requested
+2025-12-01 05:04:50,577 INFO: Running saboteur-only (attacks baseline circuit)
+2025-12-01 05:05:14,827 INFO: Running adversarial co-evolution
+2025-12-01 05:09:03,435 INFO: Plotting coevolutionary process from results/run_20251201-050352/adversarial/adversarial_training_20251201-050514
+2025-12-01 05:09:07,060 INFO: --- Generating Co-Evolution Dashboard for results/run_20251201-050352/adversarial/adversarial_training_20251201-050514 ---
+Dashboard saved to: results/run_20251201-050352/adversarial/adversarial_training_20251201-050514/coevolution_dashboard.png
+
+2025-12-01 05:09:07,063 INFO: Copied vanilla circuit to compare/run_0
+2025-12-01 05:09:07,066 INFO: Copied robust circuit from results/run_20251201-050352/adversarial/adversarial_training_20251201-050514/circuit_robust.json to compare/run_0
+2025-12-01 05:09:07,066 INFO: Running comparison across runs in results/run_20251201-050352/compare
+2025-12-01 05:09:09,265 INFO: Running parameter recovery experiment with n_seeds=5
+2025-12-01 05:09:09,266 INFO: === Parameter Recovery Experiment ===
+2025-12-01 05:09:09,266 INFO: Qubits: 3
+2025-12-01 05:09:09,266 INFO: Noise parameters to test: [0.001, 0.005, 0.01, 0.02, 0.05, 0.08, 0.1]
+2025-12-01 05:09:09,266 INFO: Shots per trial: 1000
+2025-12-01 05:09:09,266 INFO: Repetitions per p (seeds): 5
+2025-12-01 05:09:09,266 INFO: Base seed: 42
+2025-12-01 05:09:09,267 INFO: Results directory: results/run_20251201-050352/parameter_recovery
+2025-12-01 05:09:09,267 INFO: Loaded baseline circuit from results/run_20251201-050352/baseline/circuit_vanilla.json
+2025-12-01 05:09:09,268 INFO: Loaded robust circuit from results/run_20251201-050352/adversarial/adversarial_training_20251201-050514/circuit_robust.json
+2025-12-01 05:09:09,268 INFO: 
+  Testing baseline circuit (n_repetitions=5):
+2025-12-01 05:09:11,506 INFO:     p=0.001: recovered=0.0010±0.0000 (n=5), fidelity=0.6933±0.0004
+2025-12-01 05:09:13,498 INFO:     p=0.005: recovered=0.0050±0.0000 (n=5), fidelity=0.5725±0.0007
+2025-12-01 05:09:15,320 INFO:     p=0.010: recovered=0.0100±0.0000 (n=5), fidelity=0.4571±0.0004
+2025-12-01 05:09:17,281 INFO:     p=0.020: recovered=0.0200±0.0000 (n=5), fidelity=0.3090±0.0005
+2025-12-01 05:09:19,077 INFO:     p=0.050: recovered=0.0499±0.0001 (n=5), fidelity=0.1577±0.0002
+2025-12-01 05:09:21,152 INFO:     p=0.080: recovered=0.0791±0.0012 (n=5), fidelity=0.1314±0.0004
+2025-12-01 05:09:22,947 INFO:     p=0.100: recovered=0.1009±0.0040 (n=5), fidelity=0.1270±0.0004
+2025-12-01 05:09:22,949 INFO: 
+  Testing robust circuit (n_repetitions=5):
+2025-12-01 05:09:23,443 INFO:     p=0.001: recovered=0.0010±0.0000 (n=5), fidelity=0.9901±0.0001
+2025-12-01 05:09:23,901 INFO:     p=0.005: recovered=0.0050±0.0000 (n=5), fidelity=0.9514±0.0001
+2025-12-01 05:09:24,325 INFO:     p=0.010: recovered=0.0100±0.0001 (n=5), fidelity=0.9050±0.0006
+2025-12-01 05:09:24,717 INFO:     p=0.020: recovered=0.0200±0.0000 (n=5), fidelity=0.8202±0.0001
+2025-12-01 05:09:25,107 INFO:     p=0.050: recovered=0.0500±0.0001 (n=5), fidelity=0.6155±0.0005
+2025-12-01 05:09:25,496 INFO:     p=0.080: recovered=0.0799±0.0001 (n=5), fidelity=0.4691±0.0004
+2025-12-01 05:09:25,885 INFO:     p=0.100: recovered=0.0999±0.0001 (n=5), fidelity=0.3958±0.0004
+2025-12-01 05:09:25,888 INFO: 
+Results saved to results/run_20251201-050352/parameter_recovery/parameter_recovery_results.json
+2025-12-01 05:09:26,182 INFO: Plot saved to results/run_20251201-050352/parameter_recovery/parameter_recovery_plot.png
+2025-12-01 05:09:26,188 INFO: Summary saved to results/run_20251201-050352/parameter_recovery/parameter_recovery_summary.txt
+2025-12-01 05:09:26,188 INFO: 
+=== Parameter Recovery Experiment Complete ===
+2025-12-01 05:09:26,189 INFO: Parameter recovery experiment complete. Results saved to results/run_20251201-050352/parameter_recovery
+2025-12-01 05:09:26,189 INFO: Running cross-noise robustness experiment (ExpPlan Part 2, Exp 2.1)
+2025-12-01 05:09:26,190 INFO: === Cross-Noise Robustness Experiment (ExpPlan Part 2, Exp 2.1) ===
+2025-12-01 05:09:26,190 INFO: Baseline circuit: results/run_20251201-050352/compare/run_0/circuit_vanilla.json
+2025-12-01 05:09:26,190 INFO: Robust circuit: results/run_20251201-050352/compare/run_0/circuit_robust.json
+2025-12-01 05:09:26,190 INFO: Output directory: results/run_20251201-050352/cross_noise/cross_noise_20251201-050926
+2025-12-01 05:09:26,190 INFO: Number of qubits: 3
+2025-12-01 05:09:26,190 INFO: Number of seeds: 5
+2025-12-01 05:09:26,190 INFO: Base seed: 42
+2025-12-01 05:09:26,191 INFO: Loaded baseline circuit with 48 operations
+2025-12-01 05:09:26,191 INFO: Loaded robust circuit with 8 operations
+2025-12-01 05:09:26,191 INFO: 
+--- Over-rotation sweep (ε ∈ [0.0, 0.1]) ---
+2025-12-01 05:09:26,497 INFO: Baseline avg retention ratio (over-rotation): 0.9834
+2025-12-01 05:09:26,497 INFO: Robust avg retention ratio (over-rotation): 0.9983
+2025-12-01 05:09:26,497 INFO: 
+--- Asymmetric Pauli noise (p_x=0.05, p_y=0.0, p_z=0.0) ---
+2025-12-01 05:09:26,537 INFO: Baseline retention ratio (asymmetric): 0.2096
+2025-12-01 05:09:26,538 INFO: Robust retention ratio (asymmetric): 0.5620
+2025-12-01 05:09:26,539 INFO: 
+Results saved to results/run_20251201-050352/cross_noise/cross_noise_20251201-050926/cross_noise_results.json
+2025-12-01 05:09:26,771 INFO: Plot saved to results/run_20251201-050352/cross_noise/cross_noise_20251201-050926/cross_noise_robustness.png
+2025-12-01 05:09:26,772 INFO: Summary saved to results/run_20251201-050352/cross_noise/cross_noise_20251201-050926/cross_noise_summary.txt
+2025-12-01 05:09:26,777 INFO: 
+=== Cross-Noise Robustness Experiment Complete ===
+2025-12-01 05:09:26,777 INFO: Cross-noise robustness complete. Results saved to results/run_20251201-050352/cross_noise
+2025-12-01 05:09:26,777 INFO: Pipeline finished. Results in results/run_20251201-050352

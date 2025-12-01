@@ -1,20 +1,17 @@
 """
-Adversarial Co-evolutionary Training Script.
+Adversarial Co-evolutionary Training Script (Enhanced Logging).
 
-This script implements adversarial training between an Architect agent (learning
-to build robust quantum circuits) and a Saboteur agent (learning to attack them).
-
-Target type and task mode are configured centrally via experiments/config.py:
-- TARGET_TYPE: 'toffoli' (default) or 'ghz'
-- TASK_MODE: 'state_preparation' (default) or 'unitary_preparation'
-
-See experiments/config.py for detailed documentation on configuration options.
+Updates:
+- Logs 'Architect Complexity' (Gate Count) to track if circuits are getting deeper.
+- Logs 'Saboteur Error Rate' to track attack intensity.
+- Uses persistent Saboteur (no reset) for Red Queen dynamics.
+- Uses config.py defaults for circuit size.
 """
 
 import os
 import sys
 
-# Add repository root to sys.path for standalone execution
+# Add repository root to sys.path
 _repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if _repo_root not in sys.path:
     sys.path.insert(0, _repo_root)
@@ -31,11 +28,10 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import BaseCallback
 
 from experiments import config
-# Import your custom environments and utilities
 from qas_gym.envs import SaboteurMultiGateEnv, AdversarialArchitectEnv
 from qas_gym.utils import save_circuit, verify_toffoli_unitary, get_ideal_unitary
 
-# --- 1. Robust Champion Callback (From train_architect.py) ---
+# --- 1. Robust Champion Callback ---
 class ChampionCircuitCallback(BaseCallback):
     """
     A callback to save the best circuit found during training.
@@ -49,8 +45,6 @@ class ChampionCircuitCallback(BaseCallback):
         self.verify_unitary = False
         self.n_qubits = None
         self.unitary_mode = False
-
-        # Holders for the champion circuit object
         self.last_champion_circuit = None
 
     def _on_step(self) -> bool:
@@ -63,16 +57,12 @@ class ChampionCircuitCallback(BaseCallback):
                     continue
                 
                 info = infos[i]
-                
-                # Determine mode once
                 if not self.unitary_mode and self.verify_unitary:
                     self.unitary_mode = True
 
-                # Retrieve circuit
                 candidate_circuit = info.get('circuit')
                 candidate_fid = info.get('fidelity', 0.0)
 
-                # Fallback
                 if candidate_circuit is None:
                     try:
                         candidate_circuit = self.training_env.env_method('get_circuit', indices=[i])[0]
@@ -80,21 +70,19 @@ class ChampionCircuitCallback(BaseCallback):
                         continue
 
                 if candidate_circuit:
-                    # Unitary Verification (if enabled)
+                    # Metric selection (Unitary vs State)
+                    metric_to_check = candidate_fid
+                    metric_name = "Fidelity"
+                    
                     if self.verify_unitary and self.n_qubits is not None:
                         try:
-                            # We use silent=True to avoid spamming console every episode
                             _, process_fid = verify_toffoli_unitary(candidate_circuit, self.n_qubits, silent=True)
                             metric_to_check = process_fid
                             metric_name = "Process Fidelity"
                         except Exception:
-                            metric_to_check = candidate_fid
-                            metric_name = "Fidelity"
-                    else:
-                        metric_to_check = candidate_fid
-                        metric_name = "Fidelity"
+                            pass
 
-                    # Check if this is a new global champion
+                    # Save if improved
                     if (self.best_saved_fidelity < 0) or (metric_to_check > self.best_saved_fidelity):
                         print(f"\n--- New Champion Circuit Found (Env {i}) ---")
                         print(f"{metric_name}: {metric_to_check:.6f}")
@@ -107,11 +95,15 @@ class ChampionCircuitCallback(BaseCallback):
                         self.circuit_saved = True
         return True
 
-# --- 2. Data Logger Callback (Kept for plotting compatibility) ---
-class FidelityLoggerCallback(BaseCallback):
-    def __init__(self, trace_list, step_list, offset_steps, verbose=0):
+# --- 2. Enhanced Logger Callback ---
+class AdversarialLoggerCallback(BaseCallback):
+    """
+    Generic logger that can track Fidelity, Complexity (Gate Count), 
+    and Error Rates from the environment info dict.
+    """
+    def __init__(self, lists_dict, step_list, offset_steps, verbose=0):
         super().__init__(verbose)
-        self.trace_list = trace_list
+        self.lists_dict = lists_dict  # {'fidelity': [], 'complexity': [], 'error_rate': []}
         self.step_list = step_list
         self.offset_steps = offset_steps 
 
@@ -120,11 +112,28 @@ class FidelityLoggerCallback(BaseCallback):
             for i, done in enumerate(self.locals['dones']):
                 if done:
                     info = self.locals['infos'][i]
-                    fid = info.get('fidelity', None)
-                    if fid is not None:
-                        self.trace_list.append(fid)
-                        current_timesteps = self.num_timesteps
-                        self.step_list.append(self.offset_steps + current_timesteps)
+                    
+                    # Log Step
+                    current_timesteps = self.num_timesteps
+                    self.step_list.append(self.offset_steps + current_timesteps)
+
+                    # Log Fidelity (Common to both)
+                    if 'fidelity' in self.lists_dict:
+                        # For Architect, this is clean fidelity. For Saboteur, this is noisy fidelity.
+                        self.lists_dict['fidelity'].append(info.get('fidelity', 0.0))
+                    
+                    # Log Complexity (Architect specific)
+                    if 'complexity' in self.lists_dict:
+                        circ = info.get('circuit')
+                        if circ:
+                            self.lists_dict['complexity'].append(len(list(circ.all_operations())))
+                        else:
+                            self.lists_dict['complexity'].append(0)
+
+                    # Log Error Rate (Saboteur specific)
+                    if 'error_rate' in self.lists_dict:
+                        self.lists_dict['error_rate'].append(info.get('mean_error_rate', 0.0))
+
         return True
 
 def train_adversarial(
@@ -133,25 +142,23 @@ def train_adversarial(
     n_generations: int,
     architect_steps_per_generation: int,
     saboteur_steps_per_generation: int,
-    max_circuit_gates: int = 20,
+    max_circuit_gates: int = config.MAX_CIRCUIT_TIMESTEPS, # UPDATED: Use Config
     fidelity_threshold: float = 0.99,
     lambda_penalty: float = 0.5,
     include_rotations: bool = False,
     task_mode: str = None,
 ):
-    # --- Effective configuration ---
+    # --- Configuration ---
     effective_task_mode = task_mode if task_mode is not None else config.TASK_MODE
     effective_target_type = config.TARGET_TYPE
     rotation_status = "with rotation gates" if include_rotations else "with Clifford+T gates only"
     
-    # --- Log configuration at start ---
     print("\n" + "=" * 60)
-    print("ADVERSARIAL TRAINING CONFIGURATION")
+    print("ADVERSARIAL TRAINING CONFIGURATION (ENHANCED LOGGING)")
     print("=" * 60)
     print(f"Target Type: {effective_target_type}")
     print(f"Task Mode: {effective_task_mode}")
     print(f"Number of Qubits: {n_qubits}")
-    print(f"Rotation Gates: {'Enabled' if include_rotations else 'Disabled'}")
     print(f"Generations: {n_generations}")
     print(f"Architect Steps/Gen: {architect_steps_per_generation}")
     print(f"Saboteur Steps/Gen: {saboteur_steps_per_generation}")
@@ -159,15 +166,13 @@ def train_adversarial(
     print(f"Results Directory: {results_dir}")
     print("=" * 60 + "\n")
     
-    print(f"--- Starting Adversarial Co-evolutionary Training ({rotation_status}) ---")
     start_time = time.time()
     log_dir = os.path.join(results_dir, f"adversarial_training_{datetime.now().strftime('%Y%m%d-%H%M%S')}")
     os.makedirs(log_dir, exist_ok=True)
 
-    # --- Target State ---
     target_state = config.get_target_state(n_qubits, effective_target_type)
     
-    # --- Ideal unitary for unitary mode ---
+    # Ideal unitary for verification
     ideal_U = None
     if effective_task_mode == 'unitary_preparation':
         try:
@@ -177,8 +182,6 @@ def train_adversarial(
 
     # --- Initialize Environments ---
     max_saboteur_level = len(SaboteurMultiGateEnv.all_error_rates)
-
-    # Architect env args
     qubits = [cirq.LineQubit(i) for i in range(n_qubits)]
     action_gates = config.get_action_gates(qubits, include_rotations=include_rotations)
     
@@ -195,52 +198,48 @@ def train_adversarial(
         ideal_unitary=ideal_U,
     )
 
-    # Dummy circuit for initialization
     dummy_qubits = list(cirq.LineQubit.range(int(np.log2(len(target_state)))))
     dummy_circuit = cirq.Circuit([cirq.I(q) for q in dummy_qubits])
     
-    # Initialize Saboteur Environment
+    # NOTE: Saboteur environment also needs to know the max_circuit_gates
+    # to set its observation space size correctly.
     saboteur_env = SaboteurMultiGateEnv(
         architect_circuit=dummy_circuit,
         target_state=target_state,
-        max_circuit_timesteps=max_circuit_gates,
+        max_circuit_timesteps=max_circuit_gates, # Ensure this matches architect
         max_error_level=4,
         discrete=True,
         lambda_penalty=lambda_penalty
     )
 
-    # --- Initialize Agents ---
-    # 1. Initialize Saboteur ONCE here (outside the loop) so it remembers previous training [PERSISTENT SABOTEUR]
+    # --- Initialize Agents (Persistent Saboteur) ---
     saboteur_agent = PPO('MultiInputPolicy', saboteur_env, **config.AGENT_PARAMS)
 
-    # 2. Initialize Architect
     initial_arch_env = AdversarialArchitectEnv(
-        saboteur_agent=None, # Start with no adversary for the first gen
+        saboteur_agent=None,
         saboteur_max_error_level=max_saboteur_level,
         **arch_env_kwargs
     )
     architect_agent = PPO('MlpPolicy', initial_arch_env, **config.AGENT_PARAMS)
 
-    # Data Storage
+    # --- Data Storage ---
     architect_fidelities = []
+    architect_complexity = [] # NEW: Track gate count
     architect_steps = []
+    
     saboteur_fidelities = []
+    saboteur_error_rates = [] # NEW: Track attack intensity
     saboteur_steps = []
     
     champion_circuit = None
-    
-    # Track total steps cumulatively
     total_arch_steps = 0
     total_sab_steps = 0
 
-    # Main Co-Evolution Loop
+    # --- Main Loop ---
     for gen in range(n_generations):
         print(f"\n--- Generation {gen+1}/{n_generations} ---")
 
-        # -----------------------------
         # 1. Train Architect
-        # -----------------------------
-        # Re-create arch env to ensure it has the latest reference to saboteur_agent
         arch_env = AdversarialArchitectEnv(
             saboteur_agent=saboteur_agent,
             saboteur_max_error_level=max_saboteur_level,
@@ -248,21 +247,23 @@ def train_adversarial(
         )
         architect_agent.set_env(arch_env)
         
-        # Callback 1: Real-time champion saving
+        # Real-time champion detection
         arch_champ_callback = ChampionCircuitCallback(
             circuit_filename=os.path.join(log_dir, "circuit_robust.json")
         )
         arch_champ_callback.verify_unitary = (effective_task_mode == 'unitary_preparation')
         arch_champ_callback.n_qubits = n_qubits
         
-        # Callback 2: Data logging
-        arch_log_callback = FidelityLoggerCallback(
-            trace_list=architect_fidelities,
+        # Data logging (Fidelity + Complexity)
+        arch_log_callback = AdversarialLoggerCallback(
+            lists_dict={
+                'fidelity': architect_fidelities,
+                'complexity': architect_complexity
+            },
             step_list=architect_steps,
             offset_steps=total_arch_steps
         )
         
-        # Train Architect
         architect_agent.learn(
             total_timesteps=architect_steps_per_generation, 
             reset_num_timesteps=False, 
@@ -270,18 +271,14 @@ def train_adversarial(
         )
         total_arch_steps += architect_steps_per_generation
 
-        # Retrieve the champion found in this generation
+        # Retrieve champion
         if arch_champ_callback.last_champion_circuit is not None:
             champion_circuit = arch_champ_callback.last_champion_circuit
             print(f"Gen {gen+1} Architect finished. Best circuit updated.")
         elif hasattr(arch_env, 'champion_circuit') and arch_env.champion_circuit is not None:
-             # Fallback if callback missed it (unlikely with fix) but env has one
              champion_circuit = arch_env.champion_circuit
 
-        # -----------------------------
         # 2. Train Saboteur
-        # -----------------------------
-        # Update the environment to attack the new champion
         if champion_circuit is not None:
             saboteur_env.set_circuit(champion_circuit)
             print(f"Saboteur now attacking champion with {len(list(champion_circuit.all_operations()))} gates.")
@@ -289,28 +286,31 @@ def train_adversarial(
             saboteur_env.set_circuit(dummy_circuit)
             print("Saboteur attacking dummy circuit (no champion found yet).")
 
-        sab_callback = FidelityLoggerCallback(
-            trace_list=saboteur_fidelities,
+        # Data logging (Fidelity + Error Rate)
+        sab_log_callback = AdversarialLoggerCallback(
+            lists_dict={
+                'fidelity': saboteur_fidelities,
+                'error_rate': saboteur_error_rates
+            },
             step_list=saboteur_steps,
             offset_steps=total_sab_steps
         )
 
-        # Train the EXISTING agent (no reset)
         saboteur_agent.set_env(saboteur_env)
-        
         saboteur_agent.learn(
             total_timesteps=saboteur_steps_per_generation, 
             reset_num_timesteps=False, 
-            callback=sab_callback
+            callback=sab_log_callback
         )
         total_sab_steps += saboteur_steps_per_generation
 
-        # -----------------------------
-        # 3. SAFETY SAVE (Inside Loop)
-        # -----------------------------
+        # 3. Save Data (Including New Metrics)
         np.savetxt(os.path.join(log_dir, "architect_fidelities.txt"), architect_fidelities)
+        np.savetxt(os.path.join(log_dir, "architect_complexity.txt"), architect_complexity) # Saved!
         np.savetxt(os.path.join(log_dir, "architect_steps.txt"), architect_steps, fmt='%d')
+        
         np.savetxt(os.path.join(log_dir, "saboteur_trained_on_architect_fidelities.txt"), saboteur_fidelities)
+        np.savetxt(os.path.join(log_dir, "saboteur_error_rates.txt"), saboteur_error_rates) # Saved!
         np.savetxt(os.path.join(log_dir, "saboteur_trained_on_architect_steps.txt"), saboteur_steps, fmt='%d')
 
     return architect_agent, saboteur_agent, arch_env, log_dir, start_time
@@ -322,7 +322,11 @@ if __name__ == "__main__":
     parser.add_argument('--n-generations', type=int, required=True, help='Number of generations')
     parser.add_argument('--architect-steps', type=int, required=True, help='Architect steps per generation')
     parser.add_argument('--saboteur-steps', type=int, required=True, help='Saboteur steps per generation')
-    parser.add_argument('--max-circuit-gates', type=int, default=20, help='Max circuit gates')
+    
+    # UPDATED: Use config.MAX_CIRCUIT_TIMESTEPS as default
+    parser.add_argument('--max-circuit-gates', type=int, default=config.MAX_CIRCUIT_TIMESTEPS, 
+                        help=f'Max circuit gates (default: {config.MAX_CIRCUIT_TIMESTEPS} from config)')
+                        
     parser.add_argument('--fidelity-threshold', type=float, default=0.99, help='Fidelity threshold')
     parser.add_argument('--lambda-penalty', type=float, default=0.5, help='Penalty coefficient for mean error rate')
     parser.add_argument('--include-rotations', action='store_true',
@@ -344,7 +348,6 @@ if __name__ == "__main__":
         task_mode=args.task_mode,
     )
 
-    # Final Save
     architect_agent.save(os.path.join(log_dir, "architect_adversarial.zip"))
     saboteur_agent.save(os.path.join(log_dir, "saboteur_adversarial.zip"))
 

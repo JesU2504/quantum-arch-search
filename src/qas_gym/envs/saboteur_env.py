@@ -3,6 +3,38 @@ import numpy as np
 import cirq
 from gymnasium import spaces
 
+def robust_measure_observables(simulator, circuit, qubits):
+    """
+    Robustly compute expectation values for X and Y observables.
+    Falls back to manual simulation if the density matrix is numerically unstable.
+    """
+    observables = [cirq.X(q) for q in qubits] + [cirq.Y(q) for q in qubits]
+    
+    try:
+        # Try the fast, strict method first
+        return simulator.simulate_expectation_values(
+            circuit,
+            observables=observables,
+            qubit_order=qubits
+        )
+    except Exception:
+        # Fallback: Simulate full density matrix and clean it
+        result = simulator.simulate(circuit, qubit_order=qubits)
+        rho = result.final_density_matrix
+        
+        # Force Hermiticity (clean numerical noise)
+        rho = 0.5 * (rho + rho.conj().T)
+        
+        # Calculate Expectation <O> = Tr(rho * O)
+        vals = []
+        for obs in observables:
+            # Get the matrix for the observable in the full Hilbert space
+            # Note: This involves matrix multiplication which is slower but safe
+            obs_mat = cirq.Circuit(obs).unitary(qubit_order=qubits)
+            exp_val = np.real(np.trace(rho @ obs_mat))
+            vals.append(exp_val)
+        return vals
+
 class SaboteurMultiGateEnv(gym.Env):
     """
     An adversarial environment where an agent (Saboteur) adds noise to a quantum circuit
@@ -73,29 +105,25 @@ class SaboteurMultiGateEnv(gym.Env):
 
     def _get_obs(self, circuit=None):
         target_circuit = circuit if circuit is not None else self.current_circuit
+        
         # 1. Quantum State Component
         if target_circuit is None or not target_circuit.all_operations():
             state_obs = np.zeros((2 * self.n_qubits,), dtype=np.float32)
             structure_obs = np.zeros((self.max_gates,), dtype=np.int32)
         else:
             all_qubits = cirq.LineQubit.range(self.n_qubits)
-            try:
-                obs_vals = self.simulator.simulate_expectation_values(
-                    target_circuit,
-                    observables=[cirq.X(q) for q in all_qubits] + [cirq.Y(q) for q in all_qubits],
-                    qubit_order=all_qubits
-                )
-                state_obs = np.array(obs_vals).real.astype(np.float32)
-            except Exception as e:
-                import warnings
-                warnings.warn(f"simulate_expectation_values failed: {e}. Returning zeros.")
-                state_obs = np.zeros((2 * self.n_qubits,), dtype=np.float32)
+            
+            # --- UPDATED ROBUST LOGIC ---
+            obs_vals = robust_measure_observables(self.simulator, target_circuit, all_qubits)
+            state_obs = np.array(obs_vals).real.astype(np.float32)
+            # ----------------------------
 
-            # 2. Structure Component
+            # 2. Structure Component (Unchanged)
             structure_obs = np.zeros((self.max_gates,), dtype=np.int32)
             for i, op in enumerate(target_circuit.all_operations()):
                 if i >= self.max_gates: break
                 structure_obs[i] = self._encode_gate(op)
+                
         return {
             "projected_state": state_obs,
             "gate_structure": structure_obs
@@ -174,41 +202,29 @@ class SaboteurMultiGateEnv(gym.Env):
 
     @staticmethod
     def create_observation_from_circuit(circuit: cirq.Circuit, n_qubits: int, max_gates: int = 20) -> dict:
-        """Static helper for the ArchitectEnv to generate observations.
-        
-        Gate encoding:
-            0: Empty/Unknown
-            1: X gate (cirq.XPowGate)
-            2: Y gate (cirq.YPowGate)
-            3: Z gate (cirq.ZPowGate)
-            4: H gate (cirq.HPowGate)
-            5: CNOT gate (cirq.CNotPowGate)
-            6: Other single-qubit gates
-            7: Rx rotation gate
-            8: Ry rotation gate
-            9: Rz rotation gate
+        """
+        Static helper to generate observations for the Architect/Saboteur.
+        Now uses robust measurement to prevent crashes on invalid density matrices.
         """
         all_qubits = cirq.LineQubit.range(n_qubits)
         simulator = cirq.DensityMatrixSimulator()
+        
+        # 1. Projected State Component (Robust)
         if not circuit.all_operations():
             state_obs = np.zeros((2 * n_qubits,), dtype=np.float32)
         else:
-            try:
-                obs_vals = simulator.simulate_expectation_values(
-                    circuit,
-                    observables=[cirq.X(q) for q in all_qubits] + [cirq.Y(q) for q in all_qubits],
-                    qubit_order=all_qubits
-                )
-                state_obs = np.array(obs_vals).real.astype(np.float32)
-            except Exception as e:
-                import warnings
-                warnings.warn(f"simulate_expectation_values failed: {e}. Returning zeros.")
-                state_obs = np.zeros((2 * n_qubits,), dtype=np.float32)
+            # Uses the helper function defined above
+            obs_vals = robust_measure_observables(simulator, circuit, all_qubits)
+            state_obs = np.array(obs_vals).real.astype(np.float32)
 
+        # 2. Gate Structure Component (Encoding)
         structure_obs = np.zeros((max_gates,), dtype=np.int32)
         for i, op in enumerate(circuit.all_operations()):
-            if i >= max_gates: break
-            val = 6
+            if i >= max_gates: 
+                break
+            
+            # Gate Encoding Map
+            val = 6 # Default: Other single-qubit
             if isinstance(op.gate, cirq.XPowGate): val = 1
             elif isinstance(op.gate, cirq.YPowGate): val = 2
             elif isinstance(op.gate, cirq.ZPowGate): val = 3
@@ -218,6 +234,7 @@ class SaboteurMultiGateEnv(gym.Env):
             elif isinstance(op.gate, cirq.Rx): val = 7
             elif isinstance(op.gate, cirq.Ry): val = 8
             elif isinstance(op.gate, cirq.Rz): val = 9
+            
             structure_obs[i] = val
             
         return {

@@ -1,0 +1,30 @@
+Cross-Noise Robustness Experiment Summary
+============================================================
+
+Timestamp: 20251201-045916
+
+Statistical Protocol:
+----------------------------------------
+  Number of epsilon points: 20
+  Base seed: 42
+  Note: Current implementation is deterministic
+
+Hyperparameters:
+----------------------------------------
+  Number of qubits: 3
+  Baseline circuit: results/run_20251201-045341/compare/run_0/circuit_vanilla.json
+  Robust circuit: results/run_20251201-045341/compare/run_0/circuit_robust.json
+  Epsilon range: (0.0, 0.1)
+  Asymmetric p_x: 0.05
+
+Over-rotation Test (ε ∈ [0, 0.1]):
+----------------------------------------
+  Baseline avg retention: 0.9990
+  Robust avg retention: 0.9983
+  Improvement: -0.0007
+
+Asymmetric Pauli Noise (p_x=0.05):
+----------------------------------------
+  Baseline retention: 0.3518
+  Robust retention: 0.6752
+  Improvement: 0.3234

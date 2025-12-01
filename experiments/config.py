@@ -93,32 +93,49 @@ def get_metric_key_for_task_mode(task_mode: str | None = None) -> str:
 
 # --- Per-Qubit Hyperparameter Configurations ---
 EXPERIMENT_PARAMS = {
+    # "Quick" Implementation (3 Qubits) - For debugging and rapid testing
     3: {
         "ARCHITECT_N_STEPS": 4096,
-        "ARCHITECT_STEPS": 4096 * 10,
-        "N_GENERATIONS": 40,
+        # Baseline Total = Steps/Gen * Generations
+        "ARCHITECT_STEPS": 4096 * 4,      # = 163,840 steps (Matched to Adversarial)
+        
+        "N_GENERATIONS": 4,
         "ARCHITECT_STEPS_PER_GENERATION": 4096,
+        
         "SABOTEUR_STEPS_PER_GENERATION": 2048,
         "SABOTEUR_N_STEPS": 2048,
-        "SABOTEUR_STEPS": 2048 * 8,
+        # Saboteur Baseline Total
+        "SABOTEUR_STEPS": 2048 * 40,       # = 81,920 steps
     },
+    
+    # "Full" Implementation (4 Qubits) - Standard Experiment (ExpPlan.md)
     4: {
         "ARCHITECT_N_STEPS": 4096,
-        "ARCHITECT_STEPS": 4096 * 40,
-        "N_GENERATIONS": 100, 
+        # Baseline Total = Steps/Gen * Generations
+        "ARCHITECT_STEPS": 4096 * 100,     # = 409,600 steps (Matched to Adversarial)
+        
+        "N_GENERATIONS": 100,
         "ARCHITECT_STEPS_PER_GENERATION": 4096, 
+        
         "SABOTEUR_STEPS_PER_GENERATION": 2048,
         "SABOTEUR_N_STEPS": 2048,
-        "SABOTEUR_STEPS": 2048 * 10, 
+        # Saboteur Baseline Total
+        "SABOTEUR_STEPS": 2048 * 100,      # = 204,800 steps
     },
+    
+    # "Long" Implementation (5 Qubits) - Scalability / Wall Test
     5: {
         "ARCHITECT_N_STEPS": 4096,
-        "ARCHITECT_STEPS": 4096 * 80,
+        # Baseline Total = Steps/Gen * Generations
+        "ARCHITECT_STEPS": 4096 * 200,     # = 819,200 steps (Matched to Adversarial)
+        
         "N_GENERATIONS": 200,
         "ARCHITECT_STEPS_PER_GENERATION": 4096,
+        
         "SABOTEUR_STEPS_PER_GENERATION": 2048,
         "SABOTEUR_N_STEPS": 2048,
-        "SABOTEUR_STEPS": 2048 * 20,
+        # Saboteur Baseline Total
+        "SABOTEUR_STEPS": 2048 * 200,      # = 409,600 steps
     },
 }
 
