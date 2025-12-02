@@ -48,11 +48,21 @@ from utils.stats import (
 
 
 # --- Multi-gate saboteur attack evaluation ---
-def evaluate_multi_gate_attacks(circuit, saboteur_agent, target_state, n_qubits, samples=32):
+def evaluate_multi_gate_attacks(
+    circuit,
+    saboteur_agent,
+    target_state,
+    n_qubits,
+    samples=32,
+    fallback_error_idx=0,
+    saboteur_budget: int = 3,
+    rng: np.random.Generator | None = None,
+):
     """
     Evaluate circuit robustness under multi-gate attacks sampled from saboteur_agent.
     Returns dict with clean fidelity, mean/min/std attacked fidelity, and all samples.
     If saboteur_agent is None, uses zero-vector (no noise) as fallback.
+    Budgeted top-k attack mirrors training (default budget=3).
     """
     from qas_gym.envs.saboteur_env import SaboteurMultiGateEnv
     qubits = sorted(list(circuit.all_qubits()))
@@ -69,6 +79,7 @@ def evaluate_multi_gate_attacks(circuit, saboteur_agent, target_state, n_qubits,
     clean_fid = fidelity_pure_target(circuit, target_state, qubits)
     ops = list(circuit.all_operations())
     attacked_vals = []
+    rng = rng or np.random.default_rng()
     for _ in range(samples):
         sab_obs = SaboteurMultiGateEnv.create_observation_from_circuit(
             circuit, n_qubits=n_qubits, max_circuit_timesteps=config.MAX_CIRCUIT_TIMESTEPS
@@ -77,16 +88,27 @@ def evaluate_multi_gate_attacks(circuit, saboteur_agent, target_state, n_qubits,
             try:
                 sab_action, _ = saboteur_agent.predict(sab_obs, deterministic=False)
             except Exception:
-                sab_action = np.zeros(len(ops), dtype=int)
+                sab_action = np.full(len(ops), fallback_error_idx, dtype=int)
         else:
-            sab_action = np.zeros(len(ops), dtype=int)
+            sab_action = np.full(len(ops), fallback_error_idx, dtype=int)
         # Build noisy circuit
         noisy_ops = []
         all_rates = SaboteurMultiGateEnv.all_error_rates
         max_idx = len(all_rates) - 1
+
+        # Budgeted top-k attack (consistent with training)
+        ops = list(circuit.all_operations())
+        valid_gate_count = min(len(ops), config.MAX_CIRCUIT_TIMESTEPS)
+        raw_action = np.array(sab_action[:valid_gate_count], dtype=int)
+        budget = min(saboteur_budget, valid_gate_count)
+        effective_action = np.zeros_like(raw_action)
+        if budget > 0 and len(raw_action) > 0:
+            top_k_indices = np.argsort(raw_action)[-budget:]
+            effective_action[top_k_indices] = raw_action[top_k_indices]
+
         for i, op in enumerate(ops):
             noisy_ops.append(op)
-            idx = int(sab_action[i]) if i < len(sab_action) else 0
+            idx = int(effective_action[i]) if i < len(effective_action) else fallback_error_idx
             idx = max(0, min(idx, max_idx))
             error_rate = all_rates[idx]
             for q in op.qubits:
@@ -109,7 +131,15 @@ def calculate_fidelity(circuit: cirq.Circuit, target_state: np.ndarray) -> float
 
 
 # --- Move compare_noise_resilience to top-level for import ---
-def compare_noise_resilience(base_results_dir, num_runs, n_qubits, samples=32, logger=None):
+def compare_noise_resilience(
+    base_results_dir,
+    num_runs,
+    n_qubits,
+    samples=32,
+    saboteur_budget: int = 3,
+    seed: int | None = 42,
+    logger=None
+):
     """
     Aggregate and compare circuit robustness under multi-gate attacks.
     
@@ -141,13 +171,19 @@ def compare_noise_resilience(base_results_dir, num_runs, n_qubits, samples=32, l
     all_metrics_robust = []
     all_samples = []
 
+    # Attack policy: prefer a trained saboteur; otherwise fall back to the strongest error level.
     try:
         from stable_baselines3 import PPO
         from qas_gym.envs.saboteur_env import SaboteurMultiGateEnv
         saboteur_model_path = os.path.join(base_results_dir, "../saboteur/saboteur_trained_on_architect_model.zip")
         saboteur_agent = PPO.load(saboteur_model_path) if os.path.exists(saboteur_model_path) else None
+        fallback_error_idx = len(SaboteurMultiGateEnv.all_error_rates) - 1  # worst-case level
+        if saboteur_agent is None:
+            log(f"[compare_circuits] No saboteur model found at {saboteur_model_path}; using budgeted max-level fallback.")
     except Exception:
         saboteur_agent = None
+        fallback_error_idx = 0
+        log("[compare_circuits] Failed to load saboteur model; falling back to no-noise attacks.")
 
     for i in range(num_runs):
         run_dir = os.path.join(base_results_dir, f"run_{i}")
@@ -163,8 +199,17 @@ def compare_noise_resilience(base_results_dir, num_runs, n_qubits, samples=32, l
             log(f"  Warning: Could not find circuit files in {run_dir}. Skipping run. Error: {e}")
             continue
 
-        metrics_v = evaluate_multi_gate_attacks(circuit_vanilla, saboteur_agent, target_state, n_qubits, samples=samples)
-        metrics_r = evaluate_multi_gate_attacks(circuit_robust, saboteur_agent, target_state, n_qubits, samples=samples)
+        rng = np.random.default_rng(None if seed is None else seed + i)
+        metrics_v = evaluate_multi_gate_attacks(
+            circuit_vanilla, saboteur_agent, target_state, n_qubits,
+            samples=samples, fallback_error_idx=fallback_error_idx,
+            saboteur_budget=saboteur_budget, rng=rng
+        )
+        metrics_r = evaluate_multi_gate_attacks(
+            circuit_robust, saboteur_agent, target_state, n_qubits,
+            samples=samples, fallback_error_idx=fallback_error_idx,
+            saboteur_budget=saboteur_budget, rng=rng
+        )
         all_metrics_vanilla.append(metrics_v)
         all_metrics_robust.append(metrics_r)
         for val in metrics_v["samples"]:
@@ -230,19 +275,27 @@ def compare_noise_resilience(base_results_dir, num_runs, n_qubits, samples=32, l
             stds_v = [m["std_attacked"] for m in all_metrics_vanilla]
             means_r = [m["mean_attacked"] for m in all_metrics_robust]
             stds_r = [m["std_attacked"] for m in all_metrics_robust]
-            
+
             labels = [f"Run {i+1}" for i in range(len(means_v))]
+            # Append aggregated mean/std if available so the plot shows both per-run values and the average.
+            if vanilla_overall and robust_overall:
+                labels.append("Mean")
+                means_v.append(vanilla_overall["mean"])
+                stds_v.append(vanilla_overall["std"])
+                means_r.append(robust_overall["mean"])
+                stds_r.append(robust_overall["std"])
+
             x = np.arange(len(means_v))
             width = 0.35
-            
+
             fig, ax = plt.subplots(figsize=(10, 6))
-            
+
             # Bar plot with error bars
-            bars_v = ax.bar(x - width/2, means_v, width, yerr=stds_v, 
+            bars_v = ax.bar(x - width/2, means_v, width, yerr=stds_v,
                            label="Vanilla", color="tab:blue", capsize=5, alpha=0.8)
             bars_r = ax.bar(x + width/2, means_r, width, yerr=stds_r,
                            label="Robust", color="tab:orange", capsize=5, alpha=0.8)
-            
+
             ax.set_ylabel("Mean Attacked Fidelity")
             ax.set_title(f"Robustness Comparison: Vanilla vs Robust Circuits\n(n={samples} attack samples per circuit, error bars: ±1 std)")
             ax.set_xticks(x)
@@ -250,7 +303,7 @@ def compare_noise_resilience(base_results_dir, num_runs, n_qubits, samples=32, l
             ax.legend()
             ax.grid(True, alpha=0.3, axis='y')
             ax.set_ylim(0, 1.05)
-            
+
             plt.tight_layout()
             out_path = os.path.join(base_results_dir, "robustness_comparison.png")
             plt.savefig(out_path, dpi=200)

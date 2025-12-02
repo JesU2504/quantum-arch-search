@@ -1,0 +1,47 @@
+{
+  "experiment_name": "circuit_robustness_comparison",
+  "timestamp": "2025-12-02T06:41:22.335007",
+  "statistical_protocol": {
+    "n_seeds": 5,
+    "seeds_used": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "aggregation_method": "mean \u00b1 std (sample standard deviation with ddof=1)",
+    "confidence_level": 0.95
+  },
+  "hyperparameters": {
+    "n_qubits": 3,
+    "num_runs": 5,
+    "samples_per_circuit": 32
+  },
+  "aggregated_results": {
+    "vanilla_fidelity": {
+      "mean": 0.9606831222772596,
+      "std": 1.2412670766236366e-16,
+      "median": 0.9606831222772597,
+      "min": 0.9606831222772597,
+      "max": 0.9606831222772597,
+      "n": 5,
+      "sem": 5.551115123125783e-17,
+      "ci_lower": 0.9606831222772595,
+      "ci_upper": 0.9606831222772597
+    },
+    "robust_fidelity": {
+      "mean": 0.9057134300470351,
+      "std": 0.056469278679533386,
+      "median": 0.9112529158592222,
+      "min": 0.8174248486757276,
+      "max": 0.954300820827484,
+      "n": 5,
+      "sem": 0.02525382915356324,
+      "ci_lower": 0.8355975597061229,
+      "ci_upper": 0.9758293003879472
+    }
+  },
+  "commit_hash": "b08b25fd",
+  "additional_notes": "Robustness comparison using 32 saboteur attack samples per circuit."
+}

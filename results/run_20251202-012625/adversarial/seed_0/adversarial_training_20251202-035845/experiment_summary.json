@@ -1,0 +1,11 @@
+{
+  "n_qubits": 3,
+  "n_generations": 10,
+  "architect_steps_per_generation": 8192,
+  "saboteur_steps_per_generation": 2048,
+  "max_circuit_gates": 20,
+  "lambda_penalty": 0.5,
+  "task_mode": "state_preparation",
+  "target_type": "ghz",
+  "timestamp": "20251202-035845"
+}

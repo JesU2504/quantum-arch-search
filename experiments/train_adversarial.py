@@ -25,7 +25,7 @@ from stable_baselines3.common.callbacks import BaseCallback
 
 from experiments import config
 from qas_gym.envs import SaboteurMultiGateEnv, AdversarialArchitectEnv
-from qas_gym.utils import save_circuit, verify_toffoli_unitary, get_ideal_unitary
+from qas_gym.utils import save_circuit, verify_toffoli_unitary, get_ideal_unitary, fidelity_pure_target
 
 
 # --- 1. Robust Champion Callback ---
@@ -34,10 +34,13 @@ class ChampionCircuitCallback(BaseCallback):
     A callback to save the best circuit found during training.
     Checks ALL parallel environments and prints in real-time.
     """
-    def __init__(self, circuit_filename, verbose=0):
+    def __init__(self, circuit_filename, clean_circuit_filename=None, verbose=0):
         super().__init__(verbose)
         self.circuit_filename = circuit_filename
+        # Optional: track a separate best-by-clean-fidelity circuit
+        self.clean_circuit_filename = clean_circuit_filename
         self.best_saved_fidelity = None
+        self.best_clean_saved_fidelity = None
         self.unitary_mode = False
         self.verify_unitary = False
         self.n_qubits = None
@@ -102,13 +105,26 @@ class ChampionCircuitCallback(BaseCallback):
                     if (self.best_saved_fidelity is None) or (metric_to_check > self.best_saved_fidelity):
                         self.best_saved_fidelity = metric_to_check
 
-                        save_circuit(candidate_circuit, self.circuit_filename)
+                        # NB: save_circuit expects (path, circuit)
+                        save_circuit(self.circuit_filename, candidate_circuit)
                         if self.verbose > 0:
                             print(
                                 f"\n[ChampionCircuitCallback] New champion! {metric_name}={metric_to_check:.6f} "
                                 f"-> saved to {self.circuit_filename}"
                             )
                         updated = True
+
+                    # Track best-by-clean-fidelity separately if requested
+                    if self.clean_circuit_filename is not None:
+                        clean_metric = candidate_fid
+                        if (self.best_clean_saved_fidelity is None) or (clean_metric > self.best_clean_saved_fidelity):
+                            self.best_clean_saved_fidelity = clean_metric
+                            save_circuit(self.clean_circuit_filename, candidate_circuit)
+                            if self.verbose > 0:
+                                print(
+                                    f"[ChampionCircuitCallback] New clean-best! Fidelity={clean_metric:.6f} "
+                                    f"-> saved to {self.clean_circuit_filename}"
+                                )
 
             except Exception as e:
                 if self.verbose > 0:
@@ -153,10 +169,8 @@ class AdversarialLoggerCallback(BaseCallback):
 
             # Log Complexity (Architect specific)
             if 'complexity' in self.lists_dict:
-                if 'gate_count' in info:
-                    self.lists_dict['complexity'].append(info['gate_count'])
-                else:
-                    self.lists_dict['complexity'].append(0)
+                gate_metric = info.get('total_gates', info.get('gate_count', 0))
+                self.lists_dict['complexity'].append(gate_metric)
 
             # Log Error Rate (Saboteur specific)
             if 'error_rate' in self.lists_dict:
@@ -285,7 +299,8 @@ def train_adversarial(
         
         # Real-time champion detection
         arch_champ_callback = ChampionCircuitCallback(
-            circuit_filename=os.path.join(log_dir, "circuit_robust.json")
+            circuit_filename=os.path.join(log_dir, "circuit_robust.json"),
+            clean_circuit_filename=os.path.join(log_dir, "circuit_clean_best.json")
         )
         arch_champ_callback.verify_unitary = (effective_task_mode == 'unitary_preparation')
         arch_champ_callback.n_qubits = n_qubits
@@ -339,6 +354,71 @@ def train_adversarial(
     np.savetxt(os.path.join(log_dir, "saboteur_trained_on_architect_fidelities.txt"), np.array(saboteur_fidelities))
     np.savetxt(os.path.join(log_dir, "saboteur_error_rates.txt"), np.array(saboteur_error_rates))
     np.savetxt(os.path.join(log_dir, "saboteur_trained_on_architect_steps.txt"), np.array(saboteur_steps))
+
+    # --- Post-training evaluation of champions under final saboteur ---
+    def evaluate_attacked_fidelity(circuit: cirq.Circuit) -> float:
+        """Evaluate attacked fidelity with current saboteur_agent using budgeted top-k noise."""
+        if circuit is None or saboteur_agent is None:
+            return -1.0
+        from qas_gym.envs.saboteur_env import SaboteurMultiGateEnv
+        ops = list(circuit.all_operations())
+        qubits = sorted(list(circuit.all_qubits()))
+        sab_obs = SaboteurMultiGateEnv.create_observation_from_circuit(
+            circuit, n_qubits=n_qubits, max_circuit_timesteps=config.MAX_CIRCUIT_TIMESTEPS
+        )
+        sab_action, _ = saboteur_agent.predict(sab_obs, deterministic=True)
+        all_rates = SaboteurMultiGateEnv.all_error_rates
+        max_idx = len(all_rates) - 1
+        valid_gate_count = min(len(ops), config.MAX_CIRCUIT_TIMESTEPS)
+        raw_action = np.array(sab_action[:valid_gate_count], dtype=int)
+        budget = min(3, valid_gate_count)
+        effective_action = np.zeros_like(raw_action)
+        if budget > 0 and len(raw_action) > 0:
+            top_k = np.argsort(raw_action)[-budget:]
+            effective_action[top_k] = raw_action[top_k]
+        noisy_ops = []
+        for i, op in enumerate(ops):
+            noisy_ops.append(op)
+            if i < len(effective_action):
+                idx = int(effective_action[i])
+                idx = max(0, min(idx, max_idx))
+                rate = all_rates[idx]
+                if rate > 0:
+                    for q in op.qubits:
+                        noisy_ops.append(cirq.DepolarizingChannel(rate).on(q))
+        noisy_circuit = cirq.Circuit(noisy_ops)
+        return float(fidelity_pure_target(noisy_circuit, target_state, qubits))
+
+    candidates = []
+    robust_path = os.path.join(log_dir, "circuit_robust.json")
+    clean_best_path = os.path.join(log_dir, "circuit_clean_best.json")
+    if os.path.exists(robust_path):
+        candidates.append(("robust_champion", robust_path))
+    if os.path.exists(clean_best_path):
+        candidates.append(("clean_best", clean_best_path))
+
+    best_eval = -1.0
+    best_label = None
+    best_circuit_data = None
+    for label, path in candidates:
+        with open(path, "r") as f:
+            data = json.load(f)
+        circuit = cirq.read_json(json_text=json.dumps(data))
+        attacked_fid = evaluate_attacked_fidelity(circuit)
+        best_clean = float(fidelity_pure_target(circuit, target_state, sorted(list(circuit.all_qubits()))))
+        print(f"[ChampionEval] {label}: clean={best_clean:.4f}, attacked={attacked_fid:.4f}")
+        if attacked_fid > best_eval:
+            best_eval = attacked_fid
+            best_label = label
+            best_circuit_data = data
+
+    if best_circuit_data is not None:
+        # Save evaluated best-under-attack as canonical robust circuit
+        with open(os.path.join(log_dir, "circuit_robust.json"), "w") as f:
+            json.dump(best_circuit_data, f, indent=2)
+        with open(os.path.join(log_dir, "circuit_robust_final.json"), "w") as f:
+            json.dump(best_circuit_data, f, indent=2)
+        print(f"[ChampionEval] Selected '{best_label}' as robust champion (attacked fidelity={best_eval:.4f})")
 
     # --- Summary JSON ---
     exp_summary = {

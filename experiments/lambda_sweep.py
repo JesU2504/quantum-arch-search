@@ -71,15 +71,17 @@ class LambdaSweepCallback(BaseCallback):
     """
     Callback to track training progress and final circuit metrics.
     
-    Records final fidelity and CNOT count at the end of each episode.
+    Records final fidelity and gate counts at the end of each episode.
     Stores full training history for analysis.
     """
     def __init__(self, verbose=0):
         super().__init__(verbose)
         self.final_fidelity = 0.0
         self.final_cnot_count = 0
+        self.final_gate_count = 0
         self.best_fidelity = 0.0
         self.best_cnot_count = 0
+        self.best_gate_count = 0
         # Training history for detailed analysis
         self.fidelity_history = []
         self.step_history = []
@@ -97,15 +99,16 @@ class LambdaSweepCallback(BaseCallback):
             # Track best fidelity achieved
             if fidelity > self.best_fidelity:
                 self.best_fidelity = fidelity
-                # Count CNOTs in the circuit
                 if 'circuit' in info:
                     circuit = info['circuit']
                     self.best_cnot_count = _count_cnots(circuit)
+                    self.best_gate_count = _count_gates(circuit)
             
             # Update final metrics (last episode's metrics)
             self.final_fidelity = fidelity
             if 'circuit' in info:
                 self.final_cnot_count = _count_cnots(info['circuit'])
+                self.final_gate_count = _count_gates(info['circuit'])
         return True
 
 
@@ -116,6 +119,11 @@ def _count_cnots(circuit) -> int:
         if isinstance(op.gate, cirq.CNotPowGate):
             count += 1
     return count
+
+
+def _count_gates(circuit) -> int:
+    """Count total gates in a circuit."""
+    return len(list(circuit.all_operations()))
 
 
 def run_single_trial(
@@ -154,10 +162,12 @@ def run_single_trial(
         pass
     
     # Create environment with the specified lambda penalty
+    # Align reward/termination with train_architect: unreachable threshold, same max_timesteps,
+    # same complexity_penalty_weight usage.
     env = ArchitectEnv(
         target=target_state,
-        fidelity_threshold=1.1,  # > 1.0 to ensure episodes run to max_timesteps
-        reward_penalty=0.01,  # Fixed penalty for reward shaping
+        fidelity_threshold=1.1,  # keep unreachable to shape by improvement
+        reward_penalty=0.01,  # keep small shaping penalty
         max_timesteps=MAX_CIRCUIT_TIMESTEPS,
         complexity_penalty_weight=lambda_penalty,
         include_rotations=include_rotations,
@@ -185,6 +195,7 @@ def run_single_trial(
         'final_fidelity': float(callback.final_fidelity),
         'best_fidelity': float(callback.best_fidelity),
         'cnot_count': int(callback.best_cnot_count),
+        'gate_count': int(callback.best_gate_count),
         'success': bool(success),
         'training_steps': training_steps,
         'fidelity_history': callback.fidelity_history,

@@ -115,37 +115,24 @@ def simulate_noisy_fidelity(circuit: cirq.Circuit, target_state: np.ndarray,
     return fidelity_pure_target(noisy_circuit, target_state, qubits)
 
 
-def generate_measurement_samples(circuit: cirq.Circuit, target_state: np.ndarray,
-                                 true_p: float, n_qubits: int, n_shots: int) -> list:
+def generate_measurement_samples(
+    circuit: cirq.Circuit,
+    target_state: np.ndarray,
+    true_p: float,
+    n_qubits: int,
+    n_shots: int,
+    rng: np.random.Generator | None = None,
+) -> list:
     """
     Generate measurement fidelity samples under noise.
     
-    For simplicity, we simulate the expected fidelity for multiple "shots" 
-    with small noise perturbations to model measurement statistics.
-    
-    Args:
-        circuit: The circuit to simulate.
-        target_state: The target quantum state.
-        true_p: The true depolarizing noise parameter.
-        n_qubits: Number of qubits.
-        n_shots: Number of measurement shots/samples.
-    
-    Returns:
-        List of fidelity samples.
+    This models shot-based estimation with binomial variance around the noisy fidelity.
     """
-    # Get the expected fidelity under noise
+    rng = rng or np.random.default_rng()
     expected_fid = simulate_noisy_fidelity(circuit, target_state, true_p, n_qubits)
-    
-    # Model measurement noise as binomial variance in fidelity estimation
-    # The variance scales as fid * (1 - fid) / n_shots for a single measurement
-    # We add small Gaussian noise to model shot noise
-    std_dev = np.sqrt(expected_fid * (1 - expected_fid) / n_shots + NOISE_VARIANCE_EPSILON)
-    
-    # Generate samples centered around expected fidelity
-    samples = np.random.normal(expected_fid, std_dev, n_shots)
-    # Clip to valid fidelity range
+    std_dev = np.sqrt(expected_fid * (1 - expected_fid) / max(1, n_shots) + NOISE_VARIANCE_EPSILON)
+    samples = rng.normal(expected_fid, std_dev, n_shots)
     samples = np.clip(samples, 0.0, 1.0)
-    
     return samples.tolist()
 
 
@@ -238,8 +225,8 @@ def run_parameter_recovery_for_circuit(circuit: cirq.Circuit, circuit_name: str,
         'observed_fidelity_std': [],
         'recovery_error_mean': [],
         'recovery_error_std': [],
-        'per_seed_data': [],  # New: detailed per-seed results
-        'noise_seeds': [],  # New: log all noise seeds
+        'per_seed_data': [],  # detailed per-seed results
+        'noise_seeds': [],  # log all noise seeds
     }
     
     log(f"\n  Testing {circuit_name} circuit (n_repetitions={n_repetitions}):")
@@ -263,8 +250,10 @@ def run_parameter_recovery_for_circuit(circuit: cirq.Circuit, circuit_name: str,
             p_noise_seeds.append(noise_seed)
             
             # Generate measurement samples
-            samples = generate_measurement_samples(circuit, target_state, true_p, 
-                                                   n_qubits, n_shots)
+            rng = np.random.default_rng(noise_seed)
+            samples = generate_measurement_samples(
+                circuit, target_state, true_p, n_qubits, n_shots, rng=rng
+            )
             observed_fid = np.mean(samples)
             observed_fid_list.append(observed_fid)
             

@@ -38,7 +38,10 @@ COLORS = {
 
 def find_adversarial_run_dirs(root_dir):
     """
-    Discover all adversarial_training_* directories under each seed_* subdir.
+    Discover adversarial_training_* directories under each seed_* subdir.
+    Supports both layouts:
+      seed_k/adversarial/adversarial_training_*
+      seed_k/adversarial_training_*
     Returns a list of full paths.
     """
     run_dirs = []
@@ -47,21 +50,27 @@ def find_adversarial_run_dirs(root_dir):
         if not os.path.isdir(seed_path):
             continue
 
+        # Pattern A: seed_k/adversarial/adversarial_training_*
         adv_root = os.path.join(seed_path, "adversarial")
-        if not os.path.isdir(adv_root):
-            continue
-
-        # Find the first adversarial_training_* subdir (there should be one)
-        candidates = [
-            d for d in os.listdir(adv_root)
-            if d.startswith("adversarial_training")
-        ]
+        candidates = []
+        if os.path.isdir(adv_root):
+            candidates = [
+                os.path.join(adv_root, d)
+                for d in os.listdir(adv_root)
+                if d.startswith("adversarial_training")
+            ]
+        # Pattern B: seed_k/adversarial_training_*
+        if not candidates:
+            candidates = [
+                os.path.join(seed_path, d)
+                for d in os.listdir(seed_path)
+                if d.startswith("adversarial_training")
+            ]
         if not candidates:
             continue
 
         candidates.sort()
-        run_dir = os.path.join(adv_root, candidates[0])
-        run_dirs.append(run_dir)
+        run_dirs.append(candidates[0])
 
     return run_dirs
 
@@ -82,11 +91,23 @@ def load_metadata_from_run_dir(run_dir):
     """
     base_run_dir = os.path.dirname(os.path.dirname(os.path.abspath(run_dir)))
     meta_path = os.path.join(base_run_dir, "metadata.json")
-    if not os.path.exists(meta_path):
-        print(f"[WARN] metadata.json not found at {meta_path}")
-        return None
-    with open(meta_path, "r") as f:
-        return json.load(f)
+    if os.path.exists(meta_path):
+        with open(meta_path, "r") as f:
+            return json.load(f)
+
+    # Fallback: walk up ancestors to find the first metadata.json (e.g., at run root)
+    current = os.path.abspath(base_run_dir)
+    root = os.path.abspath(os.sep)
+    while current != root:
+        cand = os.path.join(current, "metadata.json")
+        if os.path.exists(cand):
+            print(f"[WARN] metadata.json not found at {meta_path}; using {cand}")
+            with open(cand, "r") as f:
+                return json.load(f)
+        current = os.path.dirname(current)
+
+    print(f"[WARN] metadata.json not found for run {run_dir}")
+    return None
 
 
 def assign_generations(steps, steps_per_gen, n_gens):
@@ -182,7 +203,17 @@ def plot_multiseed(root_dir, out_path):
     for d in run_dirs:
         print("  -", d)
 
-    all_stats = [compute_per_generation_stats(d) for d in run_dirs]
+    all_stats = []
+    valid_runs = []
+    for d in run_dirs:
+        try:
+            all_stats.append(compute_per_generation_stats(d))
+            valid_runs.append(d)
+        except Exception as e:
+            print(f"[WARN] Skipping {d}: {e}")
+
+    if not all_stats:
+        raise RuntimeError("No valid runs with fidelity logs found.")
 
     # Check n_gens consistency
     n_gens = all_stats[0]["n_gens"]
@@ -193,12 +224,14 @@ def plot_multiseed(root_dir, out_path):
     gen_indices = np.arange(n_gens)
     gens_plot = gen_indices + 1
 
-    def stack_and_agg(key):
+    def stack_and_agg(key, clip01=False):
         arr = np.stack([st[key] for st in all_stats], axis=0)  # [n_seeds, n_gens]
+        if clip01:
+            arr = np.clip(arr, 0.0, 1.0)
         return arr, np.nanmean(arr, axis=0), np.nanstd(arr, axis=0)
 
-    best_clean_all, best_clean_mean, best_clean_std = stack_and_agg("best_clean")
-    mean_noisy_all, mean_noisy_mean, mean_noisy_std = stack_and_agg("mean_noisy")
+    best_clean_all, best_clean_mean, best_clean_std = stack_and_agg("best_clean", clip01=True)
+    mean_noisy_all, mean_noisy_mean, mean_noisy_std = stack_and_agg("mean_noisy", clip01=True)
     gap_all, gap_mean, gap_std = stack_and_agg("gap")
     mean_error_all, mean_error_mean, mean_error_std = stack_and_agg("mean_error")
     mean_complex_all, mean_complex_mean, mean_complex_std = stack_and_agg("mean_complex")
@@ -209,72 +242,59 @@ def plot_multiseed(root_dir, out_path):
     )
 
     # ---------- PANEL 1: Fidelity & Robustness Gap ---------- #
+    # Light per-seed overlays for context
+    for i in range(best_clean_all.shape[0]):
+        ax1.plot(gens_plot, best_clean_all[i], color=COLORS["arch_clean"], alpha=0.15, linewidth=1)
+        ax1.plot(gens_plot, mean_noisy_all[i], color=COLORS["sab_noisy"], alpha=0.15, linewidth=1)
+
     ax1.plot(
         gens_plot, best_clean_mean, marker="o", linestyle="-", color=COLORS["arch_clean"],
-        label="Best Clean Fidelity (mean over seeds)"
+        label="Best Clean Fidelity (mean ± std)"
     )
     ax1.fill_between(
         gens_plot,
         best_clean_mean - best_clean_std,
         best_clean_mean + best_clean_std,
         color=COLORS["arch_clean"],
-        alpha=0.18,
+        alpha=0.15,
     )
 
     ax1.plot(
         gens_plot, mean_noisy_mean, marker="s", linestyle="-", color=COLORS["sab_noisy"],
-        label="Mean Fidelity Under Attack (mean over seeds)"
+        label="Fidelity Under Attack (mean ± std)"
     )
     ax1.fill_between(
         gens_plot,
         mean_noisy_mean - mean_noisy_std,
         mean_noisy_mean + mean_noisy_std,
         color=COLORS["sab_noisy"],
-        alpha=0.18,
+        alpha=0.15,
     )
 
     ax1.set_ylabel("Fidelity", fontweight="bold")
     ax1.set_ylim(0.0, 1.05)
     ax1.margins(x=0.01)
 
-    # Robustness gap on a twin axis
-    ax1b = ax1.twinx()
-    ax1b.plot(
-        gens_plot, gap_mean, marker="d", linestyle="--", color=COLORS["gap"],
-        label="Robustness Gap (clean - attacked, mean)"
-    )
-    ax1b.fill_between(
-        gens_plot,
-        gap_mean - gap_std,
-        gap_mean + gap_std,
-        color=COLORS["gap"],
-        alpha=0.12,
-    )
-    ax1b.set_ylabel("Robustness Gap", color=COLORS["gap"], fontweight="bold")
-    ax1b.tick_params(axis='y', labelcolor=COLORS["gap"])
+    # Legend (fidelity traces only)
+    ax1.legend(loc="lower right", frameon=True, fontsize=9)
 
-    # Combine legends with clearer ordering
-    lines1, labels1 = ax1.get_legend_handles_labels()
-    lines2, labels2 = ax1b.get_legend_handles_labels()
-    legend_handles = lines1 + lines2
-    legend_labels = labels1 + labels2
-    ax1.legend(legend_handles, legend_labels, loc="lower right", frameon=True)
-
+    title = f"Co-Evolution Across Seeds (N={len(valid_runs)} runs, {n_gens} generations)"
     ax1.set_title(
-        f"Co-Evolution Across Seeds (N={len(all_stats)} runs, {n_gens} generations)",
+        title,
         fontsize=14,
         fontweight="bold",
     )
 
-    # Annotate final generation summary
+    # Summary box with finals
     ax1.text(
-        0.02, 0.95,
+        0.98, 0.98,
+        f"Seeds: {len(valid_runs)}\n"
         f"Final clean: {best_clean_mean[-1]:.3f} ± {best_clean_std[-1]:.3f}\n"
-        f"Final attacked: {mean_noisy_mean[-1]:.3f} ± {mean_noisy_std[-1]:.3f}\n"
-        f"Final gap: {gap_mean[-1]:.3f} ± {gap_std[-1]:.3f}",
+        f"Final attacked: {mean_noisy_mean[-1]:.3f} ± {mean_noisy_std[-1]:.3f}",
         transform=ax1.transAxes,
         fontsize=9,
-        bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.7)
+        va="top", ha="right",
+        bbox=dict(boxstyle='round,pad=0.35', fc='white', alpha=0.9)
     )
 
     # ---------- PANEL 2: Saboteur Intensity (Error Rate) ---------- #

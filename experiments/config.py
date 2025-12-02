@@ -44,7 +44,8 @@ N_RUNS = 5
 RESULTS_DIR = "results"
 # CRITICAL: This determines the padding size for the Saboteur's input.
 # Must be consistent across env creation in train_adversarial.py
-MAX_CIRCUIT_TIMESTEPS = 15 
+# Bumped to allow deeper circuits during robust training.
+MAX_CIRCUIT_TIMESTEPS = 25 
 
 # --- Default Target Type for Experiments ---
 TARGET_TYPE = "ghz"  # or "toffoli" as needed
@@ -97,16 +98,17 @@ EXPERIMENT_PARAMS = {
     3: {
         # More rollout per update to help PPO escape the 0.69 plateau
         "ARCHITECT_N_STEPS": 2048,
-        # Baseline Total = Steps/Gen * Generations (10 gens)
-        "ARCHITECT_STEPS": 8192 * 10,
+        # Short run with a cushion beyond the ~74k success point
+        "ARCHITECT_STEPS": 8000 * 12,     # = 96,000 steps
         
-        "N_GENERATIONS": 10,
-        "ARCHITECT_STEPS_PER_GENERATION": 8192,
+        "N_GENERATIONS": 12,
+        "ARCHITECT_STEPS_PER_GENERATION": 8000,
         
+        # Give the saboteur enough budget to learn, scaled to shorter run
         "SABOTEUR_STEPS_PER_GENERATION": 2048,
         "SABOTEUR_N_STEPS": 2048,
-        # Saboteur Baseline Total
-        "SABOTEUR_STEPS": 2048 * 10,       # = 81,920 steps
+        # Saboteur Total
+        "SABOTEUR_STEPS": 2048 * 12,       # = 24,576 steps
     },
     
     # "Full" Implementation (4 Qubits) - Standard Experiment (ExpPlan.md)

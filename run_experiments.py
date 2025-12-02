@@ -15,6 +15,7 @@ import os
 import sys
 from datetime import datetime
 import shutil
+import glob
 
 # Add repository root and src to sys.path for standalone execution
 _repo_root = os.path.abspath(os.path.dirname(__file__))
@@ -260,43 +261,78 @@ def run_pipeline(args):
     else:
         logger.info('Skipping adversarial as requested')
 
+    # If adversarial training was skipped, attempt to discover existing robust circuits
+    if not adv_training_dirs:
+        discovered = []
+        for seed_dir in sorted(glob.glob(os.path.join(adversarial_dir, 'seed_*'))):
+            if not os.path.isdir(seed_dir):
+                continue
+            candidates = []
+            for root, _, files in os.walk(seed_dir):
+                if 'circuit_robust.json' in files:
+                    candidates.append(os.path.join(root, 'circuit_robust.json'))
+            if candidates:
+                best = max(candidates, key=os.path.getmtime)
+                discovered.append(os.path.dirname(best))
+        if discovered:
+            adv_training_dirs.extend(discovered)
+            canonical_adv_training_dir = canonical_adv_training_dir or discovered[0]
+            logger.info('Discovered %d existing adversarial run(s) with robust circuits', len(discovered))
+
     # 4) Comparison & File Management
     compare_base = os.path.join(base, 'compare')
-    run0 = os.path.join(compare_base, 'run_0')
-    os.makedirs(run0, exist_ok=True)
-
     vanilla_src = os.path.join(baseline_dir, 'circuit_vanilla.json')
-    if os.path.exists(vanilla_src):
-        shutil.copy(vanilla_src, os.path.join(run0, 'circuit_vanilla.json'))
-    
-    # Locate canonical robust circuit:
-    # 1) Prefer base/adversarial/circuit_robust.json (if we copy it there)
-    # 2) Otherwise, fall back to canonical_adv_training_dir/circuit_robust.json
-    robust_src = os.path.join(adversarial_dir, 'circuit_robust.json')
-    if not os.path.exists(robust_src) and canonical_adv_training_dir:
-        robust_src = os.path.join(canonical_adv_training_dir, 'circuit_robust.json')
+    os.makedirs(compare_base, exist_ok=True)
 
-    # If we found a robust circuit in the canonical training dir but not at root,
-    # copy it to the adversarial root and to compare/run_0.
-    if canonical_adv_training_dir:
-        cand = os.path.join(canonical_adv_training_dir, 'circuit_robust.json')
-        if os.path.exists(cand):
-            # Copy to adversarial root for convenience
-            target_root_robust = os.path.join(adversarial_dir, 'circuit_robust.json')
-            shutil.copy(cand, target_root_robust)
-            robust_src = target_root_robust
-            logger.info(f'Canonical robust circuit copied to {target_root_robust}')
+    # Gather robust circuits from every adversarial seed so downstream steps can use all of them.
+    compare_runs = []
+    robust_for_downstream = None
+    for idx, adv_dir in enumerate(adv_training_dirs):
+        run_dir = os.path.join(compare_base, f'run_{idx}')
+        os.makedirs(run_dir, exist_ok=True)
+        if os.path.exists(vanilla_src):
+            shutil.copy(vanilla_src, os.path.join(run_dir, 'circuit_vanilla.json'))
 
-    if os.path.exists(robust_src):
-        shutil.copy(robust_src, os.path.join(run0, 'circuit_robust.json'))
-        logger.info('Robust circuit copied to comparison folder')
-    else:
-        logger.warning('Robust circuit not found for comparison.')
+        robust_src = os.path.join(adv_dir, 'circuit_robust.json')
+        if os.path.exists(robust_src):
+            shutil.copy(robust_src, os.path.join(run_dir, 'circuit_robust.json'))
+            compare_runs.append(run_dir)
+            if robust_for_downstream is None:
+                robust_for_downstream = os.path.join(run_dir, 'circuit_robust.json')
+            logger.info(f'Robust circuit from {adv_dir} copied to {run_dir}')
+            # Also copy the first robust circuit to adversarial root for convenience
+            if idx == 0:
+                target_root_robust = os.path.join(adversarial_dir, 'circuit_robust.json')
+                shutil.copy(robust_src, target_root_robust)
+        else:
+            logger.warning(f'No robust circuit found at {robust_src}')
+
+    # Backward compatibility: if no adversarial runs or no robust circuits were found, keep run_0 structure
+    if not compare_runs:
+        run0 = os.path.join(compare_base, 'run_0')
+        os.makedirs(run0, exist_ok=True)
+        if os.path.exists(vanilla_src):
+            shutil.copy(vanilla_src, os.path.join(run0, 'circuit_vanilla.json'))
+        # Try canonical robust fallback
+        robust_src = os.path.join(adversarial_dir, 'circuit_robust.json')
+        if not os.path.exists(robust_src) and canonical_adv_training_dir:
+            robust_src = os.path.join(canonical_adv_training_dir, 'circuit_robust.json')
+        if os.path.exists(robust_src):
+            shutil.copy(robust_src, os.path.join(run0, 'circuit_robust.json'))
+            robust_for_downstream = os.path.join(run0, 'circuit_robust.json')
+            logger.info('Robust circuit copied to comparison folder (fallback run_0)')
+        else:
+            logger.warning('Robust circuit not found for comparison.')
+        compare_runs.append(run0)
 
     # 5) Compare
     if not args.skip_compare:
         logger.info('Running comparison across runs')
-        compare_noise_resilience(base_results_dir=compare_base, num_runs=1, n_qubits=args.n_qubits)
+        compare_noise_resilience(
+            base_results_dir=compare_base,
+            num_runs=len(compare_runs),
+            n_qubits=args.n_qubits
+        )
 
     # 6) Parameter Recovery
     param_recovery_dir = os.path.join(base, 'parameter_recovery')
@@ -304,7 +340,7 @@ def run_pipeline(args):
     if not args.skip_parameter_recovery:
         if os.path.exists(vanilla_src):
             logger.info('Running parameter recovery experiment')
-            robust_to_use = robust_src if (robust_src and os.path.exists(robust_src)) else vanilla_src
+            robust_to_use = robust_for_downstream if (robust_for_downstream and os.path.exists(robust_for_downstream)) else vanilla_src
             run_parameter_recovery(
                 results_dir=param_recovery_dir,
                 n_qubits=args.n_qubits,
@@ -319,8 +355,10 @@ def run_pipeline(args):
     cross_noise_dir = os.path.join(base, 'cross_noise')
     os.makedirs(cross_noise_dir, exist_ok=True)
     if not args.skip_cross_noise:
-        vanilla_circuit_path = os.path.join(run0, 'circuit_vanilla.json')
-        robust_circuit_path = os.path.join(run0, 'circuit_robust.json')
+        # Use the first available comparison run for cross-noise
+        first_run = compare_runs[0] if compare_runs else os.path.join(compare_base, 'run_0')
+        vanilla_circuit_path = os.path.join(first_run, 'circuit_vanilla.json')
+        robust_circuit_path = os.path.join(first_run, 'circuit_robust.json')
         if os.path.exists(vanilla_circuit_path) and os.path.exists(robust_circuit_path):
             logger.info('Running cross-noise robustness experiment')
             run_cross_noise_robustness(
