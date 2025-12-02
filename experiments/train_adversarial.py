@@ -174,11 +174,13 @@ def train_adversarial(
     max_circuit_gates: int = config.MAX_CIRCUIT_TIMESTEPS, # UPDATED: Use Config
     fidelity_threshold: float = 0.99,
     lambda_penalty: float = 0.5,
-    include_rotations: bool = False,
+    include_rotations: bool | None = None,
     task_mode: str = None,
 ):
     # --- Configuration ---
     effective_task_mode = task_mode if task_mode is not None else config.TASK_MODE
+    if include_rotations is None:
+        include_rotations = config.INCLUDE_ROTATIONS
     effective_target_type = config.TARGET_TYPE
     rotation_status = "with rotation gates" if include_rotations else "with Clifford+T gates only"
     
@@ -371,7 +373,7 @@ if __name__ == "__main__":
     parser.add_argument("--max-circuit-gates", type=int, default=config.MAX_CIRCUIT_TIMESTEPS)
     parser.add_argument("--fidelity-threshold", type=float, default=0.99)
     parser.add_argument("--lambda-penalty", type=float, default=0.5)
-    parser.add_argument("--include-rotations", action="store_true")
+    # Gate set controlled via experiments/config.py (INCLUDE_ROTATIONS/ROTATION_TYPES)
     parser.add_argument("--task-mode", type=str, default=None)
 
     args = parser.parse_args()
@@ -385,6 +387,9 @@ if __name__ == "__main__":
     architect_steps = args.architect_steps if args.architect_steps is not None else qubit_params["ARCHITECT_STEPS_PER_GENERATION"]
     saboteur_steps = args.saboteur_steps if args.saboteur_steps is not None else qubit_params["SABOTEUR_STEPS_PER_GENERATION"]
 
+    # Gate set is controlled centrally in experiments/config.py
+    include_rotations = config.INCLUDE_ROTATIONS
+
     architect_agent, saboteur_agent, log_dir = train_adversarial(
         results_dir=args.results_dir,
         n_qubits=args.n_qubits,
@@ -394,7 +399,7 @@ if __name__ == "__main__":
         max_circuit_gates=args.max_circuit_gates,
         fidelity_threshold=args.fidelity_threshold,
         lambda_penalty=args.lambda_penalty,
-        include_rotations=args.include_rotations,
+        include_rotations=include_rotations,
         task_mode=args.task_mode,
     )
 

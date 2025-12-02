@@ -182,7 +182,7 @@ class ChampionCircuitCallback(BaseCallback):
         lines.append("=" * 60 + "\n")
         return "\n".join(lines)
 
-def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps, include_rotations=False, target_type=None, task_mode=None):
+def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps, include_rotations=None, target_type=None, task_mode=None):
     """
     Trains a baseline architect in a noise-free environment to find a circuit
     for the configured target (default: n-controlled Toffoli gate).
@@ -252,6 +252,9 @@ def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps, in
         print("\n--- Target Circuit (for reference) ---")
         print(target_circuit)
 
+    if include_rotations is None:
+        include_rotations = config.INCLUDE_ROTATIONS
+
     # Use ArchitectEnv for a fair comparison with the adversarial setup
     # The environment will handle creation of qubits, observables, and gates internally.
     # Enforce gate set from config.py
@@ -314,33 +317,57 @@ def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps, in
     except Exception:
         print("Warning: could not save architect step indices (file write failed or steps empty)")
 
-    # Plotting
-    plt.figure(figsize=(10, 6))
+    # Plotting (more informative)
     if callback.steps:
-        # Plot raw episode fidelities as a scatter plot for a clear view of performance
-        plt.scatter(callback.steps, callback.fidelities, alpha=0.2, s=10, label='Episode Fidelity')
+        steps_arr = np.array(callback.steps)
+        fids_arr = np.array(callback.fidelities)
+        best_arr = np.maximum.accumulate(fids_arr)
 
-        # Calculate and plot the cumulative best fidelity over time
-        cumulative_best = np.maximum.accumulate(callback.fidelities)
-        plt.plot(callback.steps, cumulative_best, 'r-', label='Best Fidelity Found', linewidth=2)
+        def rolling_mean(x, window):
+            window = max(1, window)
+            if len(x) < window:
+                return x
+            kernel = np.ones(window) / window
+            # pad to preserve length
+            return np.convolve(x, kernel, mode="same")
 
-    plt.title(f"Baseline Architect Training Progress ({n_qubits}-Qubit Toffoli Gate, {rotation_status})")
-    plt.xlabel("Training Steps")
-    plt.ylabel("Fidelity")
-    plt.grid(True)
-    plt.legend()
-    plt.ylim(bottom=-0.05, top=1.05)
-    plt.tight_layout()
-    plt.savefig(plot_filename)
-    print(f"Training plot saved to {plot_filename}")
+        # Use ~2% of points as window, minimum 10
+        smooth_window = max(10, len(fids_arr) // 50)
+        smooth = rolling_mean(fids_arr, smooth_window)
+
+        fig, (ax_main, ax_hist) = plt.subplots(
+            2, 1, figsize=(10, 8), gridspec_kw={"height_ratios": [3, 1]}, sharex=True
+        )
+
+        ax_main.scatter(steps_arr, fids_arr, alpha=0.2, s=10, label="Episode Fidelity", color="#4c78a8")
+        ax_main.plot(steps_arr, smooth, color="#f58518", linewidth=2, label=f"Rolling Mean (window={smooth_window})")
+        ax_main.plot(steps_arr, best_arr, color="#72b7b2", linewidth=2, label="Best So Far")
+        ax_main.axhline(1.0, color="grey", linestyle="--", linewidth=1, label="Ideal Fidelity")
+        ax_main.set_ylabel("Fidelity")
+        ax_main.set_title(f"Architect Training ({n_qubits}-Qubit {effective_target.title()}, {rotation_status})")
+        ax_main.grid(True, alpha=0.3)
+        ax_main.set_ylim(bottom=-0.05, top=1.05)
+        ax_main.legend()
+
+        ax_hist.hist(fids_arr, bins=30, color="#4c78a8", alpha=0.7, edgecolor="white")
+        ax_hist.axvline(np.max(fids_arr), color="#72b7b2", linestyle="--", linewidth=1.5, label=f"Best={np.max(fids_arr):.3f}")
+        ax_hist.set_xlabel("Fidelity")
+        ax_hist.set_ylabel("Count")
+        ax_hist.grid(True, alpha=0.3)
+        ax_hist.legend()
+
+        plt.tight_layout()
+        plt.savefig(plot_filename)
+        print(f"Training plot saved to {plot_filename}")
+    else:
+        print("No steps recorded; skipping plot generation.")
 
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Train a baseline architect agent")
     parser.add_argument('--n-qubits', type=int, default=4, help='Number of qubits (default: 4)')
     parser.add_argument('--results-dir', type=str, default='results', help='Directory to save results')
-    parser.add_argument('--include-rotations', action='store_true',
-                        help='Include parameterized rotation gates (Rx, Ry, Rz) in action space')
+    # Gate set controlled via experiments/config.py (INCLUDE_ROTATIONS/ROTATION_TYPES)
     args = parser.parse_args()
     
     params = config.EXPERIMENT_PARAMS[args.n_qubits]
@@ -349,5 +376,5 @@ if __name__ == "__main__":
         n_qubits=args.n_qubits, 
         architect_steps=params["ARCHITECT_STEPS"],
         n_steps=params["ARCHITECT_N_STEPS"],
-        include_rotations=args.include_rotations
+        include_rotations=None  # defer to config.INCLUDE_ROTATIONS
     )

@@ -95,12 +95,13 @@ def get_metric_key_for_task_mode(task_mode: str | None = None) -> str:
 EXPERIMENT_PARAMS = {
     # "Quick" Implementation (3 Qubits) - For debugging and rapid testing
     3: {
-        "ARCHITECT_N_STEPS": 4096,
-        # Baseline Total = Steps/Gen * Generations
-        "ARCHITECT_STEPS": 4096 * 10,      
+        # More rollout per update to help PPO escape the 0.69 plateau
+        "ARCHITECT_N_STEPS": 2048,
+        # Baseline Total = Steps/Gen * Generations (10 gens)
+        "ARCHITECT_STEPS": 8192 * 10,
         
         "N_GENERATIONS": 10,
-        "ARCHITECT_STEPS_PER_GENERATION": 4096,
+        "ARCHITECT_STEPS_PER_GENERATION": 8192,
         
         "SABOTEUR_STEPS_PER_GENERATION": 2048,
         "SABOTEUR_N_STEPS": 2048,
@@ -110,12 +111,13 @@ EXPERIMENT_PARAMS = {
     
     # "Full" Implementation (4 Qubits) - Standard Experiment (ExpPlan.md)
     4: {
-        "ARCHITECT_N_STEPS": 4096,
+        # Match 3-qubit tuning: longer per-gen rollout with 2048-step PPO updates
+        "ARCHITECT_N_STEPS": 2048,
         # Baseline Total = Steps/Gen * Generations
-        "ARCHITECT_STEPS": 4096 * 100,     # = 409,600 steps (Matched to Adversarial)
+        "ARCHITECT_STEPS": 8192 * 100,     # = 819,200 steps (Matched to Adversarial)
         
         "N_GENERATIONS": 100,
-        "ARCHITECT_STEPS_PER_GENERATION": 4096, 
+        "ARCHITECT_STEPS_PER_GENERATION": 8192, 
         
         "SABOTEUR_STEPS_PER_GENERATION": 2048,
         "SABOTEUR_N_STEPS": 2048,
@@ -125,12 +127,13 @@ EXPERIMENT_PARAMS = {
     
     # "Long" Implementation (5 Qubits) - Scalability / Wall Test
     5: {
-        "ARCHITECT_N_STEPS": 4096,
+        # Match 3-qubit tuning: longer per-gen rollout with 2048-step PPO updates
+        "ARCHITECT_N_STEPS": 2048,
         # Baseline Total = Steps/Gen * Generations
-        "ARCHITECT_STEPS": 4096 * 200,     # = 819,200 steps (Matched to Adversarial)
+        "ARCHITECT_STEPS": 8192 * 200,     # = 1,638,400 steps (Matched to Adversarial)
         
         "N_GENERATIONS": 200,
-        "ARCHITECT_STEPS_PER_GENERATION": 4096,
+        "ARCHITECT_STEPS_PER_GENERATION": 8192,
         
         "SABOTEUR_STEPS_PER_GENERATION": 2048,
         "SABOTEUR_N_STEPS": 2048,
@@ -162,13 +165,14 @@ SABOTEUR_N_STEPS = _DEFAULT_PARAMS["SABOTEUR_STEPS_PER_GENERATION"]
 
 # --- Agent Hyperparameters ---
 AGENT_PARAMS = {
-    "n_steps": 1000,
-    "batch_size": 100,
+    # PPO stability / exploration tweaks to improve small-GHZ convergence
+    "n_steps": 2048,
+    "batch_size": 256,
     "n_epochs": 10,
     "gamma": 0.99,
-    "gae_lambda": 0.95,
+    "gae_lambda": 0.92,
     "learning_rate": 3e-4,
-    "ent_coef": 0.01,
+    "ent_coef": 0.02,
     "verbose": 0,
     "device": "cpu", 
 }
@@ -196,8 +200,8 @@ from qas_gym.utils import get_gates_by_name
 # Set to False (default) for backward compatibility with Clifford+T gate set.
 INCLUDE_ROTATIONS = True
 # Limit rotation gate types to reduce action space while preserving Toffoli synthesis.
-# Rz(π/4) acts as the T gate (up to global phase), sufficient for Toffoli.
-ROTATION_TYPES = ['Rz', 'Rx', 'Ry']
+# Rz(π/4) acts as the T gate (up to global phase). Rx is helpful for GHZ prep.
+ROTATION_TYPES = ['Rz', 'Rx']
 
 
 def get_action_gates(

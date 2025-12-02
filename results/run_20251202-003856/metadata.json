@@ -1,11 +1,11 @@
 {
-  "adversarial_arch_steps": 4096,
+  "adversarial_arch_steps": 8192,
   "adversarial_gens": 100,
-  "baseline_steps": 409600,
+  "baseline_steps": 819200,
   "n_qubits": 4,
   "n_seeds": 5,
   "saboteur_steps": 204800,
   "seed": null,
   "source": "experiments.config",
-  "timestamp": "20251202-000626"
+  "timestamp": "20251202-003856"
 }
