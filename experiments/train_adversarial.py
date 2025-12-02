@@ -34,7 +34,16 @@ class ChampionCircuitCallback(BaseCallback):
     A callback to save the best circuit found during training.
     Checks ALL parallel environments and prints in real-time.
     """
-    def __init__(self, circuit_filename, clean_circuit_filename=None, verbose=0):
+    def __init__(
+        self,
+        circuit_filename,
+        clean_circuit_filename=None,
+        verbose=0,
+        offset_steps=0,
+        min_step_to_save=0,
+        hall_of_fame=None,
+        hall_of_fame_size=5,
+    ):
         super().__init__(verbose)
         self.circuit_filename = circuit_filename
         # Optional: track a separate best-by-clean-fidelity circuit
@@ -44,11 +53,26 @@ class ChampionCircuitCallback(BaseCallback):
         self.unitary_mode = False
         self.verify_unitary = False
         self.n_qubits = None
+        # Offset allows us to enforce "start saving only after X global steps"
+        self.offset_steps = offset_steps
+        self.min_step_to_save = min_step_to_save
+        self.hall_of_fame = hall_of_fame if hall_of_fame is not None else []
+        self.hall_of_fame_size = hall_of_fame_size
+
+    def _record_hall_of_fame(self, entry):
+        """Maintain a top-k hall of fame by attacked/process fidelity."""
+        self.hall_of_fame.append(entry)
+        # Sort descending by metric
+        self.hall_of_fame.sort(key=lambda e: e.get("metric", -1.0), reverse=True)
+        # Trim to size
+        if len(self.hall_of_fame) > self.hall_of_fame_size:
+            self.hall_of_fame[:] = self.hall_of_fame[: self.hall_of_fame_size]
 
     def _on_step(self) -> bool:
         # We assume training_env is a VecEnv with possibly multiple ArchitectEnv instances.
         envs = self.training_env.envs if hasattr(self.training_env, "envs") else [self.training_env]
         updated = False
+        global_step = self.num_timesteps + self.offset_steps
 
         for i, env in enumerate(envs):
             if hasattr(env, 'env'):
@@ -70,12 +94,16 @@ class ChampionCircuitCallback(BaseCallback):
 
                 candidate_circuit = info.get('circuit')
                 candidate_fid = info.get('fidelity', 0.0)
+                clean_metric = candidate_fid
 
                 if candidate_circuit is None:
                     try:
                         candidate_circuit = self.training_env.env_method('get_circuit', indices=[i])[0]
                     except Exception:
                         continue
+                # Enforce minimum step before considering champions
+                if global_step < self.min_step_to_save:
+                    continue
 
                 if candidate_circuit:
                     # Prefer robustness (fidelity_under_attack) if available
@@ -100,6 +128,17 @@ class ChampionCircuitCallback(BaseCallback):
                         except Exception:
                             # Fall back to robustness / state fidelity
                             pass
+
+                    # Hall-of-fame tracking for best-overall evaluation
+                    if candidate_circuit is not None:
+                        hof_entry = {
+                            "metric": float(metric_to_check),
+                            "metric_name": metric_name,
+                            "clean_metric": float(clean_metric) if clean_metric is not None else None,
+                            "step": int(global_step),
+                            "circuit": json.loads(cirq.to_json(candidate_circuit)),
+                        }
+                        self._record_hall_of_fame(hof_entry)
 
                     # Compare and potentially save
                     if (self.best_saved_fidelity is None) or (metric_to_check > self.best_saved_fidelity):
@@ -190,6 +229,8 @@ def train_adversarial(
     lambda_penalty: float = 0.5,
     include_rotations: bool | None = None,
     task_mode: str = None,
+    champion_save_last_steps: int | None = None,
+    hall_of_fame_size: int = 5,
 ):
     # --- Configuration ---
     effective_task_mode = task_mode if task_mode is not None else config.TASK_MODE
@@ -210,12 +251,22 @@ def train_adversarial(
     print(f"Saboteur Steps per Generation: {saboteur_steps_per_generation}")
     print(f"Lambda Penalty (Saboteur): {lambda_penalty}")
     print(f"Rotation Gates: {rotation_status}")
+    print(f"Hall-of-Fame Size: {hall_of_fame_size}")
     print("=" * 60 + "\n")
+
+    total_architect_steps = n_generations * architect_steps_per_generation
+    champion_min_step = 0
+    if champion_save_last_steps is not None and champion_save_last_steps > 0:
+        champion_min_step = max(0, total_architect_steps - champion_save_last_steps)
+        print(
+            f"Champion circuits will only be saved from step {champion_min_step} onward "
+            f"(last {champion_save_last_steps} architect steps)."
+        )
 
     # --- Prepare Results Directory ---
     os.makedirs(results_dir, exist_ok=True)
     timestamp = time.strftime("%Y%m%d-%H%M%S")
-    log_dir = os.path.join(results_dir, f"adversarial_training_{timestamp}")
+    log_dir = results_dir
     os.makedirs(log_dir, exist_ok=True)
     
     # --- Target State / Unitary ---
@@ -283,6 +334,7 @@ def train_adversarial(
     champion_circuit = None
     total_arch_steps = 0
     total_sab_steps = 0
+    hall_of_fame = []
 
     # --- Main Loop ---
     for gen in range(n_generations):
@@ -300,7 +352,11 @@ def train_adversarial(
         # Real-time champion detection
         arch_champ_callback = ChampionCircuitCallback(
             circuit_filename=os.path.join(log_dir, "circuit_robust.json"),
-            clean_circuit_filename=os.path.join(log_dir, "circuit_clean_best.json")
+            clean_circuit_filename=os.path.join(log_dir, "circuit_clean_best.json"),
+            offset_steps=total_arch_steps,
+            min_step_to_save=champion_min_step,
+            hall_of_fame=hall_of_fame,
+            hall_of_fame_size=hall_of_fame_size,
         )
         arch_champ_callback.verify_unitary = (effective_task_mode == 'unitary_preparation')
         arch_champ_callback.n_qubits = n_qubits
@@ -355,6 +411,10 @@ def train_adversarial(
     np.savetxt(os.path.join(log_dir, "saboteur_error_rates.txt"), np.array(saboteur_error_rates))
     np.savetxt(os.path.join(log_dir, "saboteur_trained_on_architect_steps.txt"), np.array(saboteur_steps))
 
+    hof_path = os.path.join(log_dir, "hall_of_fame.json")
+    with open(hof_path, "w") as f:
+        json.dump(hall_of_fame, f, indent=2)
+
     # --- Post-training evaluation of champions under final saboteur ---
     def evaluate_attacked_fidelity(circuit: cirq.Circuit) -> float:
         """Evaluate attacked fidelity with current saboteur_agent using budgeted top-k noise."""
@@ -390,22 +450,53 @@ def train_adversarial(
         return float(fidelity_pure_target(noisy_circuit, target_state, qubits))
 
     candidates = []
+    # Hall-of-fame candidates (already serialized circuits)
+    for idx, entry in enumerate(hall_of_fame):
+        candidates.append({
+            "label": f"hof_rank_{idx+1}",
+            "circuit_data": entry.get("circuit"),
+            "metric": entry.get("metric"),
+            "clean_metric": entry.get("clean_metric"),
+            "metric_name": entry.get("metric_name", "Fidelity"),
+            "step": entry.get("step"),
+        })
+
+    # Fallback: include last saved champions from disk if any
     robust_path = os.path.join(log_dir, "circuit_robust.json")
     clean_best_path = os.path.join(log_dir, "circuit_clean_best.json")
     if os.path.exists(robust_path):
-        candidates.append(("robust_champion", robust_path))
+        with open(robust_path, "r") as f:
+            data = json.load(f)
+        candidates.append({"label": "robust_champion_file", "circuit_data": data})
     if os.path.exists(clean_best_path):
-        candidates.append(("clean_best", clean_best_path))
+        with open(clean_best_path, "r") as f:
+            data = json.load(f)
+        candidates.append({"label": "clean_best_file", "circuit_data": data})
 
     best_eval = -1.0
     best_label = None
     best_circuit_data = None
-    for label, path in candidates:
-        with open(path, "r") as f:
-            data = json.load(f)
+    evaluated_candidates = []
+    for cand in candidates:
+        label = cand.get("label", "candidate")
+        data = cand.get("circuit_data")
+        if data is None:
+            continue
         circuit = cirq.read_json(json_text=json.dumps(data))
         attacked_fid = evaluate_attacked_fidelity(circuit)
-        best_clean = float(fidelity_pure_target(circuit, target_state, sorted(list(circuit.all_qubits()))))
+        try:
+            best_clean = float(fidelity_pure_target(circuit, target_state, sorted(list(circuit.all_qubits()))))
+        except Exception:
+            best_clean = float("nan")
+        evaluated_candidates.append({
+            "label": label,
+            "attacked_fidelity": attacked_fid,
+            "clean_fidelity": best_clean,
+            "source_metric": cand.get("metric"),
+            "source_clean_metric": cand.get("clean_metric"),
+            "metric_name": cand.get("metric_name"),
+            "step": cand.get("step"),
+        })
         print(f"[ChampionEval] {label}: clean={best_clean:.4f}, attacked={attacked_fid:.4f}")
         if attacked_fid > best_eval:
             best_eval = attacked_fid
@@ -419,6 +510,8 @@ def train_adversarial(
         with open(os.path.join(log_dir, "circuit_robust_final.json"), "w") as f:
             json.dump(best_circuit_data, f, indent=2)
         print(f"[ChampionEval] Selected '{best_label}' as robust champion (attacked fidelity={best_eval:.4f})")
+    with open(os.path.join(log_dir, "hall_of_fame_evaluated.json"), "w") as f:
+        json.dump(evaluated_candidates, f, indent=2)
 
     # --- Summary JSON ---
     exp_summary = {
@@ -431,6 +524,10 @@ def train_adversarial(
         "task_mode": effective_task_mode,
         "target_type": effective_target_type,
         "timestamp": timestamp,
+        "champion_save_last_steps": champion_save_last_steps,
+        "champion_min_step": champion_min_step,
+        "hall_of_fame_size": hall_of_fame_size,
+        "hall_of_fame_count": len(hall_of_fame),
     }
     with open(os.path.join(log_dir, "experiment_summary.json"), "w") as f:
         json.dump(exp_summary, f, indent=2)
@@ -453,6 +550,10 @@ if __name__ == "__main__":
     parser.add_argument("--max-circuit-gates", type=int, default=config.MAX_CIRCUIT_TIMESTEPS)
     parser.add_argument("--fidelity-threshold", type=float, default=0.99)
     parser.add_argument("--lambda-penalty", type=float, default=0.5)
+    parser.add_argument("--champion-save-last-steps", type=int, default=None,
+                        help="Only save champion circuits during the last N architect steps.")
+    parser.add_argument("--hall-of-fame-size", type=int, default=5,
+                        help="Keep top-k champions across the whole run for end-of-training evaluation.")
     # Gate set controlled via experiments/config.py (INCLUDE_ROTATIONS/ROTATION_TYPES)
     parser.add_argument("--task-mode", type=str, default=None)
 
@@ -481,6 +582,8 @@ if __name__ == "__main__":
         lambda_penalty=args.lambda_penalty,
         include_rotations=include_rotations,
         task_mode=args.task_mode,
+        champion_save_last_steps=args.champion_save_last_steps,
+        hall_of_fame_size=args.hall_of_fame_size,
     )
 
     architect_agent.save(os.path.join(log_dir, "architect_adversarial.zip"))

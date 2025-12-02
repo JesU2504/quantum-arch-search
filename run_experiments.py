@@ -16,6 +16,9 @@ import sys
 from datetime import datetime
 import shutil
 import glob
+import itertools
+import random
+from pathlib import Path
 
 # Add repository root and src to sys.path for standalone execution
 _repo_root = os.path.abspath(os.path.dirname(__file__))
@@ -24,6 +27,8 @@ if _repo_root not in sys.path:
 _src_root = os.path.join(_repo_root, 'src')
 if _src_root not in sys.path:
     sys.path.insert(0, _src_root)
+
+from qas_gym.utils import fidelity_pure_target
 
 
 def setup_logger(log_path):
@@ -64,6 +69,230 @@ def set_global_seed(seed, logger=None):
     except Exception:
         if logger is not None:
             logger.warning("Torch not available; skipping torch seeding.")
+
+
+def summarize_fidelity_outputs(base_dir: str, analysis_dir: str, logger=None):
+    """
+    Collect fidelity stats from lambda_sweep (train_architect) and adversarial runs.
+    Writes a raw CSV for downstream reporting.
+    """
+    import csv
+    rows = []
+    base_path = Path(base_dir)
+
+    # Lambda sweep (train_architect)
+    for path in base_path.glob("**/lambda_sweep/lambda_*/seed_*_results.json"):
+        with open(path) as f:
+            data = json.load(f)
+        rel = path.relative_to(base_path)
+        rows.append({
+            "experiment": "train_architect_lambda_sweep",
+            "run": str(rel.parts[0]) if rel.parts else "",
+            "seed": data.get("seed"),
+            "lambda_penalty": data.get("lambda"),
+            "best_fidelity": data.get("best_fidelity"),
+            "final_fidelity": data.get("final_fidelity"),
+            "success": data.get("success"),
+            "record_count": len(data.get("fidelity_history", [])),
+            "source_path": str(rel),
+        })
+
+    # Adversarial runs (train_adversarial)
+    for path in base_path.glob("**/adversarial/seed_*/adversarial_training_*/architect_fidelities.txt"):
+        try:
+            with open(path) as f:
+                vals = [float(line.strip()) for line in f if line.strip()]
+        except Exception:
+            continue
+        if not vals:
+            continue
+        seed_label = next((p for p in path.parts if p.startswith("seed_")), "")
+        rel = path.relative_to(base_path)
+        rows.append({
+            "experiment": "train_adversarial",
+            "run": str(rel.parts[0]) if rel.parts else "",
+            "seed": seed_label,
+            "lambda_penalty": None,
+            "best_fidelity": max(vals),
+            "final_fidelity": vals[-1],
+            "success": None,
+            "record_count": len(vals),
+            "source_path": str(rel),
+        })
+
+    if not rows:
+        if logger:
+            logger.warning("No fidelity data found to summarize.")
+        return
+
+    rows_sorted = sorted(rows, key=lambda r: (r["experiment"], r.get("run", ""), str(r.get("seed"))))
+    os.makedirs(analysis_dir, exist_ok=True)
+    out_path = Path(analysis_dir) / "fidelity_raw_data.csv"
+    with out_path.open("w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=list(rows_sorted[0].keys()))
+        writer.writeheader()
+        writer.writerows(rows_sorted)
+    if logger:
+        logger.info("Fidelity summary written to %s", out_path)
+
+
+def _evaluate_circuit_under_attacks(circuit: "cirq.Circuit", target_state, rate: float, budget: int, max_samples: int):
+    """
+    Evaluate clean fidelity and sampled attacked fidelities for a circuit.
+    Returns dict with clean and attacked stats.
+    """
+    import numpy as np
+    import cirq
+
+    qubits = sorted(circuit.all_qubits())
+    ops = list(circuit.all_operations())
+    clean_fid = float(fidelity_pure_target(circuit, target_state, qubits))
+
+    combos = []
+    max_k = min(budget, len(ops))
+    for k in range(1, max_k + 1):
+        combos.extend(itertools.combinations(range(len(ops)), k))
+    if len(combos) > max_samples:
+        combos = random.sample(combos, max_samples)
+
+    def add_noise(indices):
+        noisy_ops = []
+        for idx, op in enumerate(ops):
+            noisy_ops.append(op)
+            if idx in indices:
+                for q in op.qubits:
+                    noisy_ops.append(cirq.DepolarizingChannel(rate).on(q))
+        return cirq.Circuit(noisy_ops)
+
+    attacked_vals = []
+    for comb in combos:
+        noisy_circ = add_noise(set(comb))
+        attacked_vals.append(fidelity_pure_target(noisy_circ, target_state, qubits))
+
+    if attacked_vals:
+        attacked_mean = float(np.mean(attacked_vals))
+        attacked_std = float(np.std(attacked_vals, ddof=0))
+        attacked_min = float(np.min(attacked_vals))
+        attacked_max = float(np.max(attacked_vals))
+    else:
+        attacked_mean = attacked_std = attacked_min = attacked_max = None
+
+    return {
+        "clean_fidelity": clean_fid,
+        "attacked_mean": attacked_mean,
+        "attacked_std": attacked_std,
+        "attacked_min": attacked_min,
+        "attacked_max": attacked_max,
+        "n_attacks_evaluated": len(attacked_vals),
+    }
+
+
+def summarize_robustness(base_dir: str, analysis_dir: str, max_samples: int, logger=None):
+    """
+    Compute robustness under attack for both adversarial (robust) circuits and baseline circuits.
+    Produces JSON/CSV in analysis_dir.
+    """
+    import csv
+    import cirq
+    import numpy as np
+    from qas_gym.envs.saboteur_env import SaboteurMultiGateEnv
+    from experiments import config as exp_config
+
+    rate = max(SaboteurMultiGateEnv.all_error_rates)
+    budget = 3
+    random.seed(0)
+
+    base_path = Path(base_dir)
+    circuit_entries = []
+
+    # Baseline circuit (single)
+    baseline_path = base_path / "baseline" / "circuit_vanilla.json"
+    if baseline_path.exists():
+        circuit_entries.append({"group": "architect_baseline", "run": "baseline", "seed": None, "path": baseline_path})
+
+    # Adversarial robust champions
+    for path in base_path.glob("**/adversarial/seed_*/adversarial_training_*/circuit_robust.json"):
+        seed_label = next((p for p in path.parts if p.startswith("seed_")), "")
+        run_label = str(path.relative_to(base_path).parts[0]) if path.relative_to(base_path).parts else ""
+        circuit_entries.append({"group": "adversarial", "run": run_label, "seed": seed_label, "path": path})
+
+    rows = []
+    for entry in sorted(circuit_entries, key=lambda e: (e["group"], e.get("run", ""), str(e.get("seed")), str(e["path"]))):
+        path = entry["path"]
+        try:
+            circuit = cirq.read_json(json_text=path.read_text())
+        except Exception as e:
+            if logger:
+                logger.error("Failed to load circuit at %s: %s", path, e)
+            continue
+        n_qubits = len(circuit.all_qubits())
+        target_state = exp_config.get_target_state(n_qubits)
+
+        stats = _evaluate_circuit_under_attacks(
+            circuit=circuit,
+            target_state=target_state,
+            rate=rate,
+            budget=budget,
+            max_samples=max_samples,
+        )
+
+        rows.append({
+            "group": entry["group"],
+            "run": entry.get("run"),
+            "seed": entry.get("seed"),
+            "clean_fidelity": stats["clean_fidelity"],
+            "attacked_mean": stats["attacked_mean"],
+            "attacked_std": stats["attacked_std"],
+            "attacked_min": stats["attacked_min"],
+            "attacked_max": stats["attacked_max"],
+            "n_attacks_evaluated": stats["n_attacks_evaluated"],
+            "circuit_path": str(path.relative_to(base_path)),
+        })
+
+    if not rows:
+        if logger:
+            logger.warning("No circuits found for robustness summary.")
+        return
+
+    os.makedirs(analysis_dir, exist_ok=True)
+    json_path = Path(analysis_dir) / "robustness_compare.json"
+    csv_path = Path(analysis_dir) / "robustness_compare.csv"
+    with json_path.open("w") as f:
+        json.dump(rows, f, indent=2)
+    with csv_path.open("w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+        writer.writeheader()
+        writer.writerows(rows)
+    if logger:
+        logger.info("Robustness comparison written to %s and %s", json_path, csv_path)
+
+
+def plot_coevolution_per_seed(run_dirs, logger=None):
+    """
+    Generate single-seed co-evolution plots for each adversarial training run.
+    """
+    import subprocess
+
+    for idx, run_dir in enumerate(run_dirs):
+        seed_label = next((p for p in Path(run_dir).parts if p.startswith("seed_")), f"seed{idx}")
+        out_path = os.path.join(os.path.dirname(run_dir), f"coevolution_{seed_label}.png")
+        try:
+            result = subprocess.run(
+                [
+                    'python', 'experiments/plot_coevolution.py',
+                    '--run-dir', run_dir,
+                    '--out', out_path
+                ],
+                capture_output=True,
+                text=True
+            )
+            if result.stdout and logger:
+                logger.info(result.stdout.strip())
+            if result.stderr and logger and result.stderr.strip():
+                logger.warning(result.stderr.strip())
+        except Exception as e:
+            if logger:
+                logger.error("Error plotting coevolution for %s: %s", run_dir, e)
 
 
 def run_pipeline(args):
@@ -131,6 +360,8 @@ def run_pipeline(args):
         'seed': base_seed if args.seed is not None else None,
         'n_seeds': effective_n_seeds,
         'source': 'experiments.config',
+        'champion_save_last_steps': args.champion_save_last_steps,
+        'hall_of_fame_size': args.hall_of_fame_size,
     }
     save_metadata(os.path.join(base, 'metadata.json'), metadata)
     logger.info('Starting pipeline with metadata: %s', metadata)
@@ -230,7 +461,9 @@ def run_pipeline(args):
                 max_circuit_gates=args.max_circuit_gates,
                 fidelity_threshold=args.fidelity_threshold,
                 include_rotations=exp_config.INCLUDE_ROTATIONS,
-                task_mode=args.task_mode
+                task_mode=args.task_mode,
+                champion_save_last_steps=args.champion_save_last_steps,
+                hall_of_fame_size=args.hall_of_fame_size,
             )
             adv_training_dirs.append(log_dir)
 
@@ -258,6 +491,12 @@ def run_pipeline(args):
                 logger.warning(result.stderr)
         except Exception as e:
             logger.error(f'Error running plot_coevolution_multiseed.py: {e}')
+
+        # Per-seed plotting
+        try:
+            plot_coevolution_per_seed(adv_training_dirs, logger=logger)
+        except Exception as e:
+            logger.error('Error running per-seed coevolution plots: %s', e)
     else:
         logger.info('Skipping adversarial as requested')
 
@@ -369,6 +608,17 @@ def run_pipeline(args):
                 logger=logger
             )
 
+    # 8) Analysis summaries (fidelity + robustness under attack)
+    analysis_dir = os.path.join(base, 'analysis')
+    try:
+        summarize_fidelity_outputs(base, analysis_dir, logger=logger)
+    except Exception as e:
+        logger.error('Error summarizing fidelities: %s', e)
+    try:
+        summarize_robustness(base, analysis_dir, max_samples=args.attack_samples, logger=logger)
+    except Exception as e:
+        logger.error('Error summarizing robustness: %s', e)
+
     logger.info('Pipeline finished. Results in %s', base)
 
 
@@ -390,12 +640,18 @@ def parse_args():
     p.add_argument('--fidelity-threshold', type=float, default=1.1)  # Train by improvement
     p.add_argument('--seed', type=int, default=None)
     p.add_argument('--n-seeds', type=int, default=None)
+    p.add_argument('--champion-save-last-steps', type=int, default=None,
+                   help='During adversarial training, only save champions in the last N architect steps (optional).')
+    p.add_argument('--hall-of-fame-size', type=int, default=5,
+                   help='Top-k champions to track during adversarial training for final evaluation.')
     p.add_argument(
         '--task-mode',
         type=str,
         default=None,
         choices=['state_preparation', 'unitary_preparation']
     )
+    p.add_argument('--attack-samples', type=int, default=3000,
+                   help='Max attack placements sampled per circuit when computing robustness summaries')
     return p.parse_args()
 
 

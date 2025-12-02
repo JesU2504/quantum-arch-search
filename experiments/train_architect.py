@@ -44,24 +44,19 @@ def plot_architect_progress(steps_arr, fids_arr, plot_filename, n_qubits, rotati
         return
 
     best_arr = np.maximum.accumulate(fids_arr)
-    cumulative_mean = np.cumsum(fids_arr) / np.arange(1, len(fids_arr) + 1)
 
-    def rolling_mean(x, window):
-        """
-        Centered rolling mean with edge padding to avoid end drops.
-        """
-        window = max(1, window)
-        if len(x) < window:
-            return x
-        pad = window // 2
-        padded = np.pad(x, (pad, pad), mode="edge")
-        kernel = np.ones(window) / window
-        smoothed = np.convolve(padded, kernel, mode="same")
-        # Trim back to original length
-        return smoothed[pad:pad + len(x)]
+    def exponential_moving_average(x, alpha):
+        """Simple EMA to react faster to improvements."""
+        if len(x) == 0:
+            return np.array([])
+        ema = np.empty_like(x, dtype=float)
+        ema[0] = x[0]
+        for i in range(1, len(x)):
+            ema[i] = alpha * x[i] + (1 - alpha) * ema[i - 1]
+        return ema
 
-    smooth_window = max(10, len(fids_arr) // 50)
-    smooth = rolling_mean(fids_arr, smooth_window)
+    ema_alpha = 0.01 if len(fids_arr) < 5000 else 0.005
+    ema = exponential_moving_average(np.array(fids_arr, dtype=float), alpha=ema_alpha)
 
     fig, ax_main = plt.subplots(figsize=(10, 6))
 
@@ -72,24 +67,12 @@ def plot_architect_progress(steps_arr, fids_arr, plot_filename, n_qubits, rotati
         "ideal": "#7f8c8d",
     }
 
-    max_points = 300
-    if len(fids_arr) > max_points:
-        sample_idx = np.linspace(0, len(fids_arr) - 1, max_points).astype(int)
-        scatter_steps = steps_arr[sample_idx]
-        scatter_fids = fids_arr[sample_idx]
-    else:
-        scatter_steps = steps_arr
-        scatter_fids = fids_arr
-
-    roll_label = f"Rolling Mean (window={smooth_window})"
-    #ax_main.scatter(scatter_steps, scatter_fids, alpha=0.12, s=10, label="Episode Fidelity (sampled)", color=colors["episodes"])
-    ax_main.plot(steps_arr, smooth, color=colors["smooth"], linewidth=2, label=roll_label)
-    #ax_main.plot(steps_arr, cumulative_mean, color=colors["ideal"], linewidth=1.2, linestyle="--", label="Cumulative Mean")
+    ema_label = f"EMA (alpha={ema_alpha:.3f})"
+    ax_main.plot(steps_arr, ema, color="#e74c3c", linewidth=1.5, linestyle="--", label=ema_label)
     ax_main.plot(steps_arr, best_arr, color=colors["best"], linewidth=2.2, label="Best So Far")
-    ax_main.axhline(1.0, color=colors["ideal"], linestyle="--", linewidth=1)
+    ax_main.axhline(1.0, color=colors["ideal"], linestyle="--", linewidth=1, label="Ideal Fidelity")
 
     ax_main.scatter(steps_arr[-1], best_arr[-1], color=colors["best"], edgecolor="white", zorder=5, s=40)
-    #ax_main.scatter(steps_arr[-1], cumulative_mean[-1], color=colors["ideal"], edgecolor="white", zorder=5, s=30)
 
     ax_main.set_xlabel("Training Steps")
     ax_main.set_ylabel("Fidelity")
@@ -99,7 +82,7 @@ def plot_architect_progress(steps_arr, fids_arr, plot_filename, n_qubits, rotati
     ax_main.margins(x=0.01)
 
     handles, labels = ax_main.get_legend_handles_labels()
-    order = ["Best So Far", roll_label, "Cumulative Mean", "Episode Fidelity (sampled)", "Ideal Fidelity"]
+    order = ["Best So Far", ema_label, "Ideal Fidelity"]
     label_to_handle = {lbl: h for h, lbl in zip(handles, labels)}
     ordered_handles = [label_to_handle[lbl] for lbl in order if lbl in label_to_handle]
     ordered_labels = [lbl for lbl in order if lbl in label_to_handle]
@@ -107,7 +90,7 @@ def plot_architect_progress(steps_arr, fids_arr, plot_filename, n_qubits, rotati
 
     ax_main.text(
         0.02, 0.95,
-        f"Final best: {best_arr[-1]:.3f}\nFinal mean: {smooth[-1]:.3f}",
+        f"Final best: {best_arr[-1]:.3f}\nFinal EMA: {ema[-1]:.3f}",
         transform=ax_main.transAxes,
         fontsize=9,
         bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.7)

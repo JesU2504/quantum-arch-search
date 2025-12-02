@@ -86,13 +86,16 @@ def plot_coevolution_single(run_dir, save_name, window_frac=0.02):
     noisy_x = noisy_steps[: len(noisy_roll)]
 
     best_clean = np.maximum.accumulate(clean_fidelity)
+    best_attacked = np.max(noisy_fidelity[-20000:])
+    best_attacked = [best_attacked for _ in clean_x]
 
     sns.set_theme(style="whitegrid")
     fig, ax = plt.subplots(figsize=(10, 6))
 
     ax.plot(clean_steps, best_clean, color=COLORS["best"], linewidth=2.2, label="Best Clean So Far")
     ax.plot(clean_x, clean_roll, color=COLORS["clean_roll"], linewidth=2.2, label=f"Rolling Mean (clean, w={clean_window})")
-    ax.plot(noisy_x, noisy_roll, color=COLORS["noisy_roll"], linewidth=2.2, label=f"Rolling Mean (attacked, w={noisy_window})")
+    ax.plot(clean_x, best_attacked, color="#c0392b", linewidth=2.2, linestyle="--", label="Best Attacked So Far")
+    #ax.plot(noisy_x, noisy_roll, color=COLORS["noisy_roll"], linewidth=2.2, label=f"Rolling Mean (attacked, w={noisy_window})")
     ax.axhline(1.0, color=COLORS["ideal"], linestyle="--", linewidth=1)
 
     ax.scatter(clean_steps[-1], best_clean[-1], color=COLORS["best"], edgecolor="white", zorder=5, s=40)
@@ -104,7 +107,12 @@ def plot_coevolution_single(run_dir, save_name, window_frac=0.02):
     ax.grid(True, alpha=0.25)
 
     handles, labels = ax.get_legend_handles_labels()
-    order = ["Best Clean So Far", f"Rolling Mean (clean, w={clean_window})", f"Rolling Mean (attacked, w={noisy_window})"]
+    order = [
+        "Best Clean So Far",
+        "Best Attacked So Far",
+        f"Rolling Mean (clean, w={clean_window})",
+        f"Rolling Mean (attacked, w={noisy_window})",
+    ]
     label_to_handle = {lbl: h for h, lbl in zip(handles, labels)}
     ordered_handles = [label_to_handle[lbl] for lbl in order if lbl in label_to_handle]
     ordered_labels = [lbl for lbl in order if lbl in label_to_handle]
@@ -114,7 +122,8 @@ def plot_coevolution_single(run_dir, save_name, window_frac=0.02):
         0.02, 0.95,
         f"Final best clean: {best_clean[-1]:.3f}\n"
         f"Final roll clean: {clean_roll[-1]:.3f}\n"
-        f"Final roll attacked: {noisy_roll[-1]:.3f}",
+        f"Final roll attacked: {noisy_roll[-1]:.3f}\n"
+        f"Best attacked: {best_attacked[-1]:.3f}",
         transform=ax.transAxes,
         fontsize=9,
         bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.7)
