@@ -159,19 +159,37 @@ def train_saboteur_only(results_dir, n_qubits, saboteur_steps, n_steps, baseline
     model.save(model_path)
     print(f"Saved trained saboteur model to {model_path}")
 
-    # 5. Plotting
-    window_size = 50  # Lowered for quick runs
-    if len(progress_callback.fidelities) >= window_size:
-        moving_averages = np.convolve(progress_callback.fidelities, np.ones(window_size)/window_size, mode='valid')
+    # 5. Plotting (use steps for x-axis and padded rolling mean)
+    fids = np.array(progress_callback.fidelities)
+    steps = np.array(progress_callback.steps) if progress_callback.steps else np.arange(len(fids))
+    if fids.size > 0:
+        def rolling_mean(x, window):
+            window = max(1, window)
+            if len(x) < window:
+                return x
+            pad = window // 2
+            padded = np.pad(x, (pad, pad), mode="edge")
+            kernel = np.ones(window) / window
+            smoothed = np.convolve(padded, kernel, mode="same")
+            return smoothed[pad:pad + len(x)]
+
+        window_size = max(10, len(fids) // 50)
+        smooth = rolling_mean(fids, window_size)
+
         plt.figure(figsize=(8, 6))
-        plt.plot(moving_averages)
+        plt.plot(steps, smooth, color="#4c78a8", linewidth=1.5, label=f"Rolling Mean (window={window_size})")
+        plt.scatter(steps, fids, s=8, alpha=0.1, color="#4c78a8", label="Episode Fidelity")
         plt.title(f"Fidelity under Saboteur Attack on Vanilla Circuit ({os.path.basename(results_dir)})")
-        plt.xlabel(f"Step (window size = {window_size})")
-        plt.ylabel("Fidelity (Moving Average)")
+        plt.xlabel("Training Steps")
+        plt.ylabel("Fidelity")
+        plt.ylim(bottom=max(0, fids.min() - 0.01), top=min(1.05, fids.max() + 0.01))
+        plt.grid(True, alpha=0.3)
+        plt.legend()
+        plt.tight_layout()
         plt.savefig(plot_path)
         print(f"Plot saved to {plot_path}")
     else:
-        print(f"Not enough data ({len(progress_callback.fidelities)} points) to generate a plot with window size {window_size}.")
+        print("No fidelity data to plot.")
 
     # Save fidelities to a file for analysis
     with open(fidelities_path, "w") as f:

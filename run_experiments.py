@@ -192,7 +192,6 @@ def run_pipeline(args):
                         n_qubits=args.n_qubits, 
                         saboteur_steps=saboteur_steps,
                         n_steps=saboteur_n_steps, 
-                        max_error_level=1,
                         baseline_circuit_path=vanilla_src
                     )
             except Exception as e:

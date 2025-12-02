@@ -34,6 +34,89 @@ from qas_gym.envs import ArchitectEnv  # Import ArchitectEnv
 from qas_gym.utils import save_circuit
 from qas_gym.utils import verify_toffoli_unitary, get_toffoli_unitary, get_ideal_unitary
 
+
+def plot_architect_progress(steps_arr, fids_arr, plot_filename, n_qubits, rotation_status, target_label):
+    """
+    Create a publication-ready training plot using stored fidelity/step traces.
+    """
+    if len(fids_arr) == 0:
+        print("No fidelity data to plot.")
+        return
+
+    best_arr = np.maximum.accumulate(fids_arr)
+    cumulative_mean = np.cumsum(fids_arr) / np.arange(1, len(fids_arr) + 1)
+
+    def rolling_mean(x, window):
+        """
+        Centered rolling mean with edge padding to avoid end drops.
+        """
+        window = max(1, window)
+        if len(x) < window:
+            return x
+        pad = window // 2
+        padded = np.pad(x, (pad, pad), mode="edge")
+        kernel = np.ones(window) / window
+        smoothed = np.convolve(padded, kernel, mode="same")
+        # Trim back to original length
+        return smoothed[pad:pad + len(x)]
+
+    smooth_window = max(10, len(fids_arr) // 50)
+    smooth = rolling_mean(fids_arr, smooth_window)
+
+    fig, ax_main = plt.subplots(figsize=(10, 6))
+
+    colors = {
+        "episodes": "#4c78a8",
+        "smooth": "#f58518",
+        "best": "#72b7b2",
+        "ideal": "#7f8c8d",
+    }
+
+    max_points = 300
+    if len(fids_arr) > max_points:
+        sample_idx = np.linspace(0, len(fids_arr) - 1, max_points).astype(int)
+        scatter_steps = steps_arr[sample_idx]
+        scatter_fids = fids_arr[sample_idx]
+    else:
+        scatter_steps = steps_arr
+        scatter_fids = fids_arr
+
+    roll_label = f"Rolling Mean (window={smooth_window})"
+    #ax_main.scatter(scatter_steps, scatter_fids, alpha=0.12, s=10, label="Episode Fidelity (sampled)", color=colors["episodes"])
+    ax_main.plot(steps_arr, smooth, color=colors["smooth"], linewidth=2, label=roll_label)
+    #ax_main.plot(steps_arr, cumulative_mean, color=colors["ideal"], linewidth=1.2, linestyle="--", label="Cumulative Mean")
+    ax_main.plot(steps_arr, best_arr, color=colors["best"], linewidth=2.2, label="Best So Far")
+    ax_main.axhline(1.0, color=colors["ideal"], linestyle="--", linewidth=1)
+
+    ax_main.scatter(steps_arr[-1], best_arr[-1], color=colors["best"], edgecolor="white", zorder=5, s=40)
+    #ax_main.scatter(steps_arr[-1], cumulative_mean[-1], color=colors["ideal"], edgecolor="white", zorder=5, s=30)
+
+    ax_main.set_xlabel("Training Steps")
+    ax_main.set_ylabel("Fidelity")
+    ax_main.set_title(f"Architect Training ({n_qubits}-Qubit {target_label})")
+    ax_main.grid(True, alpha=0.25)
+    ax_main.set_ylim(bottom=-0.05, top=1.05)
+    ax_main.margins(x=0.01)
+
+    handles, labels = ax_main.get_legend_handles_labels()
+    order = ["Best So Far", roll_label, "Cumulative Mean", "Episode Fidelity (sampled)", "Ideal Fidelity"]
+    label_to_handle = {lbl: h for h, lbl in zip(handles, labels)}
+    ordered_handles = [label_to_handle[lbl] for lbl in order if lbl in label_to_handle]
+    ordered_labels = [lbl for lbl in order if lbl in label_to_handle]
+    ax_main.legend(ordered_handles, ordered_labels, loc="lower right", frameon=True)
+
+    ax_main.text(
+        0.02, 0.95,
+        f"Final best: {best_arr[-1]:.3f}\nFinal mean: {smooth[-1]:.3f}",
+        transform=ax_main.transAxes,
+        fontsize=9,
+        bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.7)
+    )
+
+    plt.tight_layout()
+    plt.savefig(plot_filename)
+    print(f"Training plot saved to {plot_filename}")
+
 class ChampionCircuitCallback(BaseCallback):
     """
     A callback to save the best circuit found during training.
@@ -321,78 +404,14 @@ def train_baseline_architect(results_dir, n_qubits, architect_steps, n_steps, in
     if callback.steps:
         steps_arr = np.array(callback.steps)
         fids_arr = np.array(callback.fidelities)
-        best_arr = np.maximum.accumulate(fids_arr)
-        cumulative_mean = np.cumsum(fids_arr) / np.arange(1, len(fids_arr) + 1)
-
-        def rolling_mean(x, window):
-            window = max(1, window)
-            if len(x) < window:
-                return x
-            kernel = np.ones(window) / window
-            # pad to preserve length
-            return np.convolve(x, kernel, mode="same")
-
-        # Use ~2% of points as window, minimum 10
-        smooth_window = max(10, len(fids_arr) // 50)
-        smooth = rolling_mean(fids_arr, smooth_window)
-
-        fig, ax_main = plt.subplots(figsize=(10, 6))
-
-        # Shared palette for readability across experiments
-        colors = {
-            "episodes": "#4c78a8",
-            "smooth": "#f58518",
-            "best": "#72b7b2",
-            "ideal": "#7f8c8d",
-        }
-
-        # Downsample episode scatter to avoid over-plotting
-        max_points = 300
-        if len(fids_arr) > max_points:
-            sample_idx = np.linspace(0, len(fids_arr) - 1, max_points).astype(int)
-            scatter_steps = steps_arr[sample_idx]
-            scatter_fids = fids_arr[sample_idx]
-        else:
-            scatter_steps = steps_arr
-            scatter_fids = fids_arr
-
-        ax_main.scatter(scatter_steps, scatter_fids, alpha=0.12, s=10, label="Episode Fidelity (sampled)", color=colors["episodes"])
-        ax_main.plot(steps_arr, smooth, color=colors["smooth"], linewidth=2, label=f"Rolling Mean (window={smooth_window})")
-        ax_main.plot(steps_arr, cumulative_mean, color=colors["ideal"], linewidth=1.2, linestyle="--", label="Cumulative Mean")
-        ax_main.plot(steps_arr, best_arr, color=colors["best"], linewidth=2.2, label="Best So Far")
-        ax_main.axhline(1.0, color=colors["ideal"], linestyle="--", linewidth=1, label="Ideal Fidelity")
-
-        # Highlight final points
-        ax_main.scatter(steps_arr[-1], best_arr[-1], color=colors["best"], edgecolor="white", zorder=5, s=40)
-        ax_main.scatter(steps_arr[-1], cumulative_mean[-1], color=colors["ideal"], edgecolor="white", zorder=5, s=30)
-
-        ax_main.set_xlabel("Training Steps")
-        ax_main.set_ylabel("Fidelity")
-        ax_main.set_title(f"Architect Training ({n_qubits}-Qubit {effective_target.title()}, {rotation_status})")
-        ax_main.grid(True, alpha=0.25)
-        ax_main.set_ylim(bottom=-0.05, top=1.05)
-        ax_main.margins(x=0.01)
-
-        # Legend ordering for readability
-        handles, labels = ax_main.get_legend_handles_labels()
-        order = ["Best So Far", "Rolling Mean (window={smooth_window})", "Cumulative Mean", "Episode Fidelity (sampled)", "Ideal Fidelity"]
-        label_to_handle = {lbl: h for h, lbl in zip(handles, labels)}
-        ordered_handles = [label_to_handle[lbl.format(smooth_window=smooth_window) if "{smooth_window}" in lbl else lbl] for lbl in order if lbl in label_to_handle]
-        ordered_labels = [lbl.format(smooth_window=smooth_window) if "{smooth_window}" in lbl else lbl for lbl in order if lbl in label_to_handle]
-        ax_main.legend(ordered_handles, ordered_labels, loc="lower right", frameon=True)
-
-        # Annotate final metrics
-        ax_main.text(
-            0.02, 0.95,
-            f"Final best: {best_arr[-1]:.3f}\nFinal mean: {cumulative_mean[-1]:.3f}",
-            transform=ax_main.transAxes,
-            fontsize=9,
-            bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.7)
+        plot_architect_progress(
+            steps_arr=steps_arr,
+            fids_arr=fids_arr,
+            plot_filename=plot_filename,
+            n_qubits=n_qubits,
+            rotation_status=rotation_status,
+            target_label=effective_target.title(),
         )
-
-        plt.tight_layout()
-        plt.savefig(plot_filename)
-        print(f"Training plot saved to {plot_filename}")
     else:
         print("No steps recorded; skipping plot generation.")
 
@@ -401,9 +420,41 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train a baseline architect agent")
     parser.add_argument('--n-qubits', type=int, default=4, help='Number of qubits (default: 4)')
     parser.add_argument('--results-dir', type=str, default='results', help='Directory to save results')
+    parser.add_argument('--replot-from', type=str, default=None,
+                        help='Directory containing architect_fidelities.txt (and optional architect_steps.txt) to replot without retraining')
     # Gate set controlled via experiments/config.py (INCLUDE_ROTATIONS/ROTATION_TYPES)
     args = parser.parse_args()
-    
+
+    # Replot-only mode
+    if args.replot_from:
+        fid_path = os.path.join(args.replot_from, "architect_fidelities.txt")
+        steps_path = os.path.join(args.replot_from, "architect_steps.txt")
+        if not os.path.exists(fid_path):
+            print(f"Error: {fid_path} not found. Cannot replot.")
+            sys.exit(1)
+        fids_arr = np.loadtxt(fid_path)
+        if fids_arr.ndim > 1:
+            fids_arr = fids_arr[:, 0]
+        if os.path.exists(steps_path):
+            steps_arr = np.loadtxt(steps_path)
+            if steps_arr.ndim > 1:
+                steps_arr = steps_arr[:, 0]
+        else:
+            steps_arr = np.arange(1, len(fids_arr) + 1)
+
+        rotation_status = "with rotation gates" if config.INCLUDE_ROTATIONS else "with Clifford+T gates only"
+        target_label = config.TARGET_TYPE.title()
+        out_path = os.path.join(args.replot_from, "architect_training_progress.png")
+        plot_architect_progress(
+            steps_arr=np.array(steps_arr),
+            fids_arr=np.array(fids_arr),
+            plot_filename=out_path,
+            n_qubits=args.n_qubits,
+            rotation_status=rotation_status,
+            target_label=target_label,
+        )
+        sys.exit(0)
+
     params = config.EXPERIMENT_PARAMS[args.n_qubits]
     train_baseline_architect(
         results_dir=args.results_dir,

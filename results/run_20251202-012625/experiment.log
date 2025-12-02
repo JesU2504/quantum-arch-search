@@ -1,3 +1,58 @@
 2025-12-02 01:26:25,568 INFO: Loading experimental parameters for 3 qubits from config.py
 2025-12-02 01:26:25,569 INFO: Starting pipeline with metadata: {'timestamp': '20251202-012625', 'n_qubits': 3, 'baseline_steps': 81920, 'saboteur_steps': 20480, 'adversarial_gens': 10, 'adversarial_arch_steps': 8192, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config'}
 2025-12-02 01:26:25,570 INFO: Running baseline architect (noiseless)
+2025-12-02 01:47:50,332 INFO: Running lambda sweep experiment (ExpPlan Part 1, Exp 1.1) with n_seeds=5
+2025-12-02 01:47:50,333 INFO: === Lambda Sweep Experiment (ExpPlan Part 1, Exp 1.1) ===
+2025-12-02 01:47:50,333 INFO: Target: ghz, Mode: state_preparation
+2025-12-02 01:47:50,333 INFO: Experiment label: ghz_state_preparation
+2025-12-02 01:47:50,333 INFO: Lambda values: [0.001, 0.005, 0.01, 0.05, 0.1]
+2025-12-02 01:47:50,333 INFO: Seeds per lambda: 5
+2025-12-02 01:47:50,333 INFO: Qubits: 3
+2025-12-02 01:47:50,333 INFO: Training steps per trial: 81920
+2025-12-02 01:47:50,333 INFO: Steps per update (PPO n_steps): 2048
+2025-12-02 01:47:50,333 INFO: Include rotations: True (types=['Rz', 'Rx'])
+2025-12-02 01:47:50,333 INFO: Results directory: results/run_20251202-012625/lambda_sweep
+2025-12-02 01:47:50,333 INFO: 
+--- Lambda = 0.001 ---
+2025-12-02 01:47:50,333 INFO:   Seed 1/5...
+2025-12-02 02:09:43,305 INFO:     Best fidelity: 0.9161, CNOT count: 4, Success: False
+2025-12-02 02:09:43,305 INFO:   Seed 2/5...
+2025-12-02 02:24:05,651 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-02 02:24:05,653 INFO: Starting pipeline with metadata: {'timestamp': '20251202-022405', 'n_qubits': 3, 'baseline_steps': 81920, 'saboteur_steps': 20480, 'adversarial_gens': 10, 'adversarial_arch_steps': 8192, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config'}
+2025-12-02 02:24:05,653 INFO: Skipping baseline as requested
+2025-12-02 02:24:05,653 INFO: Skipping lambda sweep as requested
+2025-12-02 02:24:05,654 INFO: Running saboteur-only (attacks baseline circuit)
+2025-12-02 02:24:05,655 ERROR: Error loading circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251202-012625/baseline/circuit_vanilla.json: train_saboteur_only() got an unexpected keyword argument 'max_error_level'. Cannot run saboteur-only.
+2025-12-02 02:24:05,656 INFO: Running adversarial co-evolution for 5 seeds (10 generations each)
+2025-12-02 02:24:05,656 INFO: Adversarial training: seed index 0 (global seed=2042)
+2025-12-02 02:24:05,656 INFO: Setting global seed = 2042
+2025-12-02 02:27:35,124 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-02 02:27:35,125 INFO: Starting pipeline with metadata: {'timestamp': '20251202-022735', 'n_qubits': 3, 'baseline_steps': 81920, 'saboteur_steps': 20480, 'adversarial_gens': 10, 'adversarial_arch_steps': 8192, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config'}
+2025-12-02 02:27:35,125 INFO: Skipping baseline as requested
+2025-12-02 02:27:35,125 INFO: Skipping lambda sweep as requested
+2025-12-02 02:27:35,126 INFO: Running saboteur-only (attacks baseline circuit)
+2025-12-02 02:31:19,160 INFO: Running adversarial co-evolution for 5 seeds (10 generations each)
+2025-12-02 02:31:19,160 INFO: Adversarial training: seed index 0 (global seed=2042)
+2025-12-02 02:31:19,160 INFO: Setting global seed = 2042
+2025-12-02 02:37:06,061 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-02 02:37:06,062 INFO: Starting pipeline with metadata: {'timestamp': '20251202-023706', 'n_qubits': 3, 'baseline_steps': 81920, 'saboteur_steps': 20480, 'adversarial_gens': 10, 'adversarial_arch_steps': 8192, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config'}
+2025-12-02 02:37:06,062 INFO: Skipping baseline as requested
+2025-12-02 02:37:06,063 INFO: Skipping lambda sweep as requested
+2025-12-02 02:37:06,063 INFO: Running saboteur-only (attacks baseline circuit)
+2025-12-02 02:40:47,951 INFO: Skipping adversarial as requested
+2025-12-02 02:40:47,955 WARNING: Robust circuit not found for comparison.
+2025-12-02 02:40:47,955 INFO: Running comparison across runs
+2025-12-02 02:40:48,125 INFO: Running parameter recovery experiment
+2025-12-02 02:40:48,126 INFO: === Parameter Recovery Experiment ===
+2025-12-02 02:40:48,126 INFO: Qubits: 3
+2025-12-02 02:40:48,126 INFO: Noise parameters to test: [0.001, 0.005, 0.01, 0.02, 0.05, 0.08, 0.1]
+2025-12-02 02:40:48,126 INFO: Shots per trial: 1000
+2025-12-02 02:40:48,126 INFO: Repetitions per p (seeds): 5
+2025-12-02 02:40:48,126 INFO: Base seed: 42
+2025-12-02 02:40:48,126 INFO: Results directory: /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251202-012625/parameter_recovery
+2025-12-02 02:40:48,127 INFO: Loaded baseline circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251202-012625/baseline/circuit_vanilla.json
+2025-12-02 02:40:48,127 INFO: Loaded robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251202-012625/baseline/circuit_vanilla.json
+2025-12-02 02:40:48,127 INFO: 
+  Testing baseline circuit (n_repetitions=5):
+2025-12-02 02:40:49,148 INFO:     p=0.001: recovered=0.0010±0.0000 (n=5), fidelity=0.9798±0.0001
+2025-12-02 02:40:50,040 INFO:     p=0.005: recovered=0.0050±0.0000 (n=5), fidelity=0.9039±0.0004
