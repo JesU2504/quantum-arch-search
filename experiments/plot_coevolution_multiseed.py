@@ -26,6 +26,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+# Shared palette for consistency across plots
+COLORS = {
+    "arch_clean": "#2ecc71",
+    "sab_noisy": "#e67e22",
+    "gap": "#c0392b",
+    "error": "#8e44ad",
+    "complexity": "#3498db",
+}
+
 
 def find_adversarial_run_dirs(root_dir):
     """
@@ -201,52 +210,55 @@ def plot_multiseed(root_dir, out_path):
 
     # ---------- PANEL 1: Fidelity & Robustness Gap ---------- #
     ax1.plot(
-        gens_plot, best_clean_mean, marker="o", linestyle="-", color="#2ecc71",
+        gens_plot, best_clean_mean, marker="o", linestyle="-", color=COLORS["arch_clean"],
         label="Best Clean Fidelity (mean over seeds)"
     )
     ax1.fill_between(
         gens_plot,
         best_clean_mean - best_clean_std,
         best_clean_mean + best_clean_std,
-        color="#2ecc71",
-        alpha=0.2,
+        color=COLORS["arch_clean"],
+        alpha=0.18,
     )
 
     ax1.plot(
-        gens_plot, mean_noisy_mean, marker="s", linestyle="-", color="#e67e22",
+        gens_plot, mean_noisy_mean, marker="s", linestyle="-", color=COLORS["sab_noisy"],
         label="Mean Fidelity Under Attack (mean over seeds)"
     )
     ax1.fill_between(
         gens_plot,
         mean_noisy_mean - mean_noisy_std,
         mean_noisy_mean + mean_noisy_std,
-        color="#e67e22",
-        alpha=0.2,
+        color=COLORS["sab_noisy"],
+        alpha=0.18,
     )
 
     ax1.set_ylabel("Fidelity", fontweight="bold")
     ax1.set_ylim(0.0, 1.05)
+    ax1.margins(x=0.01)
 
     # Robustness gap on a twin axis
     ax1b = ax1.twinx()
     ax1b.plot(
-        gens_plot, gap_mean, marker="d", linestyle="--", color="#c0392b",
+        gens_plot, gap_mean, marker="d", linestyle="--", color=COLORS["gap"],
         label="Robustness Gap (clean - attacked, mean)"
     )
     ax1b.fill_between(
         gens_plot,
         gap_mean - gap_std,
         gap_mean + gap_std,
-        color="#c0392b",
-        alpha=0.15,
+        color=COLORS["gap"],
+        alpha=0.12,
     )
-    ax1b.set_ylabel("Robustness Gap", color="#c0392b", fontweight="bold")
-    ax1b.tick_params(axis='y', labelcolor="#c0392b")
+    ax1b.set_ylabel("Robustness Gap", color=COLORS["gap"], fontweight="bold")
+    ax1b.tick_params(axis='y', labelcolor=COLORS["gap"])
 
-    # Combine legends
+    # Combine legends with clearer ordering
     lines1, labels1 = ax1.get_legend_handles_labels()
     lines2, labels2 = ax1b.get_legend_handles_labels()
-    ax1.legend(lines1 + lines2, labels1 + labels2, loc="lower right")
+    legend_handles = lines1 + lines2
+    legend_labels = labels1 + labels2
+    ax1.legend(legend_handles, legend_labels, loc="lower right", frameon=True)
 
     ax1.set_title(
         f"Co-Evolution Across Seeds (N={len(all_stats)} runs, {n_gens} generations)",
@@ -254,36 +266,49 @@ def plot_multiseed(root_dir, out_path):
         fontweight="bold",
     )
 
+    # Annotate final generation summary
+    ax1.text(
+        0.02, 0.95,
+        f"Final clean: {best_clean_mean[-1]:.3f} ± {best_clean_std[-1]:.3f}\n"
+        f"Final attacked: {mean_noisy_mean[-1]:.3f} ± {mean_noisy_std[-1]:.3f}\n"
+        f"Final gap: {gap_mean[-1]:.3f} ± {gap_std[-1]:.3f}",
+        transform=ax1.transAxes,
+        fontsize=9,
+        bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.7)
+    )
+
     # ---------- PANEL 2: Saboteur Intensity (Error Rate) ---------- #
     ax2.plot(
         gens_plot, mean_error_mean, marker="o", linestyle="-",
-        color="#8e44ad", label="Mean Error Rate (over seeds)"
+        color=COLORS["error"], label="Mean Error Rate (over seeds)"
     )
     ax2.fill_between(
         gens_plot,
         mean_error_mean - mean_error_std,
         mean_error_mean + mean_error_std,
-        color="#8e44ad",
+        color=COLORS["error"],
         alpha=0.2,
     )
     ax2.set_ylabel("Error Rate", fontweight="bold")
     ax2.legend(loc="upper left")
+    ax2.margins(x=0.01)
 
     # ---------- PANEL 3: Architect Complexity (Gate Count) ---------- #
     ax3.plot(
         gens_plot, mean_complex_mean, marker="^", linestyle="-",
-        color="#3498db", label="Mean Gate Count (over seeds)"
+        color=COLORS["complexity"], label="Mean Gate Count (over seeds)"
     )
     ax3.fill_between(
         gens_plot,
         mean_complex_mean - mean_complex_std,
         mean_complex_mean + mean_complex_std,
-        color="#3498db",
+        color=COLORS["complexity"],
         alpha=0.2,
     )
     ax3.set_ylabel("Gate Count", fontweight="bold")
     ax3.set_xlabel("Generation", fontweight="bold")
     ax3.legend(loc="upper left")
+    ax3.margins(x=0.01)
 
     plt.tight_layout()
     plt.savefig(out_path, dpi=300)

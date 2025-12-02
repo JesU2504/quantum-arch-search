@@ -143,6 +143,23 @@ class SaboteurMultiGateEnv(gym.Env):
             "gate_structure": structure,
         }
 
+    @staticmethod
+    def create_observation_from_circuit(circuit: cirq.Circuit, n_qubits: int, max_circuit_timesteps: int | None = None):
+        """
+        Convenience helper to build the saboteur observation for an arbitrary circuit
+        without requiring a full environment to be set up by the caller.
+        """
+        max_steps = max_circuit_timesteps if max_circuit_timesteps is not None else 20
+        # Dummy target_state is unused for observation; length drives qubit count if not passed.
+        dummy_target = np.zeros(2 ** n_qubits, dtype=complex)
+        env = SaboteurMultiGateEnv(
+            architect_circuit=circuit,
+            target_state=dummy_target,
+            max_circuit_timesteps=max_steps,
+            n_qubits=n_qubits,
+        )
+        return env._get_obs(circuit)
+
     def step(self, action):
         if self.current_circuit is None:
             return self._get_obs(), 0.0, True, False, {}

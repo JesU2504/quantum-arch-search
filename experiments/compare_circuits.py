@@ -70,7 +70,9 @@ def evaluate_multi_gate_attacks(circuit, saboteur_agent, target_state, n_qubits,
     ops = list(circuit.all_operations())
     attacked_vals = []
     for _ in range(samples):
-        sab_obs = SaboteurMultiGateEnv.create_observation_from_circuit(circuit, n_qubits=n_qubits)
+        sab_obs = SaboteurMultiGateEnv.create_observation_from_circuit(
+            circuit, n_qubits=n_qubits, max_circuit_timesteps=config.MAX_CIRCUIT_TIMESTEPS
+        )
         if saboteur_agent is not None:
             try:
                 sab_action, _ = saboteur_agent.predict(sab_obs, deterministic=False)

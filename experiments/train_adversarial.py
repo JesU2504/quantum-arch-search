@@ -20,6 +20,7 @@ import time
 import json
 import numpy as np
 import cirq
+import matplotlib.pyplot as plt
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import BaseCallback
 

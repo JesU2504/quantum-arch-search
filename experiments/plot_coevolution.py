@@ -24,6 +24,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+# Shared palette for consistency across plots
+COLORS = {
+    "arch_clean": "#2ecc71",
+    "sab_noisy": "#e67e22",
+    "gap": "#c0392b",
+    "error": "#8e44ad",
+    "complexity": "#3498db",
+}
+
 
 # ----------------- Basics ----------------- #
 
@@ -216,12 +225,12 @@ def plot_coevolution_dashboard(run_dir, save_name, window=100):
 
     # Architect best clean fidelity
     line_arch, = ax1.plot(
-        gens_plot, arch_best_clean, marker="o", linestyle="-", color="#2ecc71",
+        gens_plot, arch_best_clean, marker="o", linestyle="-", color=COLORS["arch_clean"],
         label="Architect Best Clean Fidelity"
     )
     # Saboteur mean attacked fidelity
     line_sab, = ax1.plot(
-        gens_plot, sab_mean_noisy, marker="s", linestyle="-", color="#e67e22",
+        gens_plot, sab_mean_noisy, marker="s", linestyle="-", color=COLORS["sab_noisy"],
         label="Saboteur Mean Fidelity (Under Attack)"
     )
 
@@ -253,11 +262,11 @@ def plot_coevolution_dashboard(run_dir, save_name, window=100):
     # --- NEW: twin y-axis for the robustness gap curve --- #
     ax1b = ax1.twinx()
     line_gap, = ax1b.plot(
-        gens_plot, gap, marker="d", linestyle="--", color="#c0392b",
+        gens_plot, gap, marker="d", linestyle="--", color=COLORS["gap"],
         label="Robustness Gap (clean - attacked)"
     )
-    ax1b.set_ylabel("Robustness Gap", color="#c0392b", fontweight="bold")
-    ax1b.tick_params(axis='y', labelcolor="#c0392b")
+    ax1b.set_ylabel("Robustness Gap", color=COLORS["gap"], fontweight="bold")
+    ax1b.tick_params(axis='y', labelcolor=COLORS["gap"])
 
     # Combine legends from both y-axes
     lines1, labels1 = ax1.get_legend_handles_labels()
@@ -288,7 +297,7 @@ def plot_coevolution_dashboard(run_dir, save_name, window=100):
     if not np.all(np.isnan(sab_mean_error)):
         ax2.plot(
             gens_plot, sab_mean_error, marker="d", linestyle="-",
-            color="#8e44ad", label="Mean Error Rate"
+            color=COLORS["error"], label="Mean Error Rate"
         )
         ax2.set_ylabel("Avg Error Rate", fontweight="bold")
         ax2.legend(loc="upper left")
@@ -299,7 +308,7 @@ def plot_coevolution_dashboard(run_dir, save_name, window=100):
     if not np.all(np.isnan(arch_mean_complex)):
         ax3.plot(
             gens_plot, arch_mean_complex, marker="^", linestyle="-",
-            color="#3498db", label="Mean Gate Count"
+            color=COLORS["complexity"], label="Mean Gate Count"
         )
         ax3.set_ylabel("Gate Count", fontweight="bold")
         ax3.legend(loc="upper left")

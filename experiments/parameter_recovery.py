@@ -331,6 +331,12 @@ def create_recovery_plot(baseline_results: dict, robust_results: dict,
         n_repetitions: Number of seeds (for annotation).
     """
     fig, ax = plt.subplots(figsize=(10, 8))
+    colors = {
+        "baseline": "#2ecc71",
+        "robust": "#e67e22",
+        "points": "#95a5a6",
+        "diag": "#7f8c8d",
+    }
     
     # Get data
     true_p = baseline_results['true_p']
@@ -340,28 +346,32 @@ def create_recovery_plot(baseline_results: dict, robust_results: dict,
     if 'per_seed_data' in baseline_results:
         for i, (p, seed_data) in enumerate(zip(true_p, baseline_results['per_seed_data'])):
             rec_ps = [sd['recovered_p'] for sd in seed_data]
-            ax.scatter([p] * len(rec_ps), rec_ps, alpha=0.2, s=20, color='tab:blue')
+            ax.scatter([p] * len(rec_ps), rec_ps, alpha=0.2, s=20, color=colors["points"])
     
     if 'per_seed_data' in robust_results:
         for i, (p, seed_data) in enumerate(zip(true_p, robust_results['per_seed_data'])):
             rec_ps = [sd['recovered_p'] for sd in seed_data]
-            ax.scatter([p] * len(rec_ps), rec_ps, alpha=0.2, s=20, color='tab:orange')
+            ax.scatter([p] * len(rec_ps), rec_ps, alpha=0.2, s=20, color=colors["points"])
     
     # Plot baseline results with error bars
-    ax.errorbar(true_p, baseline_results['recovered_p_mean'],
-                yerr=baseline_results['recovered_p_std'],
-                fmt='o-', capsize=5, capthick=2, label='Baseline Circuit', 
-                color='tab:blue', markersize=8, linewidth=2)
-    
+    ax.errorbar(
+        true_p, baseline_results['recovered_p_mean'],
+        yerr=baseline_results['recovered_p_std'],
+        fmt='o-', capsize=5, capthick=2, label='Baseline Circuit',
+        color=colors["baseline"], markersize=8, linewidth=2
+    )
+
     # Plot robust results with error bars
-    ax.errorbar(true_p, robust_results['recovered_p_mean'],
-                yerr=robust_results['recovered_p_std'],
-                fmt='s-', capsize=5, capthick=2, label='Robust Circuit',
-                color='tab:orange', markersize=8, linewidth=2)
+    ax.errorbar(
+        true_p, robust_results['recovered_p_mean'],
+        yerr=robust_results['recovered_p_std'],
+        fmt='s-', capsize=5, capthick=2, label='Robust Circuit',
+        color=colors["robust"], markersize=8, linewidth=2
+    )
     
     # Plot perfect recovery line (diagonal)
     p_range = [0, max(true_p) * 1.1]
-    ax.plot(p_range, p_range, 'k--', alpha=0.5, label='Perfect Recovery', linewidth=2)
+    ax.plot(p_range, p_range, linestyle='--', color=colors["diag"], alpha=0.6, label='Perfect Recovery', linewidth=2)
     
     ax.set_xlabel('True Noise Parameter (p)', fontsize=12)
     ax.set_ylabel('Recovered Noise Parameter (p)', fontsize=12)

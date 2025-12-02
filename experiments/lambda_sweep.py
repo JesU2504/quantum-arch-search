@@ -65,9 +65,6 @@ from utils.stats import (
 LAMBDA_VALUES = [0.001, 0.005, 0.01, 0.05, 0.1]
 FIDELITY_THRESHOLD = 0.99  # Success threshold per ExpPlan.md
 MAX_CIRCUIT_TIMESTEPS = config.MAX_CIRCUIT_TIMESTEPS
-# Default training steps for PPO when not specified by the pipeline
-DEFAULT_TRAINING_STEPS = 50000  # Enough for convergence but manageable runtime
-N_STEPS_PER_UPDATE = 1024
 
 
 class LambdaSweepCallback(BaseCallback):
@@ -127,6 +124,10 @@ def run_single_trial(
     target_state: np.ndarray,
     training_steps: int,
     n_qubits: int,
+    n_steps_per_update: int,
+    include_rotations: bool,
+    action_gates: list[cirq.Operation],
+    qubits: list[cirq.LineQubit],
     save_dir: str = None,
 ) -> dict:
     """
@@ -159,11 +160,14 @@ def run_single_trial(
         reward_penalty=0.01,  # Fixed penalty for reward shaping
         max_timesteps=MAX_CIRCUIT_TIMESTEPS,
         complexity_penalty_weight=lambda_penalty,
+        include_rotations=include_rotations,
+        action_gates=action_gates,
+        qubits=qubits,
     )
     
     # Create agent with fixed hyperparameters
     agent_params = config.AGENT_PARAMS.copy()
-    agent_params['n_steps'] = N_STEPS_PER_UPDATE
+    agent_params['n_steps'] = n_steps_per_update
     agent_params['seed'] = seed
     
     model = PPO("MlpPolicy", env=env, **agent_params)
@@ -219,6 +223,12 @@ def create_lambda_sweep_plot(
         n_seeds: Number of seeds (for annotation).
     """
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+    colors = {
+        "fidelity": "#2ecc71",
+        "cnot": "#3498db",
+        "points": "#95a5a6",
+        "threshold": "#c0392b",
+    }
     
     lambdas = np.array(lambda_values)
     
@@ -236,19 +246,29 @@ def create_lambda_sweep_plot(
     
     # Plot individual points (faint)
     for i, (lv, fids) in enumerate(zip(lambda_values, all_fidelities)):
-        ax1.scatter([lv] * len(fids), fids, alpha=0.3, s=30, color='tab:blue')
+        ax1.scatter([lv] * len(fids), fids, alpha=0.25, s=25, color=colors["points"])
     
     # Plot mean with error bars
-    ax1.errorbar(lambdas, fidelity_means, yerr=fidelity_stds, fmt='o-',
-                 capsize=5, capthick=2, linewidth=2, markersize=10,
-                 color='tab:blue', label='Mean ± Std')
-    
-    ax1.axhline(y=FIDELITY_THRESHOLD, color='red', linestyle='--', 
-                alpha=0.7, label=f'Success threshold ({FIDELITY_THRESHOLD})')
+    ax1.errorbar(
+        lambdas, fidelity_means, yerr=fidelity_stds, fmt='o-',
+        capsize=5, capthick=2, linewidth=2, markersize=9,
+        color=colors["fidelity"], label='Mean ± Std'
+    )
+    ax1.fill_between(
+        lambdas,
+        np.array(fidelity_means) - np.array(fidelity_stds),
+        np.array(fidelity_means) + np.array(fidelity_stds),
+        color=colors["fidelity"], alpha=0.15
+    )
+
+    ax1.axhline(
+        y=FIDELITY_THRESHOLD, color=colors["threshold"], linestyle='--',
+        alpha=0.7, linewidth=1.5, label=f'Success threshold ({FIDELITY_THRESHOLD})'
+    )
     ax1.set_xscale('log')
     ax1.set_xlabel('Lambda (λ)', fontsize=12)
     ax1.set_ylabel('Best Fidelity', fontsize=12)
-    ax1.set_title(f'Fidelity vs Lambda (n={n_seeds} seeds)', fontsize=14)
+    ax1.set_title(f'Fidelity vs Lambda (n={n_seeds} seeds)', fontsize=14, fontweight="bold")
     ax1.legend()
     ax1.grid(True, alpha=0.3)
     ax1.set_ylim(0, 1.05)
@@ -267,17 +287,25 @@ def create_lambda_sweep_plot(
     
     # Plot individual points (faint)
     for i, (lv, cnots) in enumerate(zip(lambda_values, all_cnots)):
-        ax2.scatter([lv] * len(cnots), cnots, alpha=0.3, s=30, color='tab:orange')
+        ax2.scatter([lv] * len(cnots), cnots, alpha=0.25, s=25, color=colors["points"])
     
     # Plot mean with error bars
-    ax2.errorbar(lambdas, cnot_means, yerr=cnot_stds, fmt='s-',
-                 capsize=5, capthick=2, linewidth=2, markersize=10,
-                 color='tab:orange', label='Mean ± Std')
+    ax2.errorbar(
+        lambdas, cnot_means, yerr=cnot_stds, fmt='s-',
+        capsize=5, capthick=2, linewidth=2, markersize=9,
+        color=colors["cnot"], label='Mean ± Std'
+    )
+    ax2.fill_between(
+        lambdas,
+        np.array(cnot_means) - np.array(cnot_stds),
+        np.array(cnot_means) + np.array(cnot_stds),
+        color=colors["cnot"], alpha=0.15
+    )
     
     ax2.set_xscale('log')
     ax2.set_xlabel('Lambda (λ)', fontsize=12)
     ax2.set_ylabel('CNOT Count', fontsize=12)
-    ax2.set_title(f'CNOT Count vs Lambda (n={n_seeds} seeds)', fontsize=14)
+    ax2.set_title(f'CNOT Count vs Lambda (n={n_seeds} seeds)', fontsize=14, fontweight="bold")
     ax2.legend()
     ax2.grid(True, alpha=0.3)
     
@@ -316,9 +344,15 @@ def run_lambda_sweep(
         Dict with per-lambda and aggregate metrics.
     """
     # Use defaults if not specified
-    effective_training_steps = training_steps if training_steps is not None else DEFAULT_TRAINING_STEPS
+    # Align defaults with train_architect.py per-qubit settings
+    params = config.get_params_for_qubits(n_qubits)
+    effective_training_steps = training_steps if training_steps is not None else params["ARCHITECT_STEPS"]
     effective_n_seeds = n_seeds if n_seeds is not None else config.N_SEEDS
     effective_lambda_values = lambda_values if lambda_values is not None else LAMBDA_VALUES
+    effective_n_steps_per_update = params["ARCHITECT_N_STEPS"]
+    include_rotations = config.INCLUDE_ROTATIONS
+    qubits = list(cirq.LineQubit.range(n_qubits))
+    action_gates = config.get_action_gates(qubits, include_rotations=include_rotations)
     
     # Use central config with optional overrides
     effective_target = target_type if target_type is not None else config.TARGET_TYPE
@@ -344,6 +378,8 @@ def run_lambda_sweep(
     log(f"Seeds per lambda: {effective_n_seeds}")
     log(f"Qubits: {n_qubits}")
     log(f"Training steps per trial: {effective_training_steps}")
+    log(f"Steps per update (PPO n_steps): {effective_n_steps_per_update}")
+    log(f"Include rotations: {include_rotations} (types={config.ROTATION_TYPES})")
     log(f"Results directory: {results_dir}")
     
     # Get target state using central config
@@ -371,6 +407,10 @@ def run_lambda_sweep(
                 target_state=target_state,
                 training_steps=effective_training_steps,
                 n_qubits=n_qubits,
+                n_steps_per_update=effective_n_steps_per_update,
+                include_rotations=include_rotations,
+                action_gates=action_gates,
+                qubits=qubits,
                 save_dir=lambda_dir,
             )
             lambda_results.append(trial_result)
@@ -440,7 +480,9 @@ def run_lambda_sweep(
         'training_steps': effective_training_steps,
         'fidelity_threshold': FIDELITY_THRESHOLD,
         'max_circuit_timesteps': MAX_CIRCUIT_TIMESTEPS,
-        'n_steps_per_update': N_STEPS_PER_UPDATE,
+        'n_steps_per_update': effective_n_steps_per_update,
+        'include_rotations': include_rotations,
+        'rotation_types': config.ROTATION_TYPES,
     }
     
     aggregated_results = {

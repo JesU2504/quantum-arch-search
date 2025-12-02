@@ -365,14 +365,21 @@ def run_cross_noise_robustness(
     # === Generate plots ===
     # Plot 1: Over-rotation fidelity retention
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    colors = {
+        "baseline": "#2ecc71",
+        "robust": "#e67e22",
+        "bars": ["#2ecc71", "#e67e22"],
+    }
     
     # Left plot: Fidelity retention ratio vs epsilon
     ax1 = axes[0]
     baseline_retentions = [r['retention_ratio'] for r in baseline_over_rotation_results]
     robust_retentions = [r['retention_ratio'] for r in robust_over_rotation_results]
     
-    ax1.plot(epsilon_values, baseline_retentions, 'b-o', label='Baseline', markersize=4)
-    ax1.plot(epsilon_values, robust_retentions, 'r-o', label='Robust', markersize=4)
+    ax1.plot(epsilon_values, baseline_retentions, marker='o', linestyle='-', color=colors["baseline"],
+             label='Baseline', markersize=4)
+    ax1.plot(epsilon_values, robust_retentions, marker='s', linestyle='-', color=colors["robust"],
+             label='Robust', markersize=4)
     ax1.set_xlabel('Over-rotation ε (radians)')
     ax1.set_ylabel('Fidelity Retention Ratio (F_noisy / F_clean)')
     ax1.set_title(f'Over-rotation Robustness (n_ε={n_epsilon_points})')
@@ -387,8 +394,7 @@ def run_cross_noise_robustness(
         baseline_asymmetric_result['retention_ratio'],
         robust_asymmetric_result['retention_ratio']
     ]
-    colors = ['tab:blue', 'tab:orange']
-    bars = ax2.bar(circuit_types, retention_values, color=colors)
+    bars = ax2.bar(circuit_types, retention_values, color=colors["bars"])
     ax2.set_ylabel('Fidelity Retention Ratio')
     ax2.set_title(f'Asymmetric Pauli Noise (p_x={p_x_asymmetric})')
     ax2.set_ylim(0, 1.05)
