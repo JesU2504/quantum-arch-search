@@ -102,9 +102,9 @@ class SaboteurMultiGateEnv(gym.Env):
         if isinstance(op.gate, cirq.ZPowGate): return 3
         if isinstance(op.gate, cirq.HPowGate): return 4
         if isinstance(op.gate, cirq.CNotPowGate): return 5
-        if isinstance(op.gate, cirq.rx): return 7
-        if isinstance(op.gate, cirq.ry): return 8
-        if isinstance(op.gate, cirq.rz): return 9
+        if isinstance(op.gate, cirq.Rx): return 7
+        if isinstance(op.gate, cirq.Ry): return 8
+        if isinstance(op.gate, cirq.Rz): return 9
         return 6
 
     def _get_obs(self, circuit=None):
@@ -260,4 +260,3 @@ class Saboteur(gym.Env):
         env = SaboteurMultiGateEnv(self.target_circuit, self.target_state)
         obs, reward, terminated, truncated, info = env.step(action)
         return np.array([info['fidelity']], dtype=np.float32), reward, terminated, truncated, info
-

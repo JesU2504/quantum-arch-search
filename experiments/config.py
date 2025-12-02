@@ -139,6 +139,27 @@ EXPERIMENT_PARAMS = {
     },
 }
 
+# Default helpers for scripts that need a quick, module-level fallback.
+# Use the 4-qubit entry when available (the "standard" experiment), otherwise
+# fall back to the first configured qubit count.
+def get_params_for_qubits(n_qubits: int) -> dict:
+    """Return the parameter set for the given qubit count or raise if missing."""
+    if n_qubits not in EXPERIMENT_PARAMS:
+        raise ValueError(
+            f"No experiment parameters defined for n_qubits={n_qubits}. "
+            f"Available: {sorted(EXPERIMENT_PARAMS.keys())}"
+        )
+    return EXPERIMENT_PARAMS[n_qubits]
+
+
+DEFAULT_N_QUBITS = 4 if 4 in EXPERIMENT_PARAMS else next(iter(EXPERIMENT_PARAMS))
+_DEFAULT_PARAMS = get_params_for_qubits(DEFAULT_N_QUBITS)
+
+# Script-level defaults (used as argparse defaults in training scripts)
+ADVERSARIAL_GENS = _DEFAULT_PARAMS["N_GENERATIONS"]
+ARCHITECT_N_STEPS = _DEFAULT_PARAMS["ARCHITECT_STEPS_PER_GENERATION"]
+SABOTEUR_N_STEPS = _DEFAULT_PARAMS["SABOTEUR_STEPS_PER_GENERATION"]
+
 # --- Agent Hyperparameters ---
 AGENT_PARAMS = {
     "n_steps": 1000,

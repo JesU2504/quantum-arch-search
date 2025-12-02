@@ -362,9 +362,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--results-dir", type=str, default="results")
     parser.add_argument("--n-qubits", type=int, required=True)
-    parser.add_argument("--n-generations", type=int, default=config.ADVERSARIAL_GENS)
-    parser.add_argument("--architect-steps", type=int, default=config.ARCHITECT_N_STEPS)
-    parser.add_argument("--saboteur-steps", type=int, default=config.SABOTEUR_N_STEPS)
+    parser.add_argument("--n-generations", type=int, default=None,
+                        help="Override generations. Defaults to config.EXPERIMENT_PARAMS for the given qubit count.")
+    parser.add_argument("--architect-steps", type=int, default=None,
+                        help="Override architect steps per generation. Defaults to config.EXPERIMENT_PARAMS.")
+    parser.add_argument("--saboteur-steps", type=int, default=None,
+                        help="Override saboteur steps per generation. Defaults to config.EXPERIMENT_PARAMS.")
     parser.add_argument("--max-circuit-gates", type=int, default=config.MAX_CIRCUIT_TIMESTEPS)
     parser.add_argument("--fidelity-threshold", type=float, default=0.99)
     parser.add_argument("--lambda-penalty", type=float, default=0.5)
@@ -376,12 +379,18 @@ if __name__ == "__main__":
     os.makedirs(args.results_dir, exist_ok=True)
     start_time = time.time()
 
+    # Resolve per-qubit defaults when user did not override via CLI
+    qubit_params = config.get_params_for_qubits(args.n_qubits)
+    n_generations = args.n_generations if args.n_generations is not None else qubit_params["N_GENERATIONS"]
+    architect_steps = args.architect_steps if args.architect_steps is not None else qubit_params["ARCHITECT_STEPS_PER_GENERATION"]
+    saboteur_steps = args.saboteur_steps if args.saboteur_steps is not None else qubit_params["SABOTEUR_STEPS_PER_GENERATION"]
+
     architect_agent, saboteur_agent, log_dir = train_adversarial(
         results_dir=args.results_dir,
         n_qubits=args.n_qubits,
-        n_generations=args.n_generations,
-        architect_steps_per_generation=args.architect_steps,
-        saboteur_steps_per_generation=args.saboteur_steps,
+        n_generations=n_generations,
+        architect_steps_per_generation=architect_steps,
+        saboteur_steps_per_generation=saboteur_steps,
         max_circuit_gates=args.max_circuit_gates,
         fidelity_threshold=args.fidelity_threshold,
         lambda_penalty=args.lambda_penalty,
