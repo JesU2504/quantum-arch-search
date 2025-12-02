@@ -98,17 +98,17 @@ EXPERIMENT_PARAMS = {
     3: {
         # More rollout per update to help PPO escape the 0.69 plateau
         "ARCHITECT_N_STEPS": 2048,
-        # Baseline Total = Steps/Gen * Generations (comparable to adversarial total)
-        "ARCHITECT_STEPS": 8000*12,     # = 400,000 steps
+        # Baseline Total = Steps/Gen * Generations (short run with cushion to hit ~1.0)
+        "ARCHITECT_STEPS": 10000 * 12,     # = 120,000 steps
         
         "N_GENERATIONS": 12,
-        "ARCHITECT_STEPS_PER_GENERATION": 16000,
+        "ARCHITECT_STEPS_PER_GENERATION": 10000,
         
-        # Give the saboteur enough budget to learn, but not overwhelm early gens
-        "SABOTEUR_STEPS_PER_GENERATION": 4096,
+        # Give the saboteur enough budget to learn, scaled to shorter run
+        "SABOTEUR_STEPS_PER_GENERATION": 2048,
         "SABOTEUR_N_STEPS": 2048,
         # Saboteur Total
-        "SABOTEUR_STEPS": 4096 * 12,       # = 102,400 steps
+        "SABOTEUR_STEPS": 2048 * 12,       # = 24,576 steps
     },
     
     # "Full" Implementation (4 Qubits) - Standard Experiment (ExpPlan.md)
@@ -228,7 +228,7 @@ def get_action_gates(
         The default gate set is Clifford+T: X, Y, Z, H, T, S (plus CNOT).
         When include_rotations=True, Rx, Ry, Rz gates are added for each qubit.
     """
-    single_qubit_gate_names = ['I', 'H', 'T', 'S'] #['X', 'Y', 'Z', 'H', 'T', 'S']
+    single_qubit_gate_names = ['I', 'H'] #['X', 'Y', 'Z', 'H', 'T', 'S']
     # Define allowed rotation angles
     # Include both T (π/4) and T† (-π/4) for exact Toffoli synthesis.
     # Cirq interprets angles modulo 2π, so negative angles are valid.

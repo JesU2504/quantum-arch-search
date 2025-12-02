@@ -77,7 +77,8 @@ def plot_coevolution_single(run_dir, save_name, window_frac=0.02):
         noisy_steps = np.arange(1, len(noisy_fidelity) + 1)
 
     clean_window = max(10, int(len(clean_fidelity) * window_frac))
-    noisy_window = max(10, int(len(noisy_fidelity) * window_frac))
+    # Use the same window for attacked to make the curves visually comparable
+    noisy_window = clean_window
     clean_roll = rolling_mean(clean_fidelity, clean_window)
     noisy_roll = rolling_mean(noisy_fidelity, noisy_window)
 
@@ -90,8 +91,8 @@ def plot_coevolution_single(run_dir, save_name, window_frac=0.02):
     fig, ax = plt.subplots(figsize=(10, 6))
 
     ax.plot(clean_steps, best_clean, color=COLORS["best"], linewidth=2.2, label="Best Clean So Far")
-    ax.plot(clean_x, clean_roll, color=COLORS["clean_roll"], linewidth=2, label=f"Rolling Mean (clean, w={clean_window})")
-    ax.plot(noisy_x, noisy_roll, color=COLORS["noisy_roll"], linewidth=2, linestyle="--", label=f"Rolling Mean (attacked, w={noisy_window})")
+    ax.plot(clean_x, clean_roll, color=COLORS["clean_roll"], linewidth=2.2, label=f"Rolling Mean (clean, w={clean_window})")
+    ax.plot(noisy_x, noisy_roll, color=COLORS["noisy_roll"], linewidth=2.2, label=f"Rolling Mean (attacked, w={noisy_window})")
     ax.axhline(1.0, color=COLORS["ideal"], linestyle="--", linewidth=1)
 
     ax.scatter(clean_steps[-1], best_clean[-1], color=COLORS["best"], edgecolor="white", zorder=5, s=40)

@@ -364,12 +364,12 @@ def train_adversarial(
         ops = list(circuit.all_operations())
         qubits = sorted(list(circuit.all_qubits()))
         sab_obs = SaboteurMultiGateEnv.create_observation_from_circuit(
-            circuit, n_qubits=n_qubits, max_circuit_timesteps=config.MAX_CIRCUIT_TIMESTEPS
+            circuit, n_qubits=n_qubits, max_circuit_timesteps=max_circuit_gates
         )
         sab_action, _ = saboteur_agent.predict(sab_obs, deterministic=True)
         all_rates = SaboteurMultiGateEnv.all_error_rates
         max_idx = len(all_rates) - 1
-        valid_gate_count = min(len(ops), config.MAX_CIRCUIT_TIMESTEPS)
+        valid_gate_count = min(len(ops), max_circuit_gates)
         raw_action = np.array(sab_action[:valid_gate_count], dtype=int)
         budget = min(3, valid_gate_count)
         effective_action = np.zeros_like(raw_action)

@@ -385,7 +385,8 @@ def parse_args():
     p.add_argument('--skip-cross-noise', action='store_true')
     p.add_argument('--baseline-steps', type=int, default=None)
     p.add_argument('--saboteur-steps', type=int, default=None)
-    p.add_argument('--max-circuit-gates', type=int, default=20)
+    from experiments import config as exp_config  # import here to access defaults
+    p.add_argument('--max-circuit-gates', type=int, default=exp_config.MAX_CIRCUIT_TIMESTEPS)
     p.add_argument('--fidelity-threshold', type=float, default=1.1)  # Train by improvement
     p.add_argument('--seed', type=int, default=None)
     p.add_argument('--n-seeds', type=int, default=None)
