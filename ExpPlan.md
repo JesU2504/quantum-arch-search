@@ -149,6 +149,10 @@ Goal: Ensure components work before expensive HPC runs.
 - Verify: Parallel throughput ~3x serial (with overhead).
 - Why: Detect serialization bottlenecks (common with Cirq).
 
+### Stage 7.4 — “Fast pass” 3‑qubit sanity run
+- Config (mirrors current 3‑qubit defaults in `experiments/config.py`): 12 generations, 8000 architect steps/gen (96k total), saboteur 2048 steps/gen (24.5k total).
+- Expectation: Reaches ~1.0 fidelity around 75k architect steps; use as a quick smoke test before longer jobs.
+
 ---
 
 ## Implementation notes

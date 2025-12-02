@@ -98,17 +98,17 @@ EXPERIMENT_PARAMS = {
     3: {
         # More rollout per update to help PPO escape the 0.69 plateau
         "ARCHITECT_N_STEPS": 2048,
-        # Short run with a cushion beyond the ~74k success point
-        "ARCHITECT_STEPS": 8000 * 12,     # = 96,000 steps
+        # Baseline Total = Steps/Gen * Generations (comparable to adversarial total)
+        "ARCHITECT_STEPS": 8000*12,     # = 400,000 steps
         
         "N_GENERATIONS": 12,
-        "ARCHITECT_STEPS_PER_GENERATION": 8000,
+        "ARCHITECT_STEPS_PER_GENERATION": 16000,
         
-        # Give the saboteur enough budget to learn, scaled to shorter run
-        "SABOTEUR_STEPS_PER_GENERATION": 2048,
+        # Give the saboteur enough budget to learn, but not overwhelm early gens
+        "SABOTEUR_STEPS_PER_GENERATION": 4096,
         "SABOTEUR_N_STEPS": 2048,
         # Saboteur Total
-        "SABOTEUR_STEPS": 2048 * 12,       # = 24,576 steps
+        "SABOTEUR_STEPS": 4096 * 12,       # = 102,400 steps
     },
     
     # "Full" Implementation (4 Qubits) - Standard Experiment (ExpPlan.md)

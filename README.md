@@ -104,6 +104,12 @@ The repository ships the core pipeline and figures for Parts 2 and 7, and a stro
 - Part 6 (QEC resource plot): not included in this repository. See `ExpPlan.md` for the argument framing; adding a simple bar‑chart script to visualize physical‑qubit overhead is straightforward.
 - Part 7 (Verification): included conceptually — saboteur‑only run demonstrates fidelity degradation and learning. A dedicated `verify_saboteur` script can be added or adapted if you want a one‑shot check on a perfect GHZ circuit.
 
+## Fast 3‑qubit sanity run (aligned with ExpPlan Stage 7.4)
+
+- Defaults in `experiments/config.py` for 3 qubits are tuned for a quick pass: 12 generations, 8000 architect steps/gen (96k total), saboteur 2048 steps/gen.
+- Empirically reaches ~1.0 fidelity around 75k architect steps; use this as a smoke test before longer jobs.
+- You can replot without retraining: `python experiments/train_architect.py --n-qubits 3 --replot-from results/<run>/baseline`
+
 
 ## VQE Architecture Search (Part 4)
 
