@@ -57,6 +57,25 @@ Outputs (example): `results/run_YYYYMMDD-HHMMSS/`
 - `compare/`
 	- `robust_eval.json`, `attacked_fidelity_samples.csv`, `robustness_comparison.png`
 
+### Experimental baseline: QuantumNAS (scaffold)
+- Optional flag: `--run-quantumnas` in `run_experiments.py` runs a QuantumNAS baseline scaffold and saves `quantumnas/circuit_quantumnas.json` for robustness analysis.
+- Status: if no external circuit is provided, `--run-quantumnas` now runs a lightweight TorchQuantum-based baseline (GHZ state prep or Toffoli unitary prep) and writes `quantumnas/circuit_quantumnas.json`. You can override epochs/depth/lr via `--quantumnas-simple-*` flags.
+- Compare/cross-noise analyses will include the QuantumNAS circuit automatically when present.
+- Parameter recovery also includes QuantumNAS automatically if `quantumnas/circuit_quantumnas.json` exists in the run.
+- If you train a circuit externally with TorchQuantum/QuantumNAS and export OpenQASM, convert it for analysis with:
+  ```bash
+  python experiments/import_quantumnas_qasm.py --qasm path/to/circuit.qasm --out results/run_x/quantumnas/circuit_quantumnas.json
+  ```
+- To evaluate a QASM circuit directly (clean + attacked fidelity) and save metrics/circuit JSON:
+  ```bash
+  python experiments/eval_qasm_circuit.py --qasm path/to/circuit.qasm --target-type ghz --task-mode state_preparation
+  ```
+- If you have a TorchQuantum `op_history` (e.g., from QuantumNAS/VQE), convert it to QASM and Cirq JSON:
+  ```bash
+  python experiments/export_tq_op_history.py --op-history path/to/op_history.pt
+  ```
+- You can also pass `--quantumnas-qasm / --quantumnas-op-history` to `run_experiments.py` to import external QuantumNAS circuits into the pipeline (saved as `quantumnas/circuit_quantumnas.json`).
+
 
 ## Reproducing key artifacts
 

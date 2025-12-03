@@ -1,0 +1,26 @@
+[
+  {
+    "group": "architect_baseline",
+    "run": "baseline",
+    "seed": null,
+    "clean_fidelity": 0.481693709269166,
+    "attacked_mean": 0.4332115094680339,
+    "attacked_std": 0.010350720314569344,
+    "attacked_min": 0.38920728676021094,
+    "attacked_max": 0.4662475287914276,
+    "n_attacks_evaluated": 3000,
+    "circuit_path": "baseline/circuit_vanilla.json"
+  },
+  {
+    "group": "quantumnas",
+    "run": "quantumnas",
+    "seed": null,
+    "clean_fidelity": 0.9999999254941939,
+    "attacked_mean": 0.8613100879347843,
+    "attacked_std": 0.039875722467906514,
+    "attacked_min": 0.751854121685028,
+    "attacked_max": 0.9666666239500044,
+    "n_attacks_evaluated": 575,
+    "circuit_path": "quantumnas/circuit_quantumnas.json"
+  }
+]

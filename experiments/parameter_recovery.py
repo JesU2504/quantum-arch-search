@@ -59,58 +59,83 @@ from utils.stats import (
 from experiments import config
 
 
-# Default noise rates to test (per problem statement)
-DEFAULT_P_VALUES = [0.001, 0.005, 0.01, 0.02, 0.05, 0.08, 0.1]
+# Default noise rates to test (harder)
+DEFAULT_P_VALUES = [0.02, 0.05, 0.08, 0.12, 0.16, 0.2, 0.25]
 
-# Number of measurement shots for statistical estimation
-DEFAULT_N_SHOTS = 1000
+# Number of measurement shots for statistical estimation (lower to increase variance)
+DEFAULT_N_SHOTS = 150
 
 # Number of repetitions for each p value to get mean/std estimates
-DEFAULT_N_REPETITIONS = 10
+DEFAULT_N_REPETITIONS = 3
+
+DEFAULT_NOISE_MODEL = "asymmetric"  # or "depolarizing"
+DEFAULT_ASYM_P = (0.08, 0.02, 0.02)
 
 # Small epsilon to avoid division by zero in variance calculations
 NOISE_VARIANCE_EPSILON = 1e-8
 
 
 def apply_depolarizing_noise_to_circuit(circuit: cirq.Circuit, p: float) -> cirq.Circuit:
-    """
-    Apply uniform depolarizing noise after each gate in the circuit.
-    
-    Args:
-        circuit: The input circuit.
-        p: Depolarizing noise probability (0 <= p <= 1).
-    
-    Returns:
-        A new circuit with depolarizing channels inserted after each gate.
-    """
+    """Apply uniform depolarizing noise after each gate in the circuit."""
     if p <= 0:
         return circuit
-    
     noisy_ops = []
     for op in circuit.all_operations():
         noisy_ops.append(op)
-        # Add depolarizing noise to each qubit involved in the gate
         for q in op.qubits:
             noisy_ops.append(cirq.DepolarizingChannel(p).on(q))
-    
     return cirq.Circuit(noisy_ops)
 
 
-def simulate_noisy_fidelity(circuit: cirq.Circuit, target_state: np.ndarray, 
-                            p: float, n_qubits: int) -> float:
+def apply_asymmetric_noise_to_circuit(circuit: cirq.Circuit, p_x: float, p_y: float, p_z: float) -> cirq.Circuit:
+    """Apply asymmetric Pauli noise after each gate."""
+    if p_x <= 0 and p_y <= 0 and p_z <= 0:
+        return circuit
+    noisy_ops = []
+    for op in circuit.all_operations():
+        noisy_ops.append(op)
+        for q in op.qubits:
+            noisy_ops.append(cirq.asymmetric_depolarize(p_x=p_x, p_y=p_y, p_z=p_z).on(q))
+    return cirq.Circuit(noisy_ops)
+
+
+def resolve_asymmetric_params(overall_p: float, noise_kwargs: dict | None = None) -> tuple[float, float, float]:
     """
-    Simulate the fidelity of a circuit under depolarizing noise.
-    
-    Args:
-        circuit: The circuit to simulate.
-        target_state: The target quantum state.
-        p: Depolarizing noise probability.
-        n_qubits: Number of qubits.
-    
-    Returns:
-        Fidelity of the noisy circuit output with respect to the target state.
+    Compute asymmetric noise parameters from an overall p.
+
+    By default we interpret provided p_x/p_y/p_z as relative weights and scale
+    them so their sum equals the tested p. To force absolute values (old
+    behavior), pass noise_kwargs['use_absolute'] = True.
     """
-    noisy_circuit = apply_depolarizing_noise_to_circuit(circuit, p)
+    noise_kwargs = noise_kwargs or {}
+    use_absolute = noise_kwargs.get("use_absolute", False)
+    px = max(noise_kwargs.get("p_x", 0.0), 0.0)
+    py = max(noise_kwargs.get("p_y", 0.0), 0.0)
+    pz = max(noise_kwargs.get("p_z", 0.0), 0.0)
+
+    if use_absolute:
+        return px, py, pz
+
+    total = px + py + pz
+    if total <= 0:
+        # If no weights supplied, fall back to isotropic scaling
+        return overall_p, overall_p, overall_p
+    scale = overall_p / total
+    return px * scale, py * scale, pz * scale
+
+
+def simulate_noisy_fidelity(circuit: cirq.Circuit, target_state: np.ndarray,
+                            p: float, n_qubits: int, noise_model: str = DEFAULT_NOISE_MODEL,
+                            noise_kwargs: dict | None = None) -> float:
+    """
+    Simulate the fidelity of a circuit under a chosen noise model.
+    """
+    noise_kwargs = noise_kwargs or {}
+    if noise_model == "asymmetric":
+        p_x, p_y, p_z = resolve_asymmetric_params(p, noise_kwargs)
+        noisy_circuit = apply_asymmetric_noise_to_circuit(circuit, p_x=p_x, p_y=p_y, p_z=p_z)
+    else:
+        noisy_circuit = apply_depolarizing_noise_to_circuit(circuit, p)
     qubits = cirq.LineQubit.range(n_qubits)
     return fidelity_pure_target(noisy_circuit, target_state, qubits)
 
@@ -122,6 +147,8 @@ def generate_measurement_samples(
     n_qubits: int,
     n_shots: int,
     rng: np.random.Generator | None = None,
+    noise_model: str = DEFAULT_NOISE_MODEL,
+    noise_kwargs: dict | None = None,
 ) -> list:
     """
     Generate measurement fidelity samples under noise.
@@ -129,33 +156,26 @@ def generate_measurement_samples(
     This models shot-based estimation with binomial variance around the noisy fidelity.
     """
     rng = rng or np.random.default_rng()
-    expected_fid = simulate_noisy_fidelity(circuit, target_state, true_p, n_qubits)
+    expected_fid = simulate_noisy_fidelity(
+        circuit, target_state, true_p, n_qubits, noise_model=noise_model, noise_kwargs=noise_kwargs
+    )
     std_dev = np.sqrt(expected_fid * (1 - expected_fid) / max(1, n_shots) + NOISE_VARIANCE_EPSILON)
     samples = rng.normal(expected_fid, std_dev, n_shots)
     samples = np.clip(samples, 0.0, 1.0)
     return samples.tolist()
 
 
-def fidelity_model(p: float, circuit: cirq.Circuit, target_state: np.ndarray, 
-                   n_qubits: int) -> float:
-    """
-    Model function that computes expected fidelity for a given noise parameter p.
-    
-    Args:
-        p: Depolarizing noise parameter to test.
-        circuit: The circuit.
-        target_state: Target state.
-        n_qubits: Number of qubits.
-    
-    Returns:
-        Expected fidelity.
-    """
-    return simulate_noisy_fidelity(circuit, target_state, p, n_qubits)
+def fidelity_model(p: float, circuit: cirq.Circuit, target_state: np.ndarray,
+                   n_qubits: int, noise_model: str, noise_kwargs: dict | None = None) -> float:
+    """Model function that computes expected fidelity for a given noise parameter p."""
+    return simulate_noisy_fidelity(circuit, target_state, p, n_qubits, noise_model=noise_model, noise_kwargs=noise_kwargs)
 
 
 def mle_recover_noise_parameter(observed_fidelity: float, circuit: cirq.Circuit,
                                 target_state: np.ndarray, n_qubits: int,
-                                p_min: float = 0.0, p_max: float = 0.15) -> float:
+                                p_min: float = 0.0, p_max: float = 0.35,
+                                noise_model: str = DEFAULT_NOISE_MODEL,
+                                noise_kwargs: dict | None = None) -> float:
     """
     Recover the noise parameter using Maximum Likelihood Estimation.
     
@@ -175,7 +195,7 @@ def mle_recover_noise_parameter(observed_fidelity: float, circuit: cirq.Circuit,
         Estimated noise parameter p.
     """
     def objective(p):
-        model_fid = fidelity_model(p, circuit, target_state, n_qubits)
+        model_fid = fidelity_model(p, circuit, target_state, n_qubits, noise_model=noise_model, noise_kwargs=noise_kwargs)
         # Minimize squared error between model and observed fidelity
         return (model_fid - observed_fidelity) ** 2
     
@@ -189,7 +209,9 @@ def run_parameter_recovery_for_circuit(circuit: cirq.Circuit, circuit_name: str,
                                        p_values: list, n_shots: int,
                                        n_repetitions: int, logger=None,
                                        base_seed: int = 0,
-                                       save_dir: str = None) -> dict:
+                                       save_dir: str = None,
+                                       noise_model: str = DEFAULT_NOISE_MODEL,
+                                       noise_kwargs: dict | None = None) -> dict:
     """
     Run parameter recovery experiment for a single circuit with multi-seed support.
     
@@ -252,14 +274,17 @@ def run_parameter_recovery_for_circuit(circuit: cirq.Circuit, circuit_name: str,
             # Generate measurement samples
             rng = np.random.default_rng(noise_seed)
             samples = generate_measurement_samples(
-                circuit, target_state, true_p, n_qubits, n_shots, rng=rng
+                circuit, target_state, true_p, n_qubits, n_shots, rng=rng,
+                noise_model=noise_model, noise_kwargs=noise_kwargs
             )
             observed_fid = np.mean(samples)
             observed_fid_list.append(observed_fid)
             
             # Recover noise parameter using MLE
             recovered_p = mle_recover_noise_parameter(observed_fid, circuit, 
-                                                      target_state, n_qubits)
+                                                      target_state, n_qubits,
+                                                      noise_model=noise_model,
+                                                      noise_kwargs=noise_kwargs)
             recovered_p_list.append(recovered_p)
             
             # Store per-seed result
@@ -303,7 +328,8 @@ def run_parameter_recovery_for_circuit(circuit: cirq.Circuit, circuit_name: str,
 
 
 def create_recovery_plot(baseline_results: dict, robust_results: dict, 
-                         output_path: str, n_qubits: int, n_repetitions: int = None):
+                         output_path: str, n_qubits: int, n_repetitions: int = None,
+                         quantumnas_results: dict | None = None):
     """
     Create and save the parameter recovery plot with error bars and annotations.
     
@@ -323,6 +349,7 @@ def create_recovery_plot(baseline_results: dict, robust_results: dict,
     colors = {
         "baseline": "#2ecc71",
         "robust": "#e67e22",
+        "quantumnas": "#2c7fb8",
         "points": "#95a5a6",
         "diag": "#7f8c8d",
     }
@@ -341,6 +368,10 @@ def create_recovery_plot(baseline_results: dict, robust_results: dict,
         for i, (p, seed_data) in enumerate(zip(true_p, robust_results['per_seed_data'])):
             rec_ps = [sd['recovered_p'] for sd in seed_data]
             ax.scatter([p] * len(rec_ps), rec_ps, alpha=0.2, s=20, color=colors["points"])
+    if quantumnas_results and 'per_seed_data' in quantumnas_results:
+        for i, (p, seed_data) in enumerate(zip(true_p, quantumnas_results['per_seed_data'])):
+            rec_ps = [sd['recovered_p'] for sd in seed_data]
+            ax.scatter([p] * len(rec_ps), rec_ps, alpha=0.2, s=20, color=colors["points"])
     
     # Plot baseline results with error bars
     ax.errorbar(
@@ -357,9 +388,21 @@ def create_recovery_plot(baseline_results: dict, robust_results: dict,
         fmt='s-', capsize=5, capthick=2, label='Robust Circuit',
         color=colors["robust"], markersize=8, linewidth=2
     )
+    if quantumnas_results is not None:
+        ax.errorbar(
+            true_p, quantumnas_results['recovered_p_mean'],
+            yerr=quantumnas_results['recovered_p_std'],
+            fmt='^-', capsize=5, capthick=2, label='QuantumNAS Circuit',
+            color=colors["quantumnas"], markersize=8, linewidth=2
+        )
     
     # Plot perfect recovery line (diagonal)
-    p_range = [0, max(true_p) * 1.1]
+    recovered_vals = list(baseline_results['recovered_p_mean']) + list(robust_results['recovered_p_mean'])
+    if quantumnas_results is not None:
+        recovered_vals += list(quantumnas_results['recovered_p_mean'])
+    max_val = max(true_p + recovered_vals)
+    plot_max = max_val * 1.1 if max_val > 0 else 0.05
+    p_range = [0, plot_max]
     ax.plot(p_range, p_range, linestyle='--', color=colors["diag"], alpha=0.6, label='Perfect Recovery', linewidth=2)
     
     ax.set_xlabel('True Noise Parameter (p)', fontsize=12)
@@ -385,10 +428,15 @@ def create_recovery_plot(baseline_results: dict, robust_results: dict,
 def run_parameter_recovery(results_dir: str = None, n_qubits: int = 4,
                            baseline_circuit_path: str = None,
                            robust_circuit_path: str = None,
+                           quantumnas_circuit_path: str = None,
                            p_values: list = None, n_shots: int = DEFAULT_N_SHOTS,
                            n_repetitions: int = None,
                            base_seed: int = 42,
-                           logger=None) -> dict:
+                           logger=None,
+                           noise_model: str = DEFAULT_NOISE_MODEL,
+                           p_x: float = DEFAULT_ASYM_P[0],
+                           p_y: float = DEFAULT_ASYM_P[1],
+                           p_z: float = DEFAULT_ASYM_P[2]) -> dict:
     """
     Run the full parameter recovery experiment with statistical reporting.
     
@@ -423,6 +471,7 @@ def run_parameter_recovery(results_dir: str = None, n_qubits: int = 4,
     
     if p_values is None:
         p_values = DEFAULT_P_VALUES
+    noise_kwargs = {"p_x": p_x, "p_y": p_y, "p_z": p_z}
     
     # Set up results directory
     if results_dir is None:
@@ -498,6 +547,7 @@ def run_parameter_recovery(results_dir: str = None, n_qubits: int = 4,
         'base_seed': base_seed,
         'baseline': None,
         'robust': None,
+        'quantumnas': None,
     }
     
     # Collect all noise seeds used
@@ -509,7 +559,9 @@ def run_parameter_recovery(results_dir: str = None, n_qubits: int = 4,
             baseline_circuit, 'baseline', target_state, n_qubits,
             p_values, n_shots, effective_n_repetitions, logger,
             base_seed=base_seed,
-            save_dir=results_dir
+            save_dir=results_dir,
+            noise_model=noise_model,
+            noise_kwargs=noise_kwargs
         )
         all_results['baseline'] = baseline_results
         if 'noise_seeds' in baseline_results:
@@ -523,13 +575,33 @@ def run_parameter_recovery(results_dir: str = None, n_qubits: int = 4,
             robust_circuit, 'robust', target_state, n_qubits,
             p_values, n_shots, effective_n_repetitions, logger,
             base_seed=base_seed + 10000,  # Offset for robust circuit
-            save_dir=results_dir
+            save_dir=results_dir,
+            noise_model=noise_model,
+            noise_kwargs=noise_kwargs
         )
         all_results['robust'] = robust_results
         if 'noise_seeds' in robust_results:
             all_noise_seeds.extend([s for seeds in robust_results['noise_seeds'] for s in seeds])
     else:
         log("Skipping robust circuit (not available)")
+
+    # QuantumNAS circuit (optional)
+    if quantumnas_circuit_path:
+        try:
+            quantumnas_circuit = load_circuit(quantumnas_circuit_path)
+            qnas_results = run_parameter_recovery_for_circuit(
+                quantumnas_circuit, 'quantumnas', target_state, n_qubits,
+                p_values, n_shots, effective_n_repetitions, logger,
+                base_seed=base_seed + 20000,
+                save_dir=results_dir,
+                noise_model=noise_model,
+                noise_kwargs=noise_kwargs
+            )
+            all_results['quantumnas'] = qnas_results
+            if 'noise_seeds' in qnas_results:
+                all_noise_seeds.extend([s for seeds in qnas_results['noise_seeds'] for s in seeds])
+        except Exception as exc:
+            log(f"Skipping QuantumNAS circuit (failed to load or evaluate): {exc}")
     
     # Save JSON results
     results_file = os.path.join(results_dir, 'parameter_recovery_results.json')
@@ -537,11 +609,12 @@ def run_parameter_recovery(results_dir: str = None, n_qubits: int = 4,
         json.dump(all_results, f, indent=2)
     log(f"\nResults saved to {results_file}")
     
-    # Create plot if both circuits available
+    # Create plot if at least baseline+robust available
     if all_results['baseline'] is not None and all_results['robust'] is not None:
         plot_path = os.path.join(results_dir, 'parameter_recovery_plot.png')
         create_recovery_plot(all_results['baseline'], all_results['robust'], 
-                            plot_path, n_qubits, n_repetitions=effective_n_repetitions)
+                            plot_path, n_qubits, n_repetitions=effective_n_repetitions,
+                            quantumnas_results=all_results.get('quantumnas'))
         log(f"Plot saved to {plot_path}")
     elif all_results['baseline'] is not None or all_results['robust'] is not None:
         # Create single-circuit plot with error bars
@@ -587,11 +660,13 @@ def run_parameter_recovery(results_dir: str = None, n_qubits: int = 4,
         'n_shots': n_shots,
         'n_repetitions': effective_n_repetitions,
         'base_seed': base_seed,
+        'noise_model': noise_model,
+        'asymmetric_params': noise_kwargs,
     }
     
     # Aggregate recovery error stats
     aggregated_results = {}
-    for circuit_type in ['baseline', 'robust']:
+    for circuit_type in ['baseline', 'robust', 'quantumnas']:
         if all_results[circuit_type] is not None:
             r = all_results[circuit_type]
             recovery_errors = r['recovery_error_mean']
@@ -628,7 +703,7 @@ def run_parameter_recovery(results_dir: str = None, n_qubits: int = 4,
         f.write(f"  Noise parameters tested: {p_values}\n")
         f.write(f"  Shots per trial: {n_shots}\n\n")
         
-        for circuit_type in ['baseline', 'robust']:
+        for circuit_type in ['baseline', 'robust', 'quantumnas']:
             if all_results[circuit_type] is not None:
                 r = all_results[circuit_type]
                 f.write(f"\n{circuit_type.upper()} Circuit Results:\n")
@@ -662,10 +737,17 @@ if __name__ == "__main__":
                         help='Path to baseline circuit JSON')
     parser.add_argument('--robust-circuit', type=str, default=None,
                         help='Path to robust circuit JSON')
+    parser.add_argument('--quantumnas-circuit', type=str, default=None,
+                        help='Path to QuantumNAS circuit JSON (optional)')
     parser.add_argument('--n-shots', type=int, default=DEFAULT_N_SHOTS,
                         help=f'Number of measurement shots (default: {DEFAULT_N_SHOTS})')
     parser.add_argument('--n-repetitions', type=int, default=DEFAULT_N_REPETITIONS,
                         help=f'Number of repetitions per p value (default: {DEFAULT_N_REPETITIONS})')
+    parser.add_argument('--noise-model', type=str, default=DEFAULT_NOISE_MODEL, choices=['depolarizing', 'asymmetric'],
+                        help='Noise model used for simulation and fitting')
+    parser.add_argument('--p-x', type=float, default=DEFAULT_ASYM_P[0], help='Asymmetric noise p_x (if noise-model=asymmetric)')
+    parser.add_argument('--p-y', type=float, default=DEFAULT_ASYM_P[1], help='Asymmetric noise p_y')
+    parser.add_argument('--p-z', type=float, default=DEFAULT_ASYM_P[2], help='Asymmetric noise p_z')
     
     args = parser.parse_args()
     
@@ -674,6 +756,11 @@ if __name__ == "__main__":
         n_qubits=args.n_qubits,
         baseline_circuit_path=args.baseline_circuit,
         robust_circuit_path=args.robust_circuit,
+        quantumnas_circuit_path=args.quantumnas_circuit,
         n_shots=args.n_shots,
         n_repetitions=args.n_repetitions,
+        noise_model=args.noise_model,
+        p_x=args.p_x,
+        p_y=args.p_y,
+        p_z=args.p_z,
     )

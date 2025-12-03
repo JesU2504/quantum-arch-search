@@ -229,6 +229,7 @@ def run_cross_noise_robustness(
     robust_circuit_path: str,
     output_dir: str,
     n_qubits: int,
+    quantum_nas_circuit_path: str | None = None,
     epsilon_range: tuple = (0.0, 0.2),
     n_epsilon_points: int = 20,
     p_x_asymmetric: float | list = 0.05,
@@ -301,6 +302,15 @@ def run_cross_noise_robustness(
     except Exception as e:
         log(f"ERROR: Failed to load robust circuit: {e}")
         return {'error': f'Failed to load robust circuit: {e}'}
+
+    quantumnas_circuit = None
+    if quantum_nas_circuit_path:
+        try:
+            quantumnas_circuit = load_circuit(quantum_nas_circuit_path)
+            log(f"Loaded QuantumNAS circuit with {len(list(quantumnas_circuit.all_operations()))} operations")
+        except Exception as e:
+            log(f"WARNING: Failed to load QuantumNAS circuit: {e}")
+            quantumnas_circuit = None
     
     # Get target state using central config
     target_state = config.get_target_state(n_qubits)
@@ -310,9 +320,11 @@ def run_cross_noise_robustness(
         return fidelity_pure_target(circ, target_state, qs) if qs else 0.0
     baseline_clean_fid = clean_fid(baseline_circuit)
     robust_clean_fid = clean_fid(robust_circuit)
-    clean_reference = max(baseline_clean_fid, robust_clean_fid)
-    log(f"Clean fidelities — baseline: {baseline_clean_fid:.4f}, robust: {robust_clean_fid:.4f}; "
-        f"using shared reference {clean_reference:.4f}")
+    qnas_clean_fid = clean_fid(quantumnas_circuit) if quantumnas_circuit is not None else None
+    clean_reference = max([fid for fid in [baseline_clean_fid, robust_clean_fid, qnas_clean_fid] if fid is not None])
+    log(f"Clean fidelities — baseline: {baseline_clean_fid:.4f}, robust: {robust_clean_fid:.4f}"
+        + (f", quantumnas: {qnas_clean_fid:.4f}" if qnas_clean_fid is not None else "")
+        + f"; using shared reference {clean_reference:.4f}")
     
     # === Over-rotation sweep ===
     log(f"\n--- Over-rotation sweep (ε ∈ [{epsilon_range[0]}, {epsilon_range[1]}]) ---")
@@ -334,11 +346,13 @@ def run_cross_noise_robustness(
     # === Asymmetric noise evaluation ===
     px_values = p_x_asymmetric if isinstance(p_x_asymmetric, (list, tuple)) else [p_x_asymmetric]
     asymmetric_results = []
+    asymmetric_qnas = []
     log(f"\n--- Asymmetric Pauli noise sweep (p_x in {px_values}, p_y=0.0, p_z=0.0) ---")
     for px in px_values:
         # Optionally add tiny stochastic jitter to reflect seeds
         baseline_ret = []
         robust_ret = []
+        qnas_ret = []
         for _ in range(effective_n_seeds):
             b_res = run_asymmetric_noise_evaluation(
                 baseline_circuit, target_state, p_x=px, p_y=0.0, p_z=0.0,
@@ -350,16 +364,28 @@ def run_cross_noise_robustness(
             )
             baseline_ret.append(b_res)
             robust_ret.append(r_res)
+            if quantumnas_circuit is not None:
+                q_res = run_asymmetric_noise_evaluation(
+                    quantumnas_circuit, target_state, p_x=px, p_y=0.0, p_z=0.0,
+                    clean_reference=clean_reference
+                )
+                qnas_ret.append(q_res)
         baseline_mean = float(np.mean([x['retention_ratio'] for x in baseline_ret]))
         robust_mean = float(np.mean([x['retention_ratio'] for x in robust_ret]))
-        log(f"p_x={px:.3f} | Baseline retention: {baseline_mean:.4f} | Robust retention: {robust_mean:.4f}")
+        qnas_mean = float(np.mean([x['retention_ratio'] for x in qnas_ret])) if qnas_ret else None
+        log(f"p_x={px:.3f} | Baseline retention: {baseline_mean:.4f} | Robust retention: {robust_mean:.4f}"
+            + (f" | QuantumNAS retention: {qnas_mean:.4f}" if qnas_mean is not None else ""))
         asymmetric_results.append({
             'p_x': px,
             'baseline': baseline_ret,
             'robust': robust_ret,
             'baseline_mean': baseline_mean,
             'robust_mean': robust_mean,
+            'quantumnas': qnas_ret if qnas_ret else None,
+            'quantumnas_mean': qnas_mean,
         })
+        if qnas_ret:
+            asymmetric_qnas.append(qnas_ret)
     
     # === Compile results ===
     all_results = {
@@ -368,6 +394,7 @@ def run_cross_noise_robustness(
             'n_qubits': n_qubits,
             'baseline_circuit_path': baseline_circuit_path,
             'robust_circuit_path': robust_circuit_path,
+            'quantumnas_circuit_path': quantum_nas_circuit_path,
             'epsilon_range': list(epsilon_range),
             'n_epsilon_points': n_epsilon_points,
             'p_x_asymmetric': p_x_asymmetric,
@@ -383,6 +410,7 @@ def run_cross_noise_robustness(
             'epsilon_values': epsilon_values.tolist(),
             'baseline': baseline_over_rotation_results,
             'robust': robust_over_rotation_results,
+            'quantumnas': None,  # filled below if available
         },
         'asymmetric_noise': asymmetric_results,
         'summary': {
@@ -390,13 +418,24 @@ def run_cross_noise_robustness(
             'robust_over_rotation_avg_retention': float(robust_retention_avg),
             'baseline_asymmetric_retention': asymmetric_results[0]['baseline_mean'],
             'robust_asymmetric_retention': asymmetric_results[0]['robust_mean'],
+            'quantumnas_asymmetric_retention': asymmetric_results[0].get('quantumnas_mean'),
         },
         'clean_fidelity': {
             'baseline': float(baseline_clean_fid),
             'robust': float(robust_clean_fid),
+            'quantumnas': float(qnas_clean_fid) if qnas_clean_fid is not None else None,
             'reference_used': float(clean_reference),
         },
     }
+
+    # Optional: over-rotation for QuantumNAS
+    if quantumnas_circuit is not None:
+        qnas_over_rotation_results = run_over_rotation_sweep(
+            quantumnas_circuit, target_state, epsilon_values, clean_reference=clean_reference
+        )
+        all_results['over_rotation']['quantumnas'] = qnas_over_rotation_results
+        qnas_retention_avg = np.mean([r['retention_ratio'] for r in qnas_over_rotation_results])
+        all_results['summary']['quantumnas_over_rotation_avg_retention'] = float(qnas_retention_avg)
     
     # === Save results JSON ===
     results_json_path = os.path.join(results_subdir, 'cross_noise_results.json')
@@ -410,7 +449,8 @@ def run_cross_noise_robustness(
     colors = {
         "baseline": "#2ecc71",
         "robust": "#e67e22",
-        "bars": ["#2ecc71", "#e67e22"],
+        "quantumnas": "#2c7fb8",
+        "bars": ["#2ecc71", "#e67e22", "#2c7fb8"],
     }
     
     # Left plot: Fidelity retention ratio vs epsilon
@@ -419,23 +459,33 @@ def run_cross_noise_robustness(
     robust_retentions = [r['retention_ratio'] for r in robust_over_rotation_results]
     baseline_noisy = [r['noisy_fidelity'] for r in baseline_over_rotation_results]
     robust_noisy = [r['noisy_fidelity'] for r in robust_over_rotation_results]
+    qnas_retentions = [r['retention_ratio'] for r in qnas_over_rotation_results] if qnas_over_rotation_results else None
+    qnas_noisy = [r['noisy_fidelity'] for r in qnas_over_rotation_results] if qnas_over_rotation_results else None
     
     ax1.plot(epsilon_values, baseline_retentions, marker='o', linestyle='-', color=colors["baseline"],
              label='Baseline', markersize=4)
     ax1.plot(epsilon_values, robust_retentions, marker='s', linestyle='-', color=colors["robust"],
              label='Robust', markersize=4)
+    if qnas_retentions is not None:
+        ax1.plot(epsilon_values, qnas_retentions, marker='^', linestyle='-', color=colors["quantumnas"],
+                 label='QuantumNAS', markersize=4)
     ax1.set_xlabel('Over-rotation ε (radians)')
     ax1.set_ylabel('Fidelity Retention Ratio (F_noisy / F_clean)')
     ax1.set_title(f'Over-rotation Robustness (n_ε={n_epsilon_points})')
     ax1.legend()
     ax1.grid(True, alpha=0.3)
     ax1.set_ylim(0, 1.05)
-    ax1.text(
-        0.68, 0.15,
-        f"Clean ref: {clean_reference:.4f}\n"
-        f"ε_max={epsilon_values[-1]:.3f}\n"
-        f"Baseline noisy: {baseline_noisy[-1]:.3f}\n"
+    info_lines = [
+        f"Clean ref: {clean_reference:.4f}",
+        f"ε_max={epsilon_values[-1]:.3f}",
+        f"Baseline noisy: {baseline_noisy[-1]:.3f}",
         f"Robust noisy: {robust_noisy[-1]:.3f}",
+    ]
+    if qnas_noisy is not None:
+        info_lines.append(f"QNAS noisy: {qnas_noisy[-1]:.3f}")
+    ax1.text(
+        0.65, 0.10,
+        "\n".join(info_lines),
         transform=ax1.transAxes,
         fontsize=9,
         bbox=dict(boxstyle='round,pad=0.35', fc='white', alpha=0.85)
@@ -449,7 +499,10 @@ def run_cross_noise_robustness(
         first_asym['baseline_mean'],
         first_asym['robust_mean'],
     ]
-    bars = ax2.bar(circuit_types, retention_values, color=colors["bars"])
+    if first_asym.get('quantumnas_mean') is not None:
+        circuit_types.append('QuantumNAS')
+        retention_values.append(first_asym['quantumnas_mean'])
+    bars = ax2.bar(circuit_types, retention_values, color=colors["bars"][:len(circuit_types)])
     ax2.set_ylabel('Fidelity Retention Ratio')
     ax2.set_title(f"Asymmetric Pauli Noise (p_x={first_asym['p_x']})")
     ax2.set_ylim(0, 1.05)
@@ -484,17 +537,25 @@ def run_cross_noise_robustness(
         f.write(f"  Number of qubits: {n_qubits}\n")
         f.write(f"  Baseline circuit: {baseline_circuit_path}\n")
         f.write(f"  Robust circuit: {robust_circuit_path}\n")
+        if quantum_nas_circuit_path:
+            f.write(f"  QuantumNAS circuit: {quantum_nas_circuit_path}\n")
         f.write(f"  Epsilon range: {epsilon_range}\n")
         f.write(f"  Asymmetric p_x: {px_values}\n")
         f.write(f"  Clean fidelity (baseline): {baseline_clean_fid:.4f}\n")
         f.write(f"  Clean fidelity (robust):   {robust_clean_fid:.4f}\n")
+        if qnas_clean_fid is not None:
+            f.write(f"  Clean fidelity (quantumnas): {qnas_clean_fid:.4f}\n")
         f.write(f"  Retention normalized by:   {clean_reference:.4f}\n\n")
         
         f.write("Over-rotation Test (ε ∈ [0, 0.1]):\n")
         f.write("-" * 40 + "\n")
         f.write(f"  Baseline avg retention: {baseline_retention_avg:.4f}\n")
         f.write(f"  Robust avg retention: {robust_retention_avg:.4f}\n")
-        f.write(f"  Improvement: {(robust_retention_avg - baseline_retention_avg):.4f}\n\n")
+        f.write(f"  Improvement: {(robust_retention_avg - baseline_retention_avg):.4f}\n")
+        if quantumnas_circuit is not None and 'quantumnas_over_rotation_avg_retention' in all_results['summary']:
+            qnas_avg = all_results['summary']['quantumnas_over_rotation_avg_retention']
+            f.write(f"  QuantumNAS avg retention: {qnas_avg:.4f}\n")
+        f.write("\n")
         
         f.write(f"Asymmetric Pauli Noise sweep (p_x in {px_values}):\n")
         f.write("-" * 40 + "\n")
@@ -546,6 +607,10 @@ if __name__ == "__main__":
         help='Path to the robust circuit JSON file'
     )
     parser.add_argument(
+        '--quantumnas-circuit', type=str, default=None,
+        help='Optional: Path to QuantumNAS circuit JSON file'
+    )
+    parser.add_argument(
         '--output-dir', type=str, default='results/cross_noise',
         help='Directory to save results (default: results/cross_noise)'
     )
@@ -574,5 +639,6 @@ if __name__ == "__main__":
         n_qubits=args.n_qubits,
         epsilon_range=(0.0, args.epsilon_max),
         n_epsilon_points=args.n_epsilon_points,
-        p_x_asymmetric=args.p_x_asymmetric
+        p_x_asymmetric=args.p_x_asymmetric,
+        quantum_nas_circuit_path=args.quantumnas_circuit
     )

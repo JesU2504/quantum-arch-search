@@ -216,6 +216,11 @@ def summarize_robustness(base_dir: str, analysis_dir: str, max_samples: int, log
         run_label = str(path.relative_to(base_path).parts[0]) if path.relative_to(base_path).parts else ""
         circuit_entries.append({"group": "adversarial", "run": run_label, "seed": seed_label, "path": path})
 
+    # QuantumNAS baseline (if produced)
+    for path in base_path.glob("**/quantumnas/circuit_quantumnas.json"):
+        run_label = str(path.relative_to(base_path).parts[0]) if path.relative_to(base_path).parts else ""
+        circuit_entries.append({"group": "quantumnas", "run": run_label, "seed": None, "path": path})
+
     rows = []
     for entry in sorted(circuit_entries, key=lambda e: (e["group"], e.get("run", ""), str(e.get("seed")), str(e["path"]))):
         path = entry["path"]
@@ -384,6 +389,128 @@ def run_pipeline(args):
         )
     else:
         logger.info('Skipping baseline as requested')
+
+    # 1b) QuantumNAS baseline (experimental scaffold; off by default)
+    quantumnas_dir = os.path.join(base, 'quantumnas')
+    os.makedirs(quantumnas_dir, exist_ok=True)
+    if getattr(args, "run_quantumnas", False):
+        logger.info('Running QuantumNAS baseline')
+        circuit_path = None
+        try:
+            import subprocess
+            # Priority: import external circuit if provided
+            if args.quantumnas_qasm or args.quantumnas_op_history:
+                logger.info('Importing external QuantumNAS circuit')
+                import_path = None
+                if args.quantumnas_qasm:
+                    import_path = Path(args.quantumnas_qasm).expanduser().resolve()
+                elif args.quantumnas_op_history:
+                    op_path = Path(args.quantumnas_op_history).expanduser().resolve()
+                    try:
+                        from experiments.export_tq_op_history import main as export_op_history_main
+                        # Reuse export script logic via subprocess-like call
+                        import sys as _sys
+                        _argv_backup = list(_sys.argv)
+                        _sys.argv = [
+                            "export_tq_op_history",
+                            "--op-history",
+                            str(op_path),
+                            "--qasm-out",
+                            str(op_path.with_suffix(".qasm")),
+                            "--cirq-out",
+                            str(op_path.with_suffix(".json")),
+                        ]
+                        export_op_history_main()
+                        import_path = op_path.with_suffix(".qasm")
+                        _sys.argv = _argv_backup
+                    except Exception as exc:
+                        logger.error("Failed to convert op_history %s: %s", op_path, exc)
+                        import_path = None
+
+                if import_path and import_path.exists():
+                    from utils.torchquantum_adapter import convert_qasm_file_to_cirq
+                    cirq_out = Path(quantumnas_dir) / "circuit_quantumnas.json"
+                    convert_qasm_file_to_cirq(import_path, cirq_out)
+                    circuit_path = cirq_out
+                    logger.info("Imported QuantumNAS circuit from %s -> %s", import_path, cirq_out)
+                else:
+                    logger.error("No valid QASM/op_history provided for QuantumNAS import.")
+            else:
+                # Run simple TorchQuantum trainer to produce a circuit from scratch
+                task = 'ghz' if exp_config.TARGET_TYPE.lower() == 'ghz' else 'toffoli'
+                epochs_default = 200 if task == 'ghz' else 800
+                depth_default = 3 if task == 'ghz' else 8
+                epochs = args.quantumnas_simple_epochs or epochs_default
+                depth = args.quantumnas_simple_depth or depth_default
+                lr = args.quantumnas_simple_lr
+                logger.info('Running simple TorchQuantum baseline (task=%s, epochs=%d, depth=%d, lr=%.4f)', task, epochs, depth, lr)
+                result = subprocess.run(
+                    [
+                        'python', 'experiments/tq_train_simple_baseline.py',
+                        '--task', task,
+                        '--epochs', str(epochs),
+                        '--lr', str(lr),
+                        '--depth', str(depth),
+                        '--out-dir', quantumnas_dir,
+                    ],
+                    capture_output=True,
+                    text=True,
+                )
+                if result.stdout:
+                    logger.info(result.stdout.strip())
+                if result.stderr and result.stderr.strip():
+                    logger.warning(result.stderr.strip())
+                expected = Path(quantumnas_dir) / "circuit_quantumnas.json"
+                if expected.exists():
+                    circuit_path = expected
+        except Exception as e:
+            logger.error('QuantumNAS baseline failed: %s', e)
+        if circuit_path:
+            logger.info('QuantumNAS circuit saved to %s', circuit_path)
+        else:
+            logger.warning('QuantumNAS baseline did not produce a circuit. See logs for details.')
+    else:
+        logger.info('Skipping QuantumNAS baseline (disabled by default)')
+
+    # 1c) Import external QuantumNAS circuit from QASM or op_history
+    if args.quantumnas_qasm or args.quantumnas_op_history:
+        logger.info('Importing external QuantumNAS circuit')
+        try:
+            import_path = None
+            if args.quantumnas_qasm:
+                import_path = Path(args.quantumnas_qasm).expanduser().resolve()
+            elif args.quantumnas_op_history:
+                op_path = Path(args.quantumnas_op_history).expanduser().resolve()
+                try:
+                    from experiments.export_tq_op_history import main as export_op_history_main
+                    # Reuse export script logic via subprocess-like call
+                    import sys as _sys
+                    _argv_backup = list(_sys.argv)
+                    _sys.argv = [
+                        "export_tq_op_history",
+                        "--op-history",
+                        str(op_path),
+                        "--qasm-out",
+                        str(op_path.with_suffix(".qasm")),
+                        "--cirq-out",
+                        str(op_path.with_suffix(".json")),
+                    ]
+                    export_op_history_main()
+                    import_path = op_path.with_suffix(".qasm")
+                    _sys.argv = _argv_backup
+                except Exception as exc:
+                    logger.error("Failed to convert op_history %s: %s", op_path, exc)
+                    import_path = None
+
+            if import_path and import_path.exists():
+                from utils.torchquantum_adapter import convert_qasm_file_to_cirq
+                cirq_out = Path(quantumnas_dir) / "circuit_quantumnas.json"
+                convert_qasm_file_to_cirq(import_path, cirq_out)
+                logger.info("Imported QuantumNAS circuit from %s -> %s", import_path, cirq_out)
+            else:
+                logger.error("No valid QASM/op_history provided for QuantumNAS import.")
+        except Exception as exc:
+            logger.error("QuantumNAS import failed: %s", exc)
 
     # 1.5) Lambda Sweep
     lambda_sweep_dir = os.path.join(base, 'lambda_sweep')
@@ -566,6 +693,18 @@ def run_pipeline(args):
 
     # 5) Compare
     if not args.skip_compare:
+        # Copy QuantumNAS circuit into compare runs before analysis
+        qnas_circuit = Path(quantumnas_dir) / "circuit_quantumnas.json"
+        if qnas_circuit.exists():
+            try:
+                for run_dir in compare_runs:
+                    target_path = Path(run_dir) / "circuit_quantumnas.json"
+                    target_path.parent.mkdir(parents=True, exist_ok=True)
+                    target_path.write_text(qnas_circuit.read_text())
+                logger.info("QuantumNAS circuit copied into compare runs for analysis.")
+            except Exception as exc:
+                logger.error("Failed to copy QuantumNAS circuit into compare runs: %s", exc)
+
         logger.info('Running comparison across runs')
         compare_noise_resilience(
             base_results_dir=compare_base,
@@ -580,11 +719,13 @@ def run_pipeline(args):
         if os.path.exists(vanilla_src):
             logger.info('Running parameter recovery experiment')
             robust_to_use = robust_for_downstream if (robust_for_downstream and os.path.exists(robust_for_downstream)) else vanilla_src
+            quantumnas_circuit = os.path.join(compare_runs[0], 'circuit_quantumnas.json') if compare_runs else None
             run_parameter_recovery(
                 results_dir=param_recovery_dir,
                 n_qubits=args.n_qubits,
                 baseline_circuit_path=vanilla_src,
                 robust_circuit_path=robust_to_use,
+                quantumnas_circuit_path=quantumnas_circuit if (quantumnas_circuit and os.path.exists(quantumnas_circuit)) else None,
                 n_repetitions=effective_n_seeds,
                 base_seed=base_seed,
                 logger=logger
@@ -598,6 +739,7 @@ def run_pipeline(args):
         first_run = compare_runs[0] if compare_runs else os.path.join(compare_base, 'run_0')
         vanilla_circuit_path = os.path.join(first_run, 'circuit_vanilla.json')
         robust_circuit_path = os.path.join(first_run, 'circuit_robust.json')
+        quantumnas_circuit_path = os.path.join(first_run, 'circuit_quantumnas.json')
         if os.path.exists(vanilla_circuit_path) and os.path.exists(robust_circuit_path):
             logger.info('Running cross-noise robustness experiment')
             run_cross_noise_robustness(
@@ -605,6 +747,7 @@ def run_pipeline(args):
                 robust_circuit_path=robust_circuit_path,
                 output_dir=cross_noise_dir,
                 n_qubits=args.n_qubits,
+                quantum_nas_circuit_path=quantumnas_circuit_path if os.path.exists(quantumnas_circuit_path) else None,
                 logger=logger
             )
 
@@ -652,6 +795,27 @@ def parse_args():
     )
     p.add_argument('--attack-samples', type=int, default=3000,
                    help='Max attack placements sampled per circuit when computing robustness summaries')
+    # Experimental: QuantumNAS baseline scaffold (off by default)
+    p.add_argument('--run-quantumnas', action='store_true',
+                   help='Run the QuantumNAS baseline scaffold (placeholder implementation).')
+    p.add_argument('--quantumnas-steps', type=int, default=None,
+                   help='Override QuantumNAS optimization steps (defaults to baseline architect steps).')
+    p.add_argument('--quantumnas-learning-rate', type=float, default=3e-4)
+    p.add_argument('--quantumnas-batch-size', type=int, default=256)
+    p.add_argument('--quantumnas-temp-start', type=float, default=5.0)
+    p.add_argument('--quantumnas-temp-end', type=float, default=0.5)
+    p.add_argument('--quantumnas-noise-rate', type=float, default=None,
+                   help='Optional depolarizing rate during QuantumNAS training.')
+    p.add_argument('--quantumnas-qasm', type=str, default=None,
+                   help='Path to an external QuantumNAS QASM file to import as circuit_quantumnas.json.')
+    p.add_argument('--quantumnas-op-history', type=str, default=None,
+                   help='Path to a TorchQuantum op_history (json/pt) to convert and import as circuit_quantumnas.json.')
+    p.add_argument('--quantumnas-simple-epochs', type=int, default=None,
+                   help='Epochs for the simple TorchQuantum baseline (default: 200 GHZ, 800 Toffoli).')
+    p.add_argument('--quantumnas-simple-depth', type=int, default=None,
+                   help='Depth (rotation+CNOT layers) for the simple TorchQuantum baseline (default: 3 GHZ, 8 Toffoli).')
+    p.add_argument('--quantumnas-simple-lr', type=float, default=0.05,
+                   help='Learning rate for the simple TorchQuantum baseline.')
     return p.parse_args()
 
 

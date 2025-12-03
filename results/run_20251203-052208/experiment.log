@@ -1,3 +1,10 @@
 2025-12-03 05:22:08,208 INFO: Loading experimental parameters for 3 qubits from config.py
 2025-12-03 05:22:08,208 INFO: Starting pipeline with metadata: {'timestamp': '20251203-052208', 'n_qubits': 3, 'baseline_steps': 180000, 'saboteur_steps': 61440, 'adversarial_gens': 15, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
 2025-12-03 05:22:08,209 INFO: Running baseline architect (noiseless)
+2025-12-03 06:08:47,254 INFO: Skipping lambda sweep as requested
+2025-12-03 06:08:47,255 INFO: Running saboteur-only (attacks baseline circuit)
+2025-12-03 06:21:26,935 INFO: Running adversarial co-evolution for 5 seeds (15 generations each)
+2025-12-03 06:21:26,935 INFO: Adversarial training: seed index 0 (global seed=2042)
+2025-12-03 06:21:26,935 INFO: Setting global seed = 2042
+2025-12-03 07:24:09,307 INFO: Adversarial training: seed index 1 (global seed=2043)
+2025-12-03 07:24:09,307 INFO: Setting global seed = 2043

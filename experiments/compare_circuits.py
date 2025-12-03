@@ -194,6 +194,7 @@ def compare_noise_resilience(
 
     all_metrics_vanilla = []
     all_metrics_robust = []
+    all_metrics_qnas = []
     all_samples = []
 
     # Attack policy: prefer a trained saboteur; otherwise fall back to the strongest error level.
@@ -215,11 +216,18 @@ def compare_noise_resilience(
         log(f"\nProcessing Run {i+1}/{num_runs} from {run_dir}")
         vanilla_circuit_file = os.path.join(run_dir, "circuit_vanilla.json")
         robust_circuit_file = os.path.join(run_dir, "circuit_robust.json")
+        quantumnas_circuit_file = os.path.join(run_dir, "circuit_quantumnas.json")
 
         try:
             from qas_gym.utils import load_circuit
             circuit_vanilla = load_circuit(vanilla_circuit_file)
             circuit_robust = load_circuit(robust_circuit_file)
+            circuit_qnas = None
+            if os.path.exists(quantumnas_circuit_file):
+                try:
+                    circuit_qnas = load_circuit(quantumnas_circuit_file)
+                except Exception as exc:
+                    log(f"  Warning: Failed to load QuantumNAS circuit in {run_dir}: {exc}")
         except FileNotFoundError as e:
             log(f"  Warning: Could not find circuit files in {run_dir}. Skipping run. Error: {e}")
             continue
@@ -243,6 +251,16 @@ def compare_noise_resilience(
             all_samples.append([i, "vanilla", val])
         for val in metrics_r["samples"]:
             all_samples.append([i, "robust", val])
+        if circuit_qnas is not None:
+            metrics_q = evaluate_multi_gate_attacks(
+                circuit_qnas, saboteur_agent, target_state, n_qubits,
+                samples=samples, fallback_error_idx=fallback_error_idx,
+                saboteur_budget=saboteur_budget, rng=rng, attack_mode=attack_mode
+            )
+            metrics_q["circuit_path"] = quantumnas_circuit_file
+            all_metrics_qnas.append(metrics_q)
+            for val in metrics_q["samples"]:
+                all_samples.append([i, "quantumnas", val])
 
     # Compute aggregated statistics across runs
     if all_metrics_vanilla and all_metrics_robust:
@@ -250,17 +268,23 @@ def compare_noise_resilience(
         vanilla_stds = [m["std_attacked"] for m in all_metrics_vanilla]
         robust_means = [m["mean_attacked"] for m in all_metrics_robust]
         robust_stds = [m["std_attacked"] for m in all_metrics_robust]
+        qnas_means = [m["mean_attacked"] for m in all_metrics_qnas] if all_metrics_qnas else []
+        qnas_stds = [m["std_attacked"] for m in all_metrics_qnas] if all_metrics_qnas else []
         
         # Aggregate across runs
         vanilla_overall = aggregate_metrics(vanilla_means)
         robust_overall = aggregate_metrics(robust_means)
+        qnas_overall = aggregate_metrics(qnas_means) if qnas_means else None
         
         log(f"\nOverall Statistics (n={len(vanilla_means)} runs, {samples} samples each):")
         log(f"  Vanilla: {format_metric_with_error(vanilla_overall['mean'], vanilla_overall['std'], vanilla_overall['n'])}")
         log(f"  Robust:  {format_metric_with_error(robust_overall['mean'], robust_overall['std'], robust_overall['n'])}")
+        if qnas_overall:
+            log(f"  QuantumNAS: {format_metric_with_error(qnas_overall['mean'], qnas_overall['std'], qnas_overall['n'])}")
     else:
         vanilla_overall = None
         robust_overall = None
+        qnas_overall = None
 
     # Save results to JSON with statistical info
     results_data = {
@@ -276,12 +300,14 @@ def compare_noise_resilience(
         },
         "vanilla": all_metrics_vanilla,
         "robust": all_metrics_robust,
+        "quantumnas": all_metrics_qnas,
     }
     
     if vanilla_overall and robust_overall:
         results_data["aggregated"] = {
             "vanilla": vanilla_overall,
             "robust": robust_overall,
+            "quantumnas": qnas_overall,
         }
     
     with open(summary_json, "w") as f:
@@ -302,6 +328,8 @@ def compare_noise_resilience(
             stds_v = [m["std_attacked"] for m in all_metrics_vanilla]
             means_r = [m["mean_attacked"] for m in all_metrics_robust]
             stds_r = [m["std_attacked"] for m in all_metrics_robust]
+            means_q = [m["mean_attacked"] for m in all_metrics_qnas] if all_metrics_qnas else []
+            stds_q = [m["std_attacked"] for m in all_metrics_qnas] if all_metrics_qnas else []
 
             labels = [f"Run {i+1}" for i in range(len(means_v))]
             # Append aggregated mean/std if available so the plot shows both per-run values and the average.
@@ -311,45 +339,33 @@ def compare_noise_resilience(
                 stds_v.append(vanilla_overall["std"])
                 means_r.append(robust_overall["mean"])
                 stds_r.append(robust_overall["std"])
+                if qnas_overall:
+                    means_q.append(qnas_overall["mean"])
+                    stds_q.append(qnas_overall["std"])
 
-            x = np.arange(len(means_v))
-            width = 0.35
+            x = np.arange(len(labels))
+            width = 0.25
 
-            fig, ax = plt.subplots(figsize=(10, 6))
+            fig, ax = plt.subplots(figsize=(12, 6))
 
-            # Bar plot with error bars
-            bars_v = ax.bar(x - width/2, means_v, width, yerr=stds_v,
-                           label="Vanilla", color="tab:blue", capsize=5, alpha=0.8)
-            bars_r = ax.bar(x + width/2, means_r, width, yerr=stds_r,
-                           label="Robust", color="tab:orange", capsize=5, alpha=0.8)
+            bars = []
+            bars.append(ax.bar(x - width, means_v, width, yerr=stds_v,
+                               label="Vanilla", color="tab:blue", capsize=5, alpha=0.8))
+            bars.append(ax.bar(x, means_r, width, yerr=stds_r,
+                               label="Robust", color="tab:orange", capsize=5, alpha=0.8))
+            if means_q:
+                bars.append(ax.bar(x + width, means_q, width, yerr=stds_q,
+                                   label="QuantumNAS", color="tab:green", capsize=5, alpha=0.8))
 
             ax.set_ylabel("Mean Attacked Fidelity")
-            ax.set_title(f"Robustness Comparison: Vanilla vs Robust Circuits\n(n={samples} attack samples per circuit, error bars: ±1 std)")
+            ax.set_title(f"Robustness Comparison: Vanilla vs Robust vs QuantumNAS\n(n={samples} attack samples per circuit, error bars: ±1 std)")
             ax.set_xticks(x)
             ax.set_xticklabels(labels)
             ax.legend()
             ax.grid(True, alpha=0.3, axis='y')
 
-            # Show absolute/relative improvement above each pair of bars
-            max_height = max(means_v + means_r) if (means_v and means_r) else 1.0
+            max_height = max(means_v + means_r + (means_q if means_q else [0]))
             ax.set_ylim(0, max(1.05, max_height + 0.1))
-            for xi, mv, mr, lbl in zip(x, means_v, means_r, labels):
-                delta = mr - mv
-                pct = (delta / mv * 100.0) if mv > 1e-9 else float("nan")
-                txt = f"{delta:+.3f}"
-                if not np.isnan(pct):
-                    txt += f" ({pct:+.1f}%)"
-                fontweight = "bold" if lbl.lower() == "mean" else "normal"
-                ax.text(
-                    xi,
-                    max(mv, mr) + 0.02,
-                    txt,
-                    ha="center",
-                    va="bottom",
-                    fontsize=9,
-                    fontweight=fontweight,
-                    color="black",
-                )
 
             plt.tight_layout()
             out_path = os.path.join(base_results_dir, "robustness_comparison.png")
@@ -371,6 +387,8 @@ def compare_noise_resilience(
             "vanilla_fidelity": vanilla_overall,
             "robust_fidelity": robust_overall,
         }
+        if qnas_overall:
+            aggregated_results["quantumnas_fidelity"] = qnas_overall
         
         summary = create_experiment_summary(
             experiment_name="circuit_robustness_comparison",
