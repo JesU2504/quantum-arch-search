@@ -66,8 +66,9 @@ def apply_over_rotation(circuit: cirq.Circuit, epsilon: float) -> cirq.Circuit:
     """
     Apply coherent over-rotation error to all single-qubit gates in the circuit.
     
-    For every single-qubit gate in the circuit (H, X, Y, Z, S, T, rotations, etc.),
-    we add an additional Rx(epsilon) after the gate to simulate coherent control errors.
+    For every gate in the circuit, add an additional Rx(epsilon) on each qubit
+    involved to simulate coherent control errors. Applying to all qubits (even
+    multi-qubit gates) increases severity so differences are more visible.
     
     Args:
         circuit: The original circuit.
@@ -79,9 +80,8 @@ def apply_over_rotation(circuit: cirq.Circuit, epsilon: float) -> cirq.Circuit:
     new_ops = []
     for op in circuit.all_operations():
         new_ops.append(op)
-        # Apply over-rotation error to all single-qubit gates
-        if len(op.qubits) == 1:
-            new_ops.append(cirq.rx(epsilon).on(op.qubits[0]))
+        for q in op.qubits:
+            new_ops.append(cirq.rx(epsilon).on(q))
     return cirq.Circuit(new_ops)
 
 
@@ -119,15 +119,20 @@ def compute_fidelity_retention_ratio(
     circuit: cirq.Circuit,
     target_state: np.ndarray,
     noise_fn,
+    clean_reference: float | None = None,
     **noise_kwargs
 ) -> dict:
     """
-    Compute the fidelity retention ratio: F_noisy / F_clean.
+    Compute the fidelity retention ratio using a shared clean reference.
     
     Args:
         circuit: The circuit to evaluate.
         target_state: The target quantum state.
         noise_fn: A function that applies noise to the circuit.
+        clean_reference: Optional clean fidelity to normalize by. If None, uses the
+            circuit's own clean fidelity. Supplying a shared reference across
+            circuits avoids inflating retention when one circuit has a lower
+            clean fidelity.
         **noise_kwargs: Additional arguments to pass to noise_fn.
         
     Returns:
@@ -137,20 +142,22 @@ def compute_fidelity_retention_ratio(
     
     # Compute clean fidelity
     clean_fidelity = fidelity_pure_target(circuit, target_state, qubits)
+    clean_ref = clean_reference if clean_reference is not None else clean_fidelity
     
     # Apply noise and compute noisy fidelity
     noisy_circuit = noise_fn(circuit, **noise_kwargs)
     noisy_fidelity = fidelity_pure_target(noisy_circuit, target_state, qubits)
     
     # Compute retention ratio (avoid division by zero) and clamp to [0, 1]
-    if clean_fidelity > 1e-10:
-        retention_ratio = noisy_fidelity / clean_fidelity
+    if clean_ref > 1e-10:
+        retention_ratio = noisy_fidelity / clean_ref
     else:
         retention_ratio = 0.0
     retention_ratio = min(1.0, retention_ratio)
     
     return {
         'clean_fidelity': float(clean_fidelity),
+        'clean_reference': float(clean_ref),
         'noisy_fidelity': float(noisy_fidelity),
         'retention_ratio': float(retention_ratio)
     }
@@ -159,7 +166,8 @@ def compute_fidelity_retention_ratio(
 def run_over_rotation_sweep(
     circuit: cirq.Circuit,
     target_state: np.ndarray,
-    epsilon_values: np.ndarray
+    epsilon_values: np.ndarray,
+    clean_reference: float | None = None
 ) -> list:
     """
     Run over-rotation sweep on a circuit.
@@ -168,6 +176,7 @@ def run_over_rotation_sweep(
         circuit: The circuit to evaluate.
         target_state: The target quantum state.
         epsilon_values: Array of over-rotation angles to test.
+        clean_reference: Optional shared clean fidelity to normalize retention.
         
     Returns:
         List of results for each epsilon value.
@@ -175,7 +184,7 @@ def run_over_rotation_sweep(
     results = []
     for epsilon in epsilon_values:
         result = compute_fidelity_retention_ratio(
-            circuit, target_state, apply_over_rotation, epsilon=epsilon
+            circuit, target_state, apply_over_rotation, clean_reference=clean_reference, epsilon=epsilon
         )
         result['epsilon'] = float(epsilon)
         results.append(result)
@@ -187,7 +196,8 @@ def run_asymmetric_noise_evaluation(
     target_state: np.ndarray,
     p_x: float = 0.05,
     p_y: float = 0.0,
-    p_z: float = 0.0
+    p_z: float = 0.0,
+    clean_reference: float | None = None
 ) -> dict:
     """
     Evaluate circuit under asymmetric Pauli noise.
@@ -198,12 +208,14 @@ def run_asymmetric_noise_evaluation(
         p_x: Probability of X error.
         p_y: Probability of Y error.
         p_z: Probability of Z error.
+        clean_reference: Optional shared clean fidelity to normalize retention.
         
     Returns:
         Dict with evaluation results.
     """
     result = compute_fidelity_retention_ratio(
         circuit, target_state, apply_asymmetric_pauli_noise,
+        clean_reference=clean_reference,
         p_x=p_x, p_y=p_y, p_z=p_z
     )
     result['p_x'] = p_x
@@ -217,7 +229,7 @@ def run_cross_noise_robustness(
     robust_circuit_path: str,
     output_dir: str,
     n_qubits: int,
-    epsilon_range: tuple = (0.0, 0.1),
+    epsilon_range: tuple = (0.0, 0.2),
     n_epsilon_points: int = 20,
     p_x_asymmetric: float | list = 0.05,
     n_seeds: int = None,
@@ -292,16 +304,25 @@ def run_cross_noise_robustness(
     
     # Get target state using central config
     target_state = config.get_target_state(n_qubits)
+    # Shared clean reference to prevent inflated retention for lower-fidelity circuits
+    def clean_fid(circ):
+        qs = sorted(list(circ.all_qubits()))
+        return fidelity_pure_target(circ, target_state, qs) if qs else 0.0
+    baseline_clean_fid = clean_fid(baseline_circuit)
+    robust_clean_fid = clean_fid(robust_circuit)
+    clean_reference = max(baseline_clean_fid, robust_clean_fid)
+    log(f"Clean fidelities — baseline: {baseline_clean_fid:.4f}, robust: {robust_clean_fid:.4f}; "
+        f"using shared reference {clean_reference:.4f}")
     
     # === Over-rotation sweep ===
     log(f"\n--- Over-rotation sweep (ε ∈ [{epsilon_range[0]}, {epsilon_range[1]}]) ---")
     epsilon_values = np.linspace(epsilon_range[0], epsilon_range[1], n_epsilon_points)
     
     baseline_over_rotation_results = run_over_rotation_sweep(
-        baseline_circuit, target_state, epsilon_values
+        baseline_circuit, target_state, epsilon_values, clean_reference=clean_reference
     )
     robust_over_rotation_results = run_over_rotation_sweep(
-        robust_circuit, target_state, epsilon_values
+        robust_circuit, target_state, epsilon_values, clean_reference=clean_reference
     )
     
     # Log summary
@@ -320,15 +341,13 @@ def run_cross_noise_robustness(
         robust_ret = []
         for _ in range(effective_n_seeds):
             b_res = run_asymmetric_noise_evaluation(
-                baseline_circuit, target_state, p_x=px, p_y=0.0, p_z=0.0
+                baseline_circuit, target_state, p_x=px, p_y=0.0, p_z=0.0,
+                clean_reference=clean_reference
             )
             r_res = run_asymmetric_noise_evaluation(
-                robust_circuit, target_state, p_x=px, p_y=0.0, p_z=0.0
+                robust_circuit, target_state, p_x=px, p_y=0.0, p_z=0.0,
+                clean_reference=clean_reference
             )
-            # Add a small Gaussian jitter to mimic measurement variation
-            jitter = lambda val: float(np.clip(val + rng.normal(0, 1e-3), 0.0, 1.0))
-            b_res['retention_ratio'] = jitter(b_res['retention_ratio'])
-            r_res['retention_ratio'] = jitter(r_res['retention_ratio'])
             baseline_ret.append(b_res)
             robust_ret.append(r_res)
         baseline_mean = float(np.mean([x['retention_ratio'] for x in baseline_ret]))
@@ -371,7 +390,12 @@ def run_cross_noise_robustness(
             'robust_over_rotation_avg_retention': float(robust_retention_avg),
             'baseline_asymmetric_retention': asymmetric_results[0]['baseline_mean'],
             'robust_asymmetric_retention': asymmetric_results[0]['robust_mean'],
-        }
+        },
+        'clean_fidelity': {
+            'baseline': float(baseline_clean_fid),
+            'robust': float(robust_clean_fid),
+            'reference_used': float(clean_reference),
+        },
     }
     
     # === Save results JSON ===
@@ -393,6 +417,8 @@ def run_cross_noise_robustness(
     ax1 = axes[0]
     baseline_retentions = [r['retention_ratio'] for r in baseline_over_rotation_results]
     robust_retentions = [r['retention_ratio'] for r in robust_over_rotation_results]
+    baseline_noisy = [r['noisy_fidelity'] for r in baseline_over_rotation_results]
+    robust_noisy = [r['noisy_fidelity'] for r in robust_over_rotation_results]
     
     ax1.plot(epsilon_values, baseline_retentions, marker='o', linestyle='-', color=colors["baseline"],
              label='Baseline', markersize=4)
@@ -404,6 +430,16 @@ def run_cross_noise_robustness(
     ax1.legend()
     ax1.grid(True, alpha=0.3)
     ax1.set_ylim(0, 1.05)
+    ax1.text(
+        0.68, 0.15,
+        f"Clean ref: {clean_reference:.4f}\n"
+        f"ε_max={epsilon_values[-1]:.3f}\n"
+        f"Baseline noisy: {baseline_noisy[-1]:.3f}\n"
+        f"Robust noisy: {robust_noisy[-1]:.3f}",
+        transform=ax1.transAxes,
+        fontsize=9,
+        bbox=dict(boxstyle='round,pad=0.35', fc='white', alpha=0.85)
+    )
     
     # Right plot: Asymmetric noise comparison (bar chart, first p_x entry)
     ax2 = axes[1]
@@ -424,7 +460,7 @@ def run_cross_noise_robustness(
         ax2.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.02,
                 f'{val:.3f}', ha='center', va='bottom', fontsize=10)
     
-    plt.tight_layout()
+    plt.tight_layout(pad=1.5)
     plot_path = os.path.join(results_subdir, 'cross_noise_robustness.png')
     plt.savefig(plot_path, dpi=200)
     plt.close(fig)
@@ -449,7 +485,10 @@ def run_cross_noise_robustness(
         f.write(f"  Baseline circuit: {baseline_circuit_path}\n")
         f.write(f"  Robust circuit: {robust_circuit_path}\n")
         f.write(f"  Epsilon range: {epsilon_range}\n")
-        f.write(f"  Asymmetric p_x: {px_values}\n\n")
+        f.write(f"  Asymmetric p_x: {px_values}\n")
+        f.write(f"  Clean fidelity (baseline): {baseline_clean_fid:.4f}\n")
+        f.write(f"  Clean fidelity (robust):   {robust_clean_fid:.4f}\n")
+        f.write(f"  Retention normalized by:   {clean_reference:.4f}\n\n")
         
         f.write("Over-rotation Test (ε ∈ [0, 0.1]):\n")
         f.write("-" * 40 + "\n")
@@ -515,8 +554,8 @@ if __name__ == "__main__":
         help='Number of qubits (default: 4)'
     )
     parser.add_argument(
-        '--epsilon-max', type=float, default=0.1,
-        help='Maximum over-rotation angle (default: 0.1)'
+        '--epsilon-max', type=float, default=0.2,
+        help='Maximum over-rotation angle (default: 0.2)'
     )
     parser.add_argument(
         '--n-epsilon-points', type=int, default=20,

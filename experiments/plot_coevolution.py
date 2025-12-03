@@ -1,14 +1,13 @@
 """
 Single-seed co-evolution plot, styled like train_architect:
 - Best clean fidelity so far
-- Rolling mean (clean)
-- Rolling mean (attacked/noisy)
+- EMA (clean)
+- EMA (attacked/noisy, aligned to clean steps)
 """
 
 import argparse
 import os
 import json
-from glob import glob
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -45,18 +44,85 @@ def rolling_mean(data, window_size):
     return np.convolve(data, window, mode="valid")
 
 
+def exponential_moving_average(data, alpha):
+    """EMA smoother (mirrors train_architect plotting)."""
+    if data is None or len(data) == 0:
+        return np.array([])
+    ema = np.empty_like(data, dtype=float)
+    ema[0] = data[0]
+    for i in range(1, len(data)):
+        ema[i] = alpha * data[i] + (1 - alpha) * ema[i - 1]
+    return ema
+
+
 def find_run_dir(root_dir: str, seed: int | None):
-    """Find the latest adversarial_training_* dir for a given seed under root_dir/seed_{seed}."""
-    if seed is None:
+    """
+    Resolve the directory that contains fidelity logs for a single seed.
+
+    Supported layouts:
+      - <root>/adversarial/seed_k/                        (files live here)
+      - <root>/seed_k/                                    (files live here)
+      - <root>/seed_k/adversarial_training_*/             (older layout)
+      - <root>/adversarial/seed_k/adversarial_training_*  (older layout)
+      - Passing the seed directory itself as --root-dir.
+    """
+    required = (
+        "architect_fidelities.txt",
+        "saboteur_trained_on_architect_fidelities.txt",
+    )
+
+    def has_logs(path: str) -> bool:
+        return all(os.path.exists(os.path.join(path, f)) for f in required)
+
+    def latest_adv_training(base: str) -> str | None:
+        if not os.path.isdir(base):
+            return None
+        candidates = [
+            os.path.join(base, d)
+            for d in os.listdir(base)
+            if os.path.isdir(os.path.join(base, d)) and d.startswith("adversarial_training")
+        ]
+        candidates.sort()
+        return candidates[-1] if candidates else None
+
+    root_dir = os.path.abspath(root_dir)
+
+    # If the user already pointed to the directory with logs, return it directly.
+    if has_logs(root_dir):
         return root_dir
-    seed_dir = os.path.join(root_dir, f"seed_{seed}")
-    if not os.path.isdir(seed_dir):
-        return None
-    candidates = glob(os.path.join(seed_dir, "adversarial_training_*"))
-    if not candidates:
-        return None
-    candidates.sort()
-    return candidates[-1]
+
+    seed_dirs = []
+    if seed is not None:
+        seed_names = [f"seed_{seed}", f"seed{seed}"]
+        # Include the root itself if it already looks like a seed directory.
+        if os.path.basename(root_dir) in seed_names and os.path.isdir(root_dir):
+            seed_dirs.append(root_dir)
+
+        for base in (root_dir, os.path.join(root_dir, "adversarial")):
+            for seed_name in seed_names:
+                candidate = os.path.join(base, seed_name)
+                if os.path.isdir(candidate):
+                    seed_dirs.append(candidate)
+    else:
+        # No explicit seed provided: scan for the first seed-like directory.
+        for base in (root_dir, os.path.join(root_dir, "adversarial")):
+            if not os.path.isdir(base):
+                continue
+            for entry in sorted(os.listdir(base)):
+                if entry.startswith("seed") and os.path.isdir(os.path.join(base, entry)):
+                    seed_dirs.append(os.path.join(base, entry))
+
+    for seed_dir in seed_dirs:
+        if has_logs(seed_dir):
+            return seed_dir
+        adv = latest_adv_training(seed_dir)
+        if adv and has_logs(adv):
+            return adv
+        adv_nested = latest_adv_training(os.path.join(seed_dir, "adversarial"))
+        if adv_nested and has_logs(adv_nested):
+            return adv_nested
+
+    return None
 
 
 def plot_coevolution_single(run_dir, save_name, window_frac=0.02):
@@ -76,26 +142,54 @@ def plot_coevolution_single(run_dir, save_name, window_frac=0.02):
     if noisy_steps is None:
         noisy_steps = np.arange(1, len(noisy_fidelity) + 1)
 
-    clean_window = max(10, int(len(clean_fidelity) * window_frac))
-    # Use the same window for attacked to make the curves visually comparable
-    noisy_window = clean_window
-    clean_roll = rolling_mean(clean_fidelity, clean_window)
-    noisy_roll = rolling_mean(noisy_fidelity, noisy_window)
+    # EMA smoothing (alpha mirrors train_architect; default fixed alpha=0.01 unless overridden)
+    def get_alpha():
+        return window_frac if window_frac and window_frac > 0 else 0.01
 
-    clean_x = clean_steps[: len(clean_roll)]
-    noisy_x = noisy_steps[: len(noisy_roll)]
+    alpha_clean = get_alpha()
+    alpha_noisy = get_alpha()
+
+    clean_ema = exponential_moving_average(clean_fidelity, alpha_clean)
+    noisy_ema = exponential_moving_average(noisy_fidelity, alpha_noisy)
+
+    clean_x = clean_steps
+    noisy_x = noisy_steps
+    # Align noisy EMA to clean steps to show both curves over same iterations
+    if len(noisy_ema) > 0 and len(noisy_x) > 0:
+        noisy_ema_aligned = np.interp(
+            clean_x, noisy_x, noisy_ema,
+            left=noisy_ema[0], right=noisy_ema[-1]
+        )
+    else:
+        noisy_ema_aligned = np.array([])
 
     best_clean = np.maximum.accumulate(clean_fidelity)
-    best_attacked = np.max(noisy_fidelity[-20000:])
-    best_attacked = [best_attacked for _ in clean_x]
+    best_attacked = np.max(noisy_fidelity[-1000:])
+    best_attacked_series = np.full(len(clean_x), best_attacked, dtype=float) if len(clean_x) else np.array([])
+
+    # Thin curves to reduce visual clutter (similar density to train_architect EMA plots)
+    def thin_curve(x_arr, y_arr, max_points=5000):
+        if len(x_arr) <= max_points:
+            return x_arr, y_arr
+        idx = np.linspace(0, len(x_arr) - 1, max_points).astype(int)
+        return x_arr[idx], y_arr[idx]
+
+    clean_steps_thin, best_clean_thin = thin_curve(clean_steps, best_clean)
+    clean_x_thin, clean_ema_thin = thin_curve(clean_x, clean_ema) if len(clean_ema) else (clean_x, clean_ema)
+    _, best_attacked_thin = thin_curve(clean_x, best_attacked_series) if len(best_attacked_series) else (clean_x, best_attacked_series)
+    _, noisy_ema_thin = thin_curve(clean_x, noisy_ema_aligned) if len(noisy_ema_aligned) else (clean_x, noisy_ema_aligned)
 
     sns.set_theme(style="whitegrid")
     fig, ax = plt.subplots(figsize=(10, 6))
 
-    ax.plot(clean_steps, best_clean, color=COLORS["best"], linewidth=2.2, label="Best Clean So Far")
-    ax.plot(clean_x, clean_roll, color=COLORS["clean_roll"], linewidth=2.2, label=f"Rolling Mean (clean, w={clean_window})")
-    ax.plot(clean_x, best_attacked, color="#c0392b", linewidth=2.2, linestyle="--", label="Best Attacked So Far")
-    #ax.plot(noisy_x, noisy_roll, color=COLORS["noisy_roll"], linewidth=2.2, label=f"Rolling Mean (attacked, w={noisy_window})")
+
+    ax.plot(clean_steps_thin, best_clean_thin, color=COLORS["best"], linewidth=2.0, label="Best Clean So Far")
+    if len(clean_ema_thin) > 0:
+        ax.plot(clean_x_thin, clean_ema_thin, color="#e74c3c", linewidth=2.0, linestyle="--", label=f"EMA (clean, alpha={alpha_clean:.3f})")
+    if len(best_attacked_thin) > 0:
+        ax.plot(clean_x_thin, best_attacked_thin, color="#c0392b", linewidth=2.0, linestyle="--", label="Best Attacked So Far")
+    # if len(noisy_ema_thin) > 0:
+    #     ax.plot(clean_x_thin, noisy_ema_thin, color=COLORS["noisy_roll"], linewidth=2.0, label=f"EMA (attacked, alpha={alpha_noisy:.3f})")
     ax.axhline(1.0, color=COLORS["ideal"], linestyle="--", linewidth=1)
 
     ax.scatter(clean_steps[-1], best_clean[-1], color=COLORS["best"], edgecolor="white", zorder=5, s=40)
@@ -110,8 +204,8 @@ def plot_coevolution_single(run_dir, save_name, window_frac=0.02):
     order = [
         "Best Clean So Far",
         "Best Attacked So Far",
-        f"Rolling Mean (clean, w={clean_window})",
-        f"Rolling Mean (attacked, w={noisy_window})",
+        f"EMA (clean, alpha={alpha_clean:.3f})",
+        f"EMA (attacked, alpha={alpha_noisy:.3f})",
     ]
     label_to_handle = {lbl: h for h, lbl in zip(handles, labels)}
     ordered_handles = [label_to_handle[lbl] for lbl in order if lbl in label_to_handle]
@@ -121,9 +215,9 @@ def plot_coevolution_single(run_dir, save_name, window_frac=0.02):
     ax.text(
         0.02, 0.95,
         f"Final best clean: {best_clean[-1]:.3f}\n"
-        f"Final roll clean: {clean_roll[-1]:.3f}\n"
-        f"Final roll attacked: {noisy_roll[-1]:.3f}\n"
-        f"Best attacked: {best_attacked[-1]:.3f}",
+        f"Final EMA clean: {clean_ema[-1] if len(clean_ema) else float('nan'):.3f}\n"
+        f"Final EMA attacked: {noisy_ema_aligned[-1] if len(noisy_ema_aligned) else float('nan'):.3f}\n"
+        f"Best attacked: {best_attacked:.3f}",
         transform=ax.transAxes,
         fontsize=9,
         bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.7)
@@ -140,13 +234,13 @@ if __name__ == "__main__":
     parser.add_argument("--run-dir", type=str, default=None,
                         help="Path to adversarial_training_* directory (if provided, seed/root ignored)")
     parser.add_argument("--root-dir", type=str, default=None,
-                        help="Path to adversarial/ parent containing seed_k/ directories")
+                        help="Path to run root, adversarial/ folder, or a specific seed directory")
     parser.add_argument("--seed", type=int, default=0,
                         help="Seed index to plot (default: 0)")
     parser.add_argument("--out", type=str, default="coevolution_corrected.png",
-                        help="Output filename (PNG)")
-    parser.add_argument("--window-frac", type=float, default=0.02,
-                        help="Rolling window as fraction of series length (default: 0.02)")
+                        help="Output path (PNG). If a directory is provided, the plot is saved as coevolution_corrected.png inside it.")
+    parser.add_argument("--window-frac", type=float, default=0.01,
+                        help="EMA smoothing alpha (default: 0.01).")
     args = parser.parse_args()
 
     run_dir = args.run_dir
@@ -155,6 +249,13 @@ if __name__ == "__main__":
             raise SystemExit("Provide either --run-dir or --root-dir with --seed")
         run_dir = find_run_dir(args.root_dir, args.seed)
         if run_dir is None:
-            raise SystemExit(f"Could not find adversarial_training_* for seed {args.seed} under {args.root_dir}")
+            raise SystemExit(f"Could not locate fidelity logs for seed {args.seed} under {args.root_dir}")
 
-    plot_coevolution_single(run_dir, args.out, window_frac=args.window_frac)
+    out_path = args.out
+    if os.path.isdir(out_path):
+        out_path = os.path.join(out_path, "coevolution_corrected.png")
+    out_dir = os.path.dirname(out_path)
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
+
+    plot_coevolution_single(run_dir, out_path, window_frac=args.window_frac)

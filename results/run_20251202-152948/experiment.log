@@ -1,3 +1,196 @@
 2025-12-02 15:29:48,968 INFO: Loading experimental parameters for 3 qubits from config.py
 2025-12-02 15:29:48,969 INFO: Starting pipeline with metadata: {'timestamp': '20251202-152948', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 10240, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': 2000, 'hall_of_fame_size': 5}
 2025-12-02 15:29:48,969 INFO: Running baseline architect (noiseless)
+2025-12-02 15:47:36,169 INFO: Running lambda sweep experiment (ExpPlan Part 1, Exp 1.1) with n_seeds=5
+2025-12-02 15:47:36,170 INFO: === Lambda Sweep Experiment (ExpPlan Part 1, Exp 1.1) ===
+2025-12-02 15:47:36,170 INFO: Target: ghz, Mode: state_preparation
+2025-12-02 15:47:36,170 INFO: Experiment label: ghz_state_preparation
+2025-12-02 15:47:36,170 INFO: Lambda values: [0.001, 0.005, 0.01, 0.05, 0.1]
+2025-12-02 15:47:36,170 INFO: Seeds per lambda: 5
+2025-12-02 15:47:36,170 INFO: Qubits: 3
+2025-12-02 15:47:36,170 INFO: Training steps per trial: 60000
+2025-12-02 15:47:36,170 INFO: Steps per update (PPO n_steps): 2048
+2025-12-02 15:47:36,170 INFO: Include rotations: True (types=['Rz', 'Rx'])
+2025-12-02 15:47:36,170 INFO: Results directory: results/run_20251202-152948/lambda_sweep
+2025-12-02 15:47:36,170 INFO: 
+--- Lambda = 0.001 ---
+2025-12-02 15:47:36,171 INFO:   Seed 1/5...
+2025-12-02 16:04:46,748 INFO:     Best fidelity: 1.0000, CNOT count: 12, Success: True
+2025-12-02 16:04:46,748 INFO:   Seed 2/5...
+2025-12-02 16:22:04,728 INFO:     Best fidelity: 1.0000, CNOT count: 7, Success: True
+2025-12-02 16:22:04,729 INFO:   Seed 3/5...
+2025-12-02 16:39:46,281 INFO:     Best fidelity: 1.0000, CNOT count: 8, Success: True
+2025-12-02 16:39:46,282 INFO:   Seed 4/5...
+2025-12-02 16:56:53,957 INFO:     Best fidelity: 0.8536, CNOT count: 7, Success: False
+2025-12-02 16:56:53,957 INFO:   Seed 5/5...
+2025-12-02 17:13:47,995 INFO:     Best fidelity: 1.0000, CNOT count: 5, Success: True
+2025-12-02 17:13:47,996 INFO:   Summary for λ=0.001:
+2025-12-02 17:13:47,996 INFO:     Success rate: 80.00% (n=5)
+2025-12-02 17:13:47,996 INFO:     Fidelity: 0.9707 ± 0.0655 (n=5)
+2025-12-02 17:13:47,996 INFO:     CNOT count: 7.8000 ± 2.5884 (n=5)
+2025-12-02 17:13:47,996 INFO: 
+--- Lambda = 0.005 ---
+2025-12-02 17:13:47,997 INFO:   Seed 1/5...
+2025-12-02 17:30:42,296 INFO:     Best fidelity: 1.0000, CNOT count: 12, Success: True
+2025-12-02 17:30:42,296 INFO:   Seed 2/5...
+2025-12-02 17:48:09,949 INFO:     Best fidelity: 1.0000, CNOT count: 7, Success: True
+2025-12-02 17:48:09,949 INFO:   Seed 3/5...
+2025-12-02 18:05:16,365 INFO:     Best fidelity: 1.0000, CNOT count: 8, Success: True
+2025-12-02 18:05:16,365 INFO:   Seed 4/5...
+2025-12-02 18:23:13,611 INFO:     Best fidelity: 0.8536, CNOT count: 7, Success: False
+2025-12-02 18:23:13,611 INFO:   Seed 5/5...
+2025-12-02 18:40:35,618 INFO:     Best fidelity: 1.0000, CNOT count: 5, Success: True
+2025-12-02 18:40:35,619 INFO:   Summary for λ=0.005:
+2025-12-02 18:40:35,619 INFO:     Success rate: 80.00% (n=5)
+2025-12-02 18:40:35,619 INFO:     Fidelity: 0.9707 ± 0.0655 (n=5)
+2025-12-02 18:40:35,619 INFO:     CNOT count: 7.8000 ± 2.5884 (n=5)
+2025-12-02 18:40:35,619 INFO: 
+--- Lambda = 0.01 ---
+2025-12-02 18:40:35,619 INFO:   Seed 1/5...
+2025-12-02 18:58:45,692 INFO:     Best fidelity: 1.0000, CNOT count: 12, Success: True
+2025-12-02 18:58:45,692 INFO:   Seed 2/5...
+2025-12-02 19:16:26,673 INFO:     Best fidelity: 1.0000, CNOT count: 7, Success: True
+2025-12-02 19:16:26,673 INFO:   Seed 3/5...
+2025-12-02 19:33:56,554 INFO:     Best fidelity: 1.0000, CNOT count: 8, Success: True
+2025-12-02 19:33:56,554 INFO:   Seed 4/5...
+2025-12-02 19:51:56,025 INFO:     Best fidelity: 0.8536, CNOT count: 7, Success: False
+2025-12-02 19:51:56,025 INFO:   Seed 5/5...
+2025-12-02 20:09:55,386 INFO:     Best fidelity: 1.0000, CNOT count: 5, Success: True
+2025-12-02 20:09:55,388 INFO:   Summary for λ=0.01:
+2025-12-02 20:09:55,388 INFO:     Success rate: 80.00% (n=5)
+2025-12-02 20:09:55,388 INFO:     Fidelity: 0.9707 ± 0.0655 (n=5)
+2025-12-02 20:09:55,388 INFO:     CNOT count: 7.8000 ± 2.5884 (n=5)
+2025-12-02 20:09:55,388 INFO: 
+--- Lambda = 0.05 ---
+2025-12-02 20:09:55,388 INFO:   Seed 1/5...
+2025-12-02 20:27:39,743 INFO:     Best fidelity: 1.0000, CNOT count: 12, Success: True
+2025-12-02 20:27:39,744 INFO:   Seed 2/5...
+2025-12-02 20:45:12,669 INFO:     Best fidelity: 1.0000, CNOT count: 7, Success: True
+2025-12-02 20:45:12,669 INFO:   Seed 3/5...
+2025-12-02 21:03:19,683 INFO:     Best fidelity: 1.0000, CNOT count: 8, Success: True
+2025-12-02 21:03:19,684 INFO:   Seed 4/5...
+2025-12-02 21:21:13,909 INFO:     Best fidelity: 0.8536, CNOT count: 7, Success: False
+2025-12-02 21:21:13,909 INFO:   Seed 5/5...
+2025-12-02 21:38:59,613 INFO:     Best fidelity: 1.0000, CNOT count: 5, Success: True
+2025-12-02 21:38:59,614 INFO:   Summary for λ=0.05:
+2025-12-02 21:38:59,614 INFO:     Success rate: 80.00% (n=5)
+2025-12-02 21:38:59,614 INFO:     Fidelity: 0.9707 ± 0.0655 (n=5)
+2025-12-02 21:38:59,614 INFO:     CNOT count: 7.8000 ± 2.5884 (n=5)
+2025-12-02 21:38:59,614 INFO: 
+--- Lambda = 0.1 ---
+2025-12-02 21:38:59,615 INFO:   Seed 1/5...
+2025-12-02 21:56:30,322 INFO:     Best fidelity: 1.0000, CNOT count: 12, Success: True
+2025-12-02 21:56:30,322 INFO:   Seed 2/5...
+2025-12-02 22:13:59,318 INFO:     Best fidelity: 1.0000, CNOT count: 7, Success: True
+2025-12-02 22:13:59,318 INFO:   Seed 3/5...
+2025-12-02 22:31:21,991 INFO:     Best fidelity: 1.0000, CNOT count: 8, Success: True
+2025-12-02 22:31:21,991 INFO:   Seed 4/5...
+2025-12-02 22:48:46,767 INFO:     Best fidelity: 0.8536, CNOT count: 7, Success: False
+2025-12-02 22:48:46,767 INFO:   Seed 5/5...
+2025-12-02 23:06:32,584 INFO:     Best fidelity: 1.0000, CNOT count: 5, Success: True
+2025-12-02 23:06:32,585 INFO:   Summary for λ=0.1:
+2025-12-02 23:06:32,585 INFO:     Success rate: 80.00% (n=5)
+2025-12-02 23:06:32,585 INFO:     Fidelity: 0.9707 ± 0.0655 (n=5)
+2025-12-02 23:06:32,585 INFO:     CNOT count: 7.8000 ± 2.5884 (n=5)
+2025-12-02 23:06:32,761 INFO: 
+Results saved to results/run_20251202-152948/lambda_sweep/lambda_sweep_results.json
+2025-12-02 23:06:33,356 INFO: Plot with error bars saved to results/run_20251202-152948/lambda_sweep/lambda_sweep_plot.png
+2025-12-02 23:06:33,368 INFO: Summary files saved to results/run_20251202-152948/lambda_sweep
+2025-12-02 23:06:33,368 INFO: Lambda sweep complete. Results saved to results/run_20251202-152948/lambda_sweep
+2025-12-02 23:06:33,369 INFO: Running saboteur-only (attacks baseline circuit)
+2025-12-02 23:08:44,325 INFO: Running adversarial co-evolution for 5 seeds (5 generations each)
+2025-12-02 23:08:44,326 INFO: Adversarial training: seed index 0 (global seed=2042)
+2025-12-02 23:08:44,326 INFO: Setting global seed = 2042
+2025-12-02 23:28:29,013 INFO: Adversarial training: seed index 1 (global seed=2043)
+2025-12-02 23:28:29,013 INFO: Setting global seed = 2043
+2025-12-02 23:46:43,961 INFO: Adversarial training: seed index 2 (global seed=2044)
+2025-12-02 23:46:43,961 INFO: Setting global seed = 2044
+2025-12-03 00:05:09,665 INFO: Adversarial training: seed index 3 (global seed=2045)
+2025-12-03 00:05:09,665 INFO: Setting global seed = 2045
+2025-12-03 00:23:28,493 INFO: Adversarial training: seed index 4 (global seed=2046)
+2025-12-03 00:23:28,493 INFO: Setting global seed = 2046
+2025-12-03 00:41:49,141 INFO: Canonical adversarial run (for comparison): results/run_20251202-152948/adversarial/seed_0
+2025-12-03 00:41:49,141 INFO: Plotting multi-seed coevolution from results/run_20251202-152948/adversarial
+2025-12-03 00:41:51,790 WARNING: Traceback (most recent call last):
+  File "/import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/experiments/plot_coevolution_multiseed.py", line 348, in <module>
+    plot_multiseed(args.root_dir, args.out)
+  File "/import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/experiments/plot_coevolution_multiseed.py", line 200, in plot_multiseed
+    raise RuntimeError(f"No adversarial_training_* dirs found under {root_dir}")
+RuntimeError: No adversarial_training_* dirs found under results/run_20251202-152948/adversarial
+
+2025-12-03 00:41:53,698 INFO: --- Generating Co-Evolution Plot for results/run_20251202-152948/adversarial/seed_0 ---
+[plot_coevolution] Saved plot to results/run_20251202-152948/adversarial/coevolution_seed_0.png
+2025-12-03 00:41:56,335 INFO: --- Generating Co-Evolution Plot for results/run_20251202-152948/adversarial/seed_1 ---
+[plot_coevolution] Saved plot to results/run_20251202-152948/adversarial/coevolution_seed_1.png
+2025-12-03 00:41:58,180 INFO: --- Generating Co-Evolution Plot for results/run_20251202-152948/adversarial/seed_2 ---
+[plot_coevolution] Saved plot to results/run_20251202-152948/adversarial/coevolution_seed_2.png
+2025-12-03 00:41:59,999 INFO: --- Generating Co-Evolution Plot for results/run_20251202-152948/adversarial/seed_3 ---
+[plot_coevolution] Saved plot to results/run_20251202-152948/adversarial/coevolution_seed_3.png
+2025-12-03 00:42:01,808 INFO: --- Generating Co-Evolution Plot for results/run_20251202-152948/adversarial/seed_4 ---
+[plot_coevolution] Saved plot to results/run_20251202-152948/adversarial/coevolution_seed_4.png
+2025-12-03 00:42:01,813 INFO: Robust circuit from results/run_20251202-152948/adversarial/seed_0 copied to results/run_20251202-152948/compare/run_0
+2025-12-03 00:42:01,818 INFO: Robust circuit from results/run_20251202-152948/adversarial/seed_1 copied to results/run_20251202-152948/compare/run_1
+2025-12-03 00:42:01,822 INFO: Robust circuit from results/run_20251202-152948/adversarial/seed_2 copied to results/run_20251202-152948/compare/run_2
+2025-12-03 00:42:01,825 INFO: Robust circuit from results/run_20251202-152948/adversarial/seed_3 copied to results/run_20251202-152948/compare/run_3
+2025-12-03 00:42:01,829 INFO: Robust circuit from results/run_20251202-152948/adversarial/seed_4 copied to results/run_20251202-152948/compare/run_4
+2025-12-03 00:42:01,829 INFO: Running comparison across runs
+2025-12-03 00:42:07,916 INFO: Running parameter recovery experiment
+2025-12-03 00:42:07,917 INFO: === Parameter Recovery Experiment ===
+2025-12-03 00:42:07,917 INFO: Qubits: 3
+2025-12-03 00:42:07,917 INFO: Noise parameters to test: [0.001, 0.005, 0.01, 0.02, 0.05, 0.08, 0.1]
+2025-12-03 00:42:07,917 INFO: Shots per trial: 1000
+2025-12-03 00:42:07,917 INFO: Repetitions per p (seeds): 5
+2025-12-03 00:42:07,917 INFO: Base seed: 42
+2025-12-03 00:42:07,917 INFO: Results directory: results/run_20251202-152948/parameter_recovery
+2025-12-03 00:42:07,917 INFO: Loaded baseline circuit from results/run_20251202-152948/baseline/circuit_vanilla.json
+2025-12-03 00:42:07,919 INFO: Loaded robust circuit from results/run_20251202-152948/compare/run_0/circuit_robust.json
+2025-12-03 00:42:07,919 INFO: 
+  Testing baseline circuit (n_repetitions=5):
+2025-12-03 00:42:08,981 INFO:     p=0.001: recovered=0.0010±0.0000 (n=5), fidelity=0.8946±0.0005
+2025-12-03 00:42:09,898 INFO:     p=0.005: recovered=0.0050±0.0000 (n=5), fidelity=0.8146±0.0002
+2025-12-03 00:42:10,745 INFO:     p=0.010: recovered=0.0100±0.0000 (n=5), fidelity=0.7260±0.0002
+2025-12-03 00:42:11,666 INFO:     p=0.020: recovered=0.0200±0.0000 (n=5), fidelity=0.5817±0.0002
+2025-12-03 00:42:12,587 INFO:     p=0.050: recovered=0.0500±0.0001 (n=5), fidelity=0.3287±0.0004
+2025-12-03 00:42:13,582 INFO:     p=0.080: recovered=0.0800±0.0001 (n=5), fidelity=0.2179±0.0002
+2025-12-03 00:42:14,361 INFO:     p=0.100: recovered=0.1000±0.0002 (n=5), fidelity=0.1808±0.0003
+2025-12-03 00:42:14,363 INFO: 
+  Testing robust circuit (n_repetitions=5):
+2025-12-03 00:42:15,531 INFO:     p=0.001: recovered=0.0010±0.0000 (n=5), fidelity=0.9770±0.0001
+2025-12-03 00:42:16,538 INFO:     p=0.005: recovered=0.0050±0.0000 (n=5), fidelity=0.8907±0.0003
+2025-12-03 00:42:17,468 INFO:     p=0.010: recovered=0.0100±0.0000 (n=5), fidelity=0.7950±0.0002
+2025-12-03 00:42:18,397 INFO:     p=0.020: recovered=0.0200±0.0000 (n=5), fidelity=0.6384±0.0004
+2025-12-03 00:42:19,402 INFO:     p=0.050: recovered=0.0500±0.0001 (n=5), fidelity=0.3553±0.0005
+2025-12-03 00:42:20,484 INFO:     p=0.080: recovered=0.0801±0.0002 (n=5), fidelity=0.2276±0.0005
+2025-12-03 00:42:21,335 INFO:     p=0.100: recovered=0.0999±0.0002 (n=5), fidelity=0.1850±0.0004
+2025-12-03 00:42:21,339 INFO: 
+Results saved to results/run_20251202-152948/parameter_recovery/parameter_recovery_results.json
+2025-12-03 00:42:21,629 INFO: Plot saved to results/run_20251202-152948/parameter_recovery/parameter_recovery_plot.png
+2025-12-03 00:42:21,635 INFO: Summary saved to results/run_20251202-152948/parameter_recovery/parameter_recovery_summary.txt
+2025-12-03 00:42:21,635 INFO: 
+=== Parameter Recovery Experiment Complete ===
+2025-12-03 00:42:21,636 INFO: Running cross-noise robustness experiment
+2025-12-03 00:42:21,636 INFO: === Cross-Noise Robustness Experiment (ExpPlan Part 2, Exp 2.1) ===
+2025-12-03 00:42:21,636 INFO: Baseline circuit: results/run_20251202-152948/compare/run_0/circuit_vanilla.json
+2025-12-03 00:42:21,636 INFO: Robust circuit: results/run_20251202-152948/compare/run_0/circuit_robust.json
+2025-12-03 00:42:21,636 INFO: Output directory: results/run_20251202-152948/cross_noise/cross_noise_20251203-004221
+2025-12-03 00:42:21,637 INFO: Number of qubits: 3
+2025-12-03 00:42:21,637 INFO: Number of seeds: 5
+2025-12-03 00:42:21,637 INFO: Base seed: 42
+2025-12-03 00:42:21,637 INFO: Loaded baseline circuit with 23 operations
+2025-12-03 00:42:21,637 INFO: Loaded robust circuit with 21 operations
+2025-12-03 00:42:21,637 INFO: 
+--- Over-rotation sweep (ε ∈ [0.0, 0.1]) ---
+2025-12-03 00:42:21,878 INFO: Baseline avg retention ratio (over-rotation): 0.9254
+2025-12-03 00:42:21,878 INFO: Robust avg retention ratio (over-rotation): 0.9834
+2025-12-03 00:42:21,878 INFO: 
+--- Asymmetric Pauli noise sweep (p_x in [0.05], p_y=0.0, p_z=0.0) ---
+2025-12-03 00:42:22,052 INFO: p_x=0.050 | Baseline retention: 0.3176 | Robust retention: 0.3047
+2025-12-03 00:42:22,053 INFO: 
+Results saved to results/run_20251202-152948/cross_noise/cross_noise_20251203-004221/cross_noise_results.json
+2025-12-03 00:42:22,286 INFO: Plot saved to results/run_20251202-152948/cross_noise/cross_noise_20251203-004221/cross_noise_robustness.png
+2025-12-03 00:42:22,287 INFO: Summary saved to results/run_20251202-152948/cross_noise/cross_noise_20251203-004221/cross_noise_summary.txt
+2025-12-03 00:42:22,291 INFO: 
+=== Cross-Noise Robustness Experiment Complete ===
+2025-12-03 00:42:22,349 INFO: Fidelity summary written to results/run_20251202-152948/analysis/fidelity_raw_data.csv
+2025-12-03 00:42:30,928 INFO: Robustness comparison written to results/run_20251202-152948/analysis/robustness_compare.json and results/run_20251202-152948/analysis/robustness_compare.csv
+2025-12-03 00:42:30,928 INFO: Pipeline finished. Results in results/run_20251202-152948

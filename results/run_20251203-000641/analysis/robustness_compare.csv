@@ -1,0 +1,2 @@
+group,run,seed,clean_fidelity,attacked_mean,attacked_std,attacked_min,attacked_max,n_attacks_evaluated,circuit_path
+architect_baseline,baseline,,0.9999999403953551,0.9639040475704517,0.008025338924135133,0.9448444545269012,0.993333339691162,833,baseline/circuit_vanilla.json

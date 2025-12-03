@@ -1,0 +1,14 @@
+[
+  {
+    "group": "architect_baseline",
+    "run": "baseline",
+    "seed": null,
+    "clean_fidelity": 0.9999999403953551,
+    "attacked_mean": 0.9639040475704517,
+    "attacked_std": 0.008025338924135133,
+    "attacked_min": 0.9448444545269012,
+    "attacked_max": 0.993333339691162,
+    "n_attacks_evaluated": 833,
+    "circuit_path": "baseline/circuit_vanilla.json"
+  }
+]

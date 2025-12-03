@@ -57,6 +57,7 @@ def evaluate_multi_gate_attacks(
     fallback_error_idx=0,
     saboteur_budget: int = 3,
     rng: np.random.Generator | None = None,
+    attack_mode: str = "max",  # 'max' (worst-case), 'policy' (agent), 'random_high' (high-level random)
 ):
     """
     Evaluate circuit robustness under multi-gate attacks sampled from saboteur_agent.
@@ -80,32 +81,54 @@ def evaluate_multi_gate_attacks(
     ops = list(circuit.all_operations())
     attacked_vals = []
     rng = rng or np.random.default_rng()
+    # Precompute static helpers outside the sampling loop
+    ops = list(circuit.all_operations())
+    all_rates = SaboteurMultiGateEnv.all_error_rates
+    max_idx = len(all_rates) - 1
+    valid_gate_count = min(len(ops), config.MAX_CIRCUIT_TIMESTEPS)
+
     for _ in range(samples):
-        sab_obs = SaboteurMultiGateEnv.create_observation_from_circuit(
-            circuit, n_qubits=n_qubits, max_circuit_timesteps=config.MAX_CIRCUIT_TIMESTEPS
-        )
-        if saboteur_agent is not None:
-            try:
-                sab_action, _ = saboteur_agent.predict(sab_obs, deterministic=False)
-            except Exception:
-                sab_action = np.full(len(ops), fallback_error_idx, dtype=int)
+        sab_action = None
+        budget = min(saboteur_budget, valid_gate_count)
+
+        if attack_mode == "max":
+            # Worst-case: hit all gates with max error rate
+            sab_action = np.full(valid_gate_count, max_idx, dtype=int)
+            budget = valid_gate_count
+        elif attack_mode == "policy":
+            sab_obs = SaboteurMultiGateEnv.create_observation_from_circuit(
+                circuit, n_qubits=n_qubits, max_circuit_timesteps=config.MAX_CIRCUIT_TIMESTEPS
+            )
+            if saboteur_agent is not None:
+                try:
+                    sab_action, _ = saboteur_agent.predict(sab_obs, deterministic=False)
+                except Exception:
+                    sab_action = None
         else:
-            sab_action = np.full(len(ops), fallback_error_idx, dtype=int)
-        # Build noisy circuit
-        noisy_ops = []
-        all_rates = SaboteurMultiGateEnv.all_error_rates
-        max_idx = len(all_rates) - 1
+            # random_high: random from the top error levels
+            high_min = max(0, max_idx - 2)
+            sab_action = rng.integers(high_min, max_idx + 1, size=valid_gate_count, dtype=int)
+            budget = valid_gate_count
+
+        # Fallback if policy failed
+        if sab_action is None:
+            high_min = max(0, max_idx - 2)
+            sab_action = rng.integers(high_min, max_idx + 1, size=valid_gate_count, dtype=int)
+            budget = valid_gate_count
 
         # Budgeted top-k attack (consistent with training)
-        ops = list(circuit.all_operations())
-        valid_gate_count = min(len(ops), config.MAX_CIRCUIT_TIMESTEPS)
         raw_action = np.array(sab_action[:valid_gate_count], dtype=int)
-        budget = min(saboteur_budget, valid_gate_count)
         effective_action = np.zeros_like(raw_action)
         if budget > 0 and len(raw_action) > 0:
-            top_k_indices = np.argsort(raw_action)[-budget:]
-            effective_action[top_k_indices] = raw_action[top_k_indices]
+            if np.all(raw_action == raw_action[0]):
+                # If all scores are equal, choose budgeted gates uniformly at random
+                budget_indices = rng.choice(len(raw_action), size=budget, replace=False)
+                effective_action[budget_indices] = raw_action[budget_indices]
+            else:
+                top_k_indices = np.argsort(raw_action)[-budget:]
+                effective_action[top_k_indices] = raw_action[top_k_indices]
 
+        noisy_ops = []
         for i, op in enumerate(ops):
             noisy_ops.append(op)
             idx = int(effective_action[i]) if i < len(effective_action) else fallback_error_idx
@@ -138,7 +161,8 @@ def compare_noise_resilience(
     samples=32,
     saboteur_budget: int = 3,
     seed: int | None = 42,
-    logger=None
+    logger=None,
+    attack_mode: str = "max",
 ):
     """
     Aggregate and compare circuit robustness under multi-gate attacks.
@@ -154,6 +178,7 @@ def compare_noise_resilience(
         n_qubits: Number of qubits for this analysis.
         samples: Number of saboteur attack samples per circuit.
         logger: Optional logger for output.
+        attack_mode: 'max' (default, worst-case), 'policy' (agent-driven), or 'random_high'.
     """
     def log(msg):
         if logger:
@@ -203,13 +228,15 @@ def compare_noise_resilience(
         metrics_v = evaluate_multi_gate_attacks(
             circuit_vanilla, saboteur_agent, target_state, n_qubits,
             samples=samples, fallback_error_idx=fallback_error_idx,
-            saboteur_budget=saboteur_budget, rng=rng
+            saboteur_budget=saboteur_budget, rng=rng, attack_mode=attack_mode
         )
+        metrics_v["circuit_path"] = vanilla_circuit_file
         metrics_r = evaluate_multi_gate_attacks(
             circuit_robust, saboteur_agent, target_state, n_qubits,
             samples=samples, fallback_error_idx=fallback_error_idx,
-            saboteur_budget=saboteur_budget, rng=rng
+            saboteur_budget=saboteur_budget, rng=rng, attack_mode=attack_mode
         )
+        metrics_r["circuit_path"] = robust_circuit_file
         all_metrics_vanilla.append(metrics_v)
         all_metrics_robust.append(metrics_r)
         for val in metrics_v["samples"]:
@@ -302,7 +329,27 @@ def compare_noise_resilience(
             ax.set_xticklabels(labels)
             ax.legend()
             ax.grid(True, alpha=0.3, axis='y')
-            ax.set_ylim(0, 1.05)
+
+            # Show absolute/relative improvement above each pair of bars
+            max_height = max(means_v + means_r) if (means_v and means_r) else 1.0
+            ax.set_ylim(0, max(1.05, max_height + 0.1))
+            for xi, mv, mr, lbl in zip(x, means_v, means_r, labels):
+                delta = mr - mv
+                pct = (delta / mv * 100.0) if mv > 1e-9 else float("nan")
+                txt = f"{delta:+.3f}"
+                if not np.isnan(pct):
+                    txt += f" ({pct:+.1f}%)"
+                fontweight = "bold" if lbl.lower() == "mean" else "normal"
+                ax.text(
+                    xi,
+                    max(mv, mr) + 0.02,
+                    txt,
+                    ha="center",
+                    va="bottom",
+                    fontsize=9,
+                    fontweight=fontweight,
+                    color="black",
+                )
 
             plt.tight_layout()
             out_path = os.path.join(base_results_dir, "robustness_comparison.png")
@@ -346,11 +393,14 @@ if __name__ == "__main__":
     parser.add_argument('--num-runs', type=int, default=3, help='Number of experimental runs to aggregate (default: 3)')
     parser.add_argument('--n-qubits', type=int, required=True, help='Number of qubits for this analysis')
     parser.add_argument('--samples', type=int, default=32, help='Number of saboteur attack samples per circuit')
+    parser.add_argument('--attack-mode', type=str, default='max', choices=['max', 'policy', 'random_high'],
+                        help="Attack sampling mode: 'max' (worst-case, default), 'policy' (agent-driven), 'random_high' (random from high error levels).")
     args = parser.parse_args()
 
     compare_noise_resilience(
         base_results_dir=args.base_results_dir,
         num_runs=args.num_runs,
         n_qubits=args.n_qubits,
-        samples=args.samples
+        samples=args.samples,
+        attack_mode=args.attack_mode
     )

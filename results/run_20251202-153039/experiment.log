@@ -1,3 +1,37 @@
 2025-12-02 15:30:39,427 INFO: Loading experimental parameters for 3 qubits from config.py
 2025-12-02 15:30:39,428 INFO: Starting pipeline with metadata: {'timestamp': '20251202-153039', 'n_qubits': 3, 'baseline_steps': 300000, 'saboteur_steps': 51200, 'adversarial_gens': 25, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': 20000, 'hall_of_fame_size': 15}
 2025-12-02 15:30:39,429 INFO: Running baseline architect (noiseless)
+2025-12-02 16:53:17,753 INFO: Running lambda sweep experiment (ExpPlan Part 1, Exp 1.1) with n_seeds=5
+2025-12-02 16:53:17,753 INFO: === Lambda Sweep Experiment (ExpPlan Part 1, Exp 1.1) ===
+2025-12-02 16:53:17,753 INFO: Target: ghz, Mode: state_preparation
+2025-12-02 16:53:17,753 INFO: Experiment label: ghz_state_preparation
+2025-12-02 16:53:17,753 INFO: Lambda values: [0.001, 0.005, 0.01, 0.05, 0.1]
+2025-12-02 16:53:17,753 INFO: Seeds per lambda: 5
+2025-12-02 16:53:17,753 INFO: Qubits: 3
+2025-12-02 16:53:17,753 INFO: Training steps per trial: 300000
+2025-12-02 16:53:17,754 INFO: Steps per update (PPO n_steps): 2048
+2025-12-02 16:53:17,754 INFO: Include rotations: True (types=['Rz', 'Rx'])
+2025-12-02 16:53:17,754 INFO: Results directory: results/run_20251202-153039/lambda_sweep
+2025-12-02 16:53:17,754 INFO: 
+--- Lambda = 0.001 ---
+2025-12-02 16:53:17,754 INFO:   Seed 1/5...
+2025-12-02 18:16:10,284 INFO:     Best fidelity: 1.0000, CNOT count: 12, Success: True
+2025-12-02 18:16:10,285 INFO:   Seed 2/5...
+2025-12-02 19:41:37,578 INFO:     Best fidelity: 1.0000, CNOT count: 7, Success: True
+2025-12-02 19:41:37,578 INFO:   Seed 3/5...
+2025-12-02 21:05:27,204 INFO:     Best fidelity: 1.0000, CNOT count: 8, Success: True
+2025-12-02 21:05:27,204 INFO:   Seed 4/5...
+2025-12-02 22:29:04,081 INFO:     Best fidelity: 0.8536, CNOT count: 7, Success: False
+2025-12-02 22:29:04,081 INFO:   Seed 5/5...
+2025-12-02 23:52:22,277 INFO:     Best fidelity: 1.0000, CNOT count: 5, Success: True
+2025-12-02 23:52:22,278 INFO:   Summary for λ=0.001:
+2025-12-02 23:52:22,279 INFO:     Success rate: 80.00% (n=5)
+2025-12-02 23:52:22,279 INFO:     Fidelity: 0.9707 ± 0.0655 (n=5)
+2025-12-02 23:52:22,279 INFO:     CNOT count: 7.8000 ± 2.5884 (n=5)
+2025-12-02 23:52:22,279 INFO: 
+--- Lambda = 0.005 ---
+2025-12-02 23:52:22,279 INFO:   Seed 1/5...
+2025-12-03 01:13:41,671 INFO:     Best fidelity: 1.0000, CNOT count: 12, Success: True
+2025-12-03 01:13:41,671 INFO:   Seed 2/5...
+2025-12-03 02:34:09,351 INFO:     Best fidelity: 1.0000, CNOT count: 7, Success: True
+2025-12-03 02:34:09,352 INFO:   Seed 3/5...

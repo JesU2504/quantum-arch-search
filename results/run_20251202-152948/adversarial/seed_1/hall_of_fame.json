@@ -1,0 +1,1497 @@
+[
+  {
+    "metric": 0.9999998211860656,
+    "metric_name": "Fidelity Under Attack",
+    "clean_metric": 0.9999998211860656,
+    "step": 59927,
+    "circuit": {
+      "cirq_type": "Circuit",
+      "moments": [
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rx",
+                "rads": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 2.356194490192345
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 0.7853981633974483
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 3.141592653589793
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 1.5707963267948966
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "HPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rx",
+                "rads": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "metric": 0.926776200532913,
+    "metric_name": "Fidelity Under Attack",
+    "clean_metric": 0.926776200532913,
+    "step": 59889,
+    "circuit": {
+      "cirq_type": "Circuit",
+      "moments": [
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rx",
+                "rads": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 2.356194490192345
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 2.356194490192345
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rx",
+                "rads": -0.7853981633974483
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": -0.7853981633974483
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 2.356194490192345
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rx",
+                "rads": 1.5707963267948966
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 2.356194490192345
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": -0.7853981633974483
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 1.5707963267948966
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 1.5707963267948966
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "metric": 0.8535531610250472,
+    "metric_name": "Fidelity Under Attack",
+    "clean_metric": 0.8535531610250472,
+    "step": 59519,
+    "circuit": {
+      "cirq_type": "Circuit",
+      "moments": [
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 2.356194490192345
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rx",
+                "rads": -0.7853981633974483
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": -0.7853981633974483
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rx",
+                "rads": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 2.356194490192345
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 3.141592653589793
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": -0.7853981633974483
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "metric": 0.8232427239418028,
+    "metric_name": "Fidelity Under Attack",
+    "clean_metric": 0.8535528406500816,
+    "step": 59892,
+    "circuit": {
+      "cirq_type": "Circuit",
+      "moments": [
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rx",
+                "rads": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 2.356194490192345
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 2.356194490192345
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rx",
+                "rads": -0.7853981633974483
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": -0.7853981633974483
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 2.356194490192345
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rx",
+                "rads": 1.5707963267948966
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 2.356194490192345
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": -0.7853981633974483
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 1.5707963267948966
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 1.5707963267948966
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 1.5707963267948966
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": -0.7853981633974483
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "metric": 0.7499998435378072,
+    "metric_name": "Fidelity Under Attack",
+    "clean_metric": 0.7499998435378072,
+    "step": 59518,
+    "circuit": {
+      "cirq_type": "Circuit",
+      "moments": [
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 2.356194490192345
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rx",
+                "rads": -0.7853981633974483
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": -0.7853981633974483
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rx",
+                "rads": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 2.356194490192345
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 3.141592653589793
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

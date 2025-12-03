@@ -1,0 +1,65 @@
+[
+  {
+    "label": "hof_rank_1",
+    "attacked_fidelity": 0.9543008804321288,
+    "clean_fidelity": 0.9999999403953551,
+    "source_metric": 0.9999999403953551,
+    "source_clean_metric": 0.9999999403953551,
+    "metric_name": "Fidelity Under Attack",
+    "step": 23848
+  },
+  {
+    "label": "hof_rank_2",
+    "attacked_fidelity": 0.9480248391628263,
+    "clean_fidelity": 0.9999999403953551,
+    "source_metric": 0.9999999403953551,
+    "source_clean_metric": 0.9999999403953551,
+    "metric_name": "Fidelity Under Attack",
+    "step": 25264
+  },
+  {
+    "label": "hof_rank_3",
+    "attacked_fidelity": 0.9448444545269012,
+    "clean_fidelity": 0.9999999403953551,
+    "source_metric": 0.9999999403953551,
+    "source_clean_metric": 0.9999999403953551,
+    "metric_name": "Fidelity Under Attack",
+    "step": 31042
+  },
+  {
+    "label": "hof_rank_4",
+    "attacked_fidelity": 0.951184809207916,
+    "clean_fidelity": 0.9999999403953551,
+    "source_metric": 0.9999999403953551,
+    "source_clean_metric": 0.9999999403953551,
+    "metric_name": "Fidelity Under Attack",
+    "step": 31185
+  },
+  {
+    "label": "hof_rank_5",
+    "attacked_fidelity": 0.951163500547409,
+    "clean_fidelity": 0.9999999403953551,
+    "source_metric": 0.9999999403953551,
+    "source_clean_metric": 0.9999999403953551,
+    "metric_name": "Fidelity Under Attack",
+    "step": 31453
+  },
+  {
+    "label": "robust_champion_file",
+    "attacked_fidelity": 0.9480248391628263,
+    "clean_fidelity": 0.9999999403953551,
+    "source_metric": null,
+    "source_clean_metric": null,
+    "metric_name": null,
+    "step": null
+  },
+  {
+    "label": "clean_best_file",
+    "attacked_fidelity": 0.9480248391628263,
+    "clean_fidelity": 0.9999999403953551,
+    "source_metric": null,
+    "source_clean_metric": null,
+    "metric_name": null,
+    "step": null
+  }
+]

@@ -42,30 +42,41 @@ def find_adversarial_run_dirs(root_dir):
     Supports both layouts:
       seed_k/adversarial/adversarial_training_*
       seed_k/adversarial_training_*
+      seed_k/ (files live directly inside)
+      root/seed_k (when root already points to the seed folder)
     Returns a list of full paths.
     """
     run_dirs = []
+    seed_candidates = []
+    # Allow root to be either the adversarial dir or a specific seed dir
+    if os.path.basename(root_dir).startswith("seed_") and os.path.isdir(root_dir):
+        seed_candidates.append(root_dir)
     for seed_name in sorted(os.listdir(root_dir)):
         seed_path = os.path.join(root_dir, seed_name)
-        if not os.path.isdir(seed_path):
-            continue
+        if os.path.isdir(seed_path) and seed_name.startswith("seed_"):
+            seed_candidates.append(seed_path)
 
+    for seed_path in seed_candidates:
+        candidates = []
         # Pattern A: seed_k/adversarial/adversarial_training_*
         adv_root = os.path.join(seed_path, "adversarial")
-        candidates = []
         if os.path.isdir(adv_root):
-            candidates = [
+            candidates.extend(
                 os.path.join(adv_root, d)
                 for d in os.listdir(adv_root)
-                if d.startswith("adversarial_training")
-            ]
+                if os.path.isdir(os.path.join(adv_root, d)) and d.startswith("adversarial_training")
+            )
         # Pattern B: seed_k/adversarial_training_*
+        candidates.extend(
+            os.path.join(seed_path, d)
+            for d in os.listdir(seed_path)
+            if os.path.isdir(os.path.join(seed_path, d)) and d.startswith("adversarial_training")
+        )
+        # Pattern C: seed_k/ contains the logs directly
         if not candidates:
-            candidates = [
-                os.path.join(seed_path, d)
-                for d in os.listdir(seed_path)
-                if d.startswith("adversarial_training")
-            ]
+            if os.path.exists(os.path.join(seed_path, "architect_fidelities.txt")):
+                candidates.append(seed_path)
+
         if not candidates:
             continue
 
