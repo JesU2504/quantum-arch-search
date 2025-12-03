@@ -45,9 +45,8 @@ class SaboteurMultiGateEnv(gym.Env):
     1. Budget Constraint: Saboteur can only attack 'max_concurrent_attacks' gates per step.
     2. Rates: Lowered max error rate to prevent 'carpet bombing' the circuit.
     """
-    # MODIFICATION 1: Reduced rates. removed 0.05 to prevent instant circuit death.
-    # Added 0.0 as an explicit "No Attack" option.
-    all_error_rates = [0.0, 0.001, 0.005, 0.01]
+    # MODIFICATION 1: Error rates (includes stronger levels; keep 0.0 as "No Attack").
+    all_error_rates = [0.0, 0.005, 0.01, 0.02, 0.05]
 
     def __init__(self, architect_circuit, target_state, max_circuit_timesteps=20, 
                  discrete=True, episode_length=1, lambda_penalty=0.5, **kwargs):
@@ -65,7 +64,7 @@ class SaboteurMultiGateEnv(gym.Env):
         self.lambda_penalty = lambda_penalty
         
         # MODIFICATION 2: Define the Attack Budget
-        self.max_concurrent_attacks = 3
+        self.max_concurrent_attacks = 5
 
         # --- Fixed Action Space (Padding) ---
         self.num_error_levels = len(self.all_error_rates)
