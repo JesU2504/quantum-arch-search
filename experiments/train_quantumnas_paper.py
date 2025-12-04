@@ -167,10 +167,17 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+INSTALL_HINT = (
+    "Install the upstream TorchQuantum/QuantumNAS stack in your environment before running this harness. "
+    "For example, in the base environment: pip install --upgrade pip && "
+    "pip install 'git+https://github.com/mit-han-lab/torchquantum.git'"
+)
+
+
 def ensure_module_available(name: str) -> None:
     if importlib.util.find_spec(name) is None:
         raise ImportError(
-            f"Required module '{name}' not found. Install the QuantumNAS/TorchQuantum dependencies before running this script."
+            f"Required module '{name}' not found. {INSTALL_HINT}"
         )
 
 
