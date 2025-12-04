@@ -62,7 +62,7 @@ Outputs (example): `results/run_YYYYMMDD-HHMMSS/`
 - Status: if no external circuit is provided, `--run-quantumnas` now runs a lightweight TorchQuantum-based baseline (GHZ state prep or Toffoli unitary prep) and writes `quantumnas/circuit_quantumnas.json`. You can override epochs/depth/lr via `--quantumnas-simple-*` flags.
 - Compare/cross-noise analyses will include the QuantumNAS circuit automatically when present.
 - Parameter recovery also includes QuantumNAS automatically if `quantumnas/circuit_quantumnas.json` exists in the run.
-- Official QuantumNAS paper harness: `--run-quantumnas-paper` launches `experiments/train_quantumnas_paper.py` to call the upstream TorchQuantum/QuantumNAS training loop and export `quantumnas/circuit_quantumnas.json`. Benchmarks supported out of the box: classification on `mnist4` (change with `--quantumnas-paper-dataset`) and VQE on `H2` (change with `--quantumnas-paper-molecule`).
+- Official QuantumNAS paper harness: `--run-quantumnas-paper` launches `experiments/train_quantumnas_paper.py` to call the upstream TorchQuantum/QuantumNAS training loop and export `quantumnas/circuit_quantumnas.json`. Benchmarks supported out of the box: classification on `mnist4`, `fashionmnist4`, `cifar10_4`, `gtsrb4`, or `vowel` (choose with `--quantumnas-paper-dataset`) and VQE on `H2`, `LiH`, `BeH2`, or `HeH+` (choose with `--quantumnas-paper-molecule`).
 - If you train a circuit externally with TorchQuantum/QuantumNAS and export OpenQASM, convert it for analysis with:
   ```bash
   python experiments/import_quantumnas_qasm.py --qasm path/to/circuit.qasm --out results/run_x/quantumnas/circuit_quantumnas.json

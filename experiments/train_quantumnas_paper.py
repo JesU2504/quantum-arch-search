@@ -10,10 +10,12 @@ existing robustness and comparison tooling can consume the circuit directly.
 
 Included paper benchmarks
 -------------------------
-- **Classification:** default TorchQuantum QuantumNAS pipeline on ``mnist4`` (can
-  be overridden with ``--dataset``).
-- **VQE:** hydrogen molecule (``H2``) by default (configurable via
-  ``--vqe-molecule``).
+- **Classification:** TorchQuantum QuantumNAS pipeline on the following datasets
+  (select via ``--dataset``): ``mnist4`` (default), ``fashionmnist4``,
+  ``cifar10_4``, ``gtsrb4``, and ``vowel``.
+- **VQE:** molecular Hamiltonians supported by the upstream QuantumNAS CLI and
+  exercised in common benchmarks (select via ``--vqe-molecule``): ``H2``
+  (default), ``LiH``, ``BeH2``, and ``HeH+``.
 
 Prerequisites
 -------------
@@ -47,6 +49,19 @@ from utils.torchquantum_adapter import convert_qasm_file_to_cirq  # noqa: E402
 
 
 DEFAULT_SEARCH_CMD = "python -m torchquantum.experiment.quantumnas.run_quantumnas"
+SUPPORTED_CLASSIFICATION_DATASETS = {
+    "mnist4": "QuantumNAS paper benchmark (default).",
+    "fashionmnist4": "FashionMNIST 4-class reduction used in prior QuantumNAS experiments.",
+    "cifar10_4": "CIFAR-10 reduced to four classes for lightweight benchmarking.",
+    "gtsrb4": "German Traffic Sign Recognition Benchmark reduced to four classes.",
+    "vowel": "Vowel classification benchmark used in QuantumNAS examples.",
+}
+SUPPORTED_VQE_MOLECULES = {
+    "H2": "Hydrogen molecule ground-state energy benchmark (default).",
+    "LiH": "Lithium hydride Hamiltonian used in QuantumNAS VQE examples.",
+    "BeH2": "Beryllium hydride Hamiltonian for deeper VQE circuits.",
+    "HeH+": "Helium hydride cation benchmark molecule.",
+}
 
 
 def parse_args() -> argparse.Namespace:
@@ -61,13 +76,21 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--dataset",
+        choices=sorted(SUPPORTED_CLASSIFICATION_DATASETS.keys()),
         default="mnist4",
-        help="Classification dataset flag forwarded to the QuantumNAS CLI (if supported).",
+        help=(
+            "Classification dataset forwarded to the QuantumNAS CLI. "
+            "Choices reflect common paper benchmarks and example configs."
+        ),
     )
     parser.add_argument(
         "--vqe-molecule",
+        choices=sorted(SUPPORTED_VQE_MOLECULES.keys()),
         default="H2",
-        help="Molecule identifier forwarded to the QuantumNAS CLI for VQE benchmarks.",
+        help=(
+            "Molecule identifier forwarded to the QuantumNAS CLI for VQE benchmarks. "
+            "Choices mirror commonly used QuantumNAS/TorchQuantum Hamiltonians."
+        ),
     )
     parser.add_argument("--seed", type=int, default=0, help="Random seed forwarded to QuantumNAS.")
     parser.add_argument(

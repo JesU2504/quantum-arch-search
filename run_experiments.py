@@ -29,7 +29,11 @@ if _src_root not in sys.path:
     sys.path.insert(0, _src_root)
 
 from qas_gym.utils import fidelity_pure_target
-from experiments.train_quantumnas_paper import DEFAULT_SEARCH_CMD
+from experiments.train_quantumnas_paper import (
+    DEFAULT_SEARCH_CMD,
+    SUPPORTED_CLASSIFICATION_DATASETS,
+    SUPPORTED_VQE_MOLECULES,
+)
 
 
 def setup_logger(log_path):
@@ -870,10 +874,28 @@ def parse_args():
                    help='Run the official QuantumNAS paper benchmark via train_quantumnas_paper.py and export circuit_quantumnas.json.')
     p.add_argument('--quantumnas-paper-task', type=str, default='auto', choices=['auto', 'classification', 'vqe'],
                    help='Paper task to launch in the QuantumNAS harness (classification, VQE, or auto to follow task_mode).')
-    p.add_argument('--quantumnas-paper-dataset', type=str, default='mnist4',
-                   help='Dataset flag forwarded to the QuantumNAS paper harness for classification tasks.')
-    p.add_argument('--quantumnas-paper-molecule', type=str, default='H2',
-                   help='Molecule name forwarded to the QuantumNAS paper harness for VQE tasks.')
+    dataset_choices = ', '.join(sorted(SUPPORTED_CLASSIFICATION_DATASETS.keys()))
+    p.add_argument(
+        '--quantumnas-paper-dataset',
+        type=str,
+        default='mnist4',
+        choices=sorted(SUPPORTED_CLASSIFICATION_DATASETS.keys()),
+        help=(
+            'Dataset forwarded to the QuantumNAS paper harness for classification tasks '
+            f'(options: {dataset_choices}).'
+        ),
+    )
+    molecule_choices = ', '.join(sorted(SUPPORTED_VQE_MOLECULES.keys()))
+    p.add_argument(
+        '--quantumnas-paper-molecule',
+        type=str,
+        default='H2',
+        choices=sorted(SUPPORTED_VQE_MOLECULES.keys()),
+        help=(
+            'Molecule forwarded to the QuantumNAS paper harness for VQE tasks '
+            f'(options: {molecule_choices}).'
+        ),
+    )
     p.add_argument('--quantumnas-paper-max-epochs', type=int, default=None,
                    help='Optional epoch override passed to the QuantumNAS paper harness.')
     p.add_argument('--quantumnas-search-cmd', type=str, default=DEFAULT_SEARCH_CMD,
