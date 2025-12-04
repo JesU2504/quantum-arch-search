@@ -1,0 +1,23 @@
+[
+  {
+    "name": "ry",
+    "wires": 0,
+    "params": 0.1188688650727272,
+    "inverse": false,
+    "trainable": true
+  },
+  {
+    "name": "ry",
+    "wires": 0,
+    "params": 0.05602455884218216,
+    "inverse": false,
+    "trainable": true
+  },
+  {
+    "name": "ry",
+    "wires": 0,
+    "params": 0.04743891954421997,
+    "inverse": false,
+    "trainable": true
+  }
+]

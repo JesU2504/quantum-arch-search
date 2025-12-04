@@ -1,0 +1,266 @@
+{
+  "molecule": "H2",
+  "noise_levels": [
+    0.0,
+    0.02
+  ],
+  "best_worst_energy": -1.1209824085235596,
+  "best_clean_energy": -1.1373059749603271,
+  "best_step": 19,
+  "n_wires": 1,
+  "n_layers": 2,
+  "hf_energy": -1.116998996754004,
+  "fci_energy": -1.137306035753399,
+  "history": [
+    {
+      "step": 1,
+      "clean_energy": -1.1303436756134033,
+      "worst_energy": -1.114159345626831
+    },
+    {
+      "step": 2,
+      "clean_energy": -1.1353473663330078,
+      "worst_energy": -1.1190630197525024
+    },
+    {
+      "step": 3,
+      "clean_energy": -1.1316511631011963,
+      "worst_energy": -1.1154407262802124
+    },
+    {
+      "step": 4,
+      "clean_energy": -1.135448694229126,
+      "worst_energy": -1.1191623210906982
+    },
+    {
+      "step": 5,
+      "clean_energy": -1.137261152267456,
+      "worst_energy": -1.1209384202957153
+    },
+    {
+      "step": 6,
+      "clean_energy": -1.1352744102478027,
+      "worst_energy": -1.118991494178772
+    },
+    {
+      "step": 7,
+      "clean_energy": -1.1343774795532227,
+      "worst_energy": -1.1181124448776245
+    },
+    {
+      "step": 8,
+      "clean_energy": -1.1359001398086548,
+      "worst_energy": -1.1196047067642212
+    },
+    {
+      "step": 9,
+      "clean_energy": -1.137249231338501,
+      "worst_energy": -1.1209267377853394
+    },
+    {
+      "step": 10,
+      "clean_energy": -1.1368151903152466,
+      "worst_energy": -1.1205013990402222
+    },
+    {
+      "step": 11,
+      "clean_energy": -1.1357569694519043,
+      "worst_energy": -1.11946439743042
+    },
+    {
+      "step": 12,
+      "clean_energy": -1.1357948780059814,
+      "worst_energy": -1.1195014715194702
+    },
+    {
+      "step": 13,
+      "clean_energy": -1.1367449760437012,
+      "worst_energy": -1.1204326152801514
+    },
+    {
+      "step": 14,
+      "clean_energy": -1.137304425239563,
+      "worst_energy": -1.1209808588027954
+    },
+    {
+      "step": 15,
+      "clean_energy": -1.1369240283966064,
+      "worst_energy": -1.1206080913543701
+    },
+    {
+      "step": 16,
+      "clean_energy": -1.1363561153411865,
+      "worst_energy": -1.1200515031814575
+    },
+    {
+      "step": 17,
+      "clean_energy": -1.136444330215454,
+      "worst_energy": -1.1201379299163818
+    },
+    {
+      "step": 18,
+      "clean_energy": -1.1370118856430054,
+      "worst_energy": -1.1206941604614258
+    },
+    {
+      "step": 19,
+      "clean_energy": -1.1373059749603271,
+      "worst_energy": -1.1209824085235596
+    },
+    {
+      "step": 20,
+      "clean_energy": -1.1370506286621094,
+      "worst_energy": -1.1207321882247925
+    },
+    {
+      "step": 21,
+      "clean_energy": -1.1367216110229492,
+      "worst_energy": -1.1204097270965576
+    },
+    {
+      "step": 22,
+      "clean_energy": -1.1368041038513184,
+      "worst_energy": -1.120490550994873
+    },
+    {
+      "step": 23,
+      "clean_energy": -1.1371549367904663,
+      "worst_energy": -1.1208343505859375
+    },
+    {
+      "step": 24,
+      "clean_energy": -1.137303352355957,
+      "worst_energy": -1.1209797859191895
+    },
+    {
+      "step": 25,
+      "clean_energy": -1.137120008468628,
+      "worst_energy": -1.1208001375198364
+    },
+    {
+      "step": 26,
+      "clean_energy": -1.1369364261627197,
+      "worst_energy": -1.1206202507019043
+    },
+    {
+      "step": 27,
+      "clean_energy": -1.1370265483856201,
+      "worst_energy": -1.1207085847854614
+    },
+    {
+      "step": 28,
+      "clean_energy": -1.1372449398040771,
+      "worst_energy": -1.120922565460205
+    },
+    {
+      "step": 29,
+      "clean_energy": -1.1372941732406616,
+      "worst_energy": -1.1209708452224731
+    },
+    {
+      "step": 30,
+      "clean_energy": -1.137155294418335,
+      "worst_energy": -1.1208347082138062
+    },
+    {
+      "step": 31,
+      "clean_energy": -1.1370723247528076,
+      "worst_energy": -1.1207534074783325
+    },
+    {
+      "step": 32,
+      "clean_energy": -1.137169599533081,
+      "worst_energy": -1.1208487749099731
+    },
+    {
+      "step": 33,
+      "clean_energy": -1.1372934579849243,
+      "worst_energy": -1.1209701299667358
+    },
+    {
+      "step": 34,
+      "clean_energy": -1.1372768878936768,
+      "worst_energy": -1.120953917503357
+    },
+    {
+      "step": 35,
+      "clean_energy": -1.1371803283691406,
+      "worst_energy": -1.1208592653274536
+    },
+    {
+      "step": 36,
+      "clean_energy": -1.1371703147888184,
+      "worst_energy": -1.1208494901657104
+    },
+    {
+      "step": 37,
+      "clean_energy": -1.1372573375701904,
+      "worst_energy": -1.1209347248077393
+    },
+    {
+      "step": 38,
+      "clean_energy": -1.137305736541748,
+      "worst_energy": -1.1209821701049805
+    },
+    {
+      "step": 39,
+      "clean_energy": -1.137258768081665,
+      "worst_energy": -1.1209361553192139
+    },
+    {
+      "step": 40,
+      "clean_energy": -1.1372120380401611,
+      "worst_energy": -1.1208903789520264
+    },
+    {
+      "step": 41,
+      "clean_energy": -1.137244462966919,
+      "worst_energy": -1.1209220886230469
+    },
+    {
+      "step": 42,
+      "clean_energy": -1.1372995376586914,
+      "worst_energy": -1.1209760904312134
+    },
+    {
+      "step": 43,
+      "clean_energy": -1.1372942924499512,
+      "worst_energy": -1.1209709644317627
+    },
+    {
+      "step": 44,
+      "clean_energy": -1.1372528076171875,
+      "worst_energy": -1.1209303140640259
+    },
+    {
+      "step": 45,
+      "clean_energy": -1.1372523307800293,
+      "worst_energy": -1.1209298372268677
+    },
+    {
+      "step": 46,
+      "clean_energy": -1.1372911930084229,
+      "worst_energy": -1.1209678649902344
+    },
+    {
+      "step": 47,
+      "clean_energy": -1.1373045444488525,
+      "worst_energy": -1.120980978012085
+    },
+    {
+      "step": 48,
+      "clean_energy": -1.1372791528701782,
+      "worst_energy": -1.1209560632705688
+    },
+    {
+      "step": 49,
+      "clean_energy": -1.1372672319412231,
+      "worst_energy": -1.1209443807601929
+    },
+    {
+      "step": 50,
+      "clean_energy": -1.137289047241211,
+      "worst_energy": -1.120965838432312
+    }
+  ]
+}

@@ -29,7 +29,7 @@ if _src_root not in sys.path:
     sys.path.insert(0, _src_root)
 
 from qas_gym.utils import fidelity_pure_target
-from experiments.train_quantumnas_paper import (
+from experiments.quantumnas.train_quantumnas_paper import (
     DEFAULT_SEARCH_CMD,
     SUPPORTED_CLASSIFICATION_DATASETS,
     SUPPORTED_VQE_MOLECULES,
@@ -289,7 +289,7 @@ def plot_coevolution_per_seed(run_dirs, logger=None):
         try:
             result = subprocess.run(
                 [
-                    'python', 'experiments/plot_coevolution.py',
+                    'python', 'experiments/analysis/plot_coevolution.py',
                     '--run-dir', run_dir,
                     '--out', out_path
                 ],
@@ -307,13 +307,13 @@ def plot_coevolution_per_seed(run_dirs, logger=None):
 
 def run_pipeline(args):
     # Lazy imports of experiment entrypoints
-    from experiments.train_architect import train_baseline_architect
-    from experiments.train_saboteur_only import train_saboteur_only
-    from experiments.train_adversarial import train_adversarial
-    from experiments.compare_circuits import compare_noise_resilience
-    from experiments.lambda_sweep import run_lambda_sweep
-    from experiments.parameter_recovery import run_parameter_recovery
-    from experiments.cross_noise_robustness import run_cross_noise_robustness
+    from experiments.architect.train_architect import train_baseline_architect
+    from experiments.adversarial.train_saboteur_only import train_saboteur_only
+    from experiments.adversarial.train_adversarial import train_adversarial
+    from experiments.analysis.compare_circuits import compare_noise_resilience
+    from experiments.architect.lambda_sweep import run_lambda_sweep
+    from experiments.analysis.parameter_recovery import run_parameter_recovery
+    from experiments.analysis.cross_noise_robustness import run_cross_noise_robustness
     
     # UNIFICATION: Import config to act as Single Source of Truth
     from experiments import config as exp_config
@@ -410,7 +410,7 @@ def run_pipeline(args):
 
             cmd = [
                 sys.executable,
-                'experiments/train_quantumnas_paper.py',
+                'experiments/quantumnas/train_quantumnas_paper.py',
                 '--task', paper_task,
                 '--out-dir', quantumnas_dir,
             ]
@@ -458,7 +458,7 @@ def run_pipeline(args):
                 elif args.quantumnas_op_history:
                     op_path = Path(args.quantumnas_op_history).expanduser().resolve()
                     try:
-                        from experiments.export_tq_op_history import main as export_op_history_main
+                        from experiments.quantumnas.export_tq_op_history import main as export_op_history_main
                         # Reuse export script logic via subprocess-like call
                         import sys as _sys
                         _argv_backup = list(_sys.argv)
@@ -497,7 +497,7 @@ def run_pipeline(args):
                 logger.info('Running simple TorchQuantum baseline (task=%s, epochs=%d, depth=%d, lr=%.4f)', task, epochs, depth, lr)
                 result = subprocess.run(
                     [
-                        'python', 'experiments/tq_train_simple_baseline.py',
+                        'python', 'experiments/architect/tq_train_simple_baseline.py',
                         '--task', task,
                         '--epochs', str(epochs),
                         '--lr', str(lr),
@@ -656,7 +656,7 @@ def run_pipeline(args):
             logger.info('Plotting multi-seed coevolution from %s', adversarial_dir)
             result = subprocess.run(
                 [
-                    'python', 'experiments/plot_coevolution_multiseed.py',
+                    'python', 'experiments/analysis/plot_coevolution_multiseed.py',
                     '--root-dir', adversarial_dir,
                     '--out', os.path.join(adversarial_dir, 'coevolution_multiseed.png')
                 ],

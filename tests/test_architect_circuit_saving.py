@@ -25,7 +25,7 @@ if _repo_root not in sys.path:
 if _src_root not in sys.path:
     sys.path.insert(0, _src_root)
 
-from experiments.train_architect import ChampionCircuitCallback, train_baseline_architect
+from experiments.architect.train_architect import ChampionCircuitCallback, train_baseline_architect
 from experiments import config
 from qas_gym.utils import save_circuit, load_circuit, verify_toffoli_unitary
 

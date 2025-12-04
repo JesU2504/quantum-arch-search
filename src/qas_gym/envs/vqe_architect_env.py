@@ -60,6 +60,8 @@ import os
 from datetime import datetime
 from scipy.optimize import minimize
 
+from utils.standard_hamiltonians import STANDARD_GEOM, get_standard_hamiltonian
+
 
 class VQEArchitectEnv(gym.Env):
     """
@@ -714,9 +716,12 @@ class VQEArchitectEnv(gym.Env):
         elif self.molecule == "H4":
             self.n_qubits = 4
             self._build_h4_hamiltonian()
+        elif self.molecule in STANDARD_GEOM:
+            self._build_standard_hamiltonian()
         else:
             raise NotImplementedError(
-                f"Molecule {self.molecule} not yet supported. Only H2 and H4 are available."
+                f"Molecule {self.molecule} not yet supported. Available: H2, H4, "
+                f"{', '.join(sorted(STANDARD_GEOM.keys()))}."
             )
 
     def _build_h2_hamiltonian(self):
@@ -765,6 +770,17 @@ class VQEArchitectEnv(gym.Env):
         self.hamiltonian = H
         self.reference_energy = self.H2_HARTREE_FOCK_ENERGY
         self.fci_energy = self.H2_FCI_ENERGY
+
+    def _build_standard_hamiltonian(self):
+        """
+        Build Hamiltonians for small molecules (HeH+, LiH, BeH2) using
+        Qiskit Nature + PySCF with standard active-space reductions.
+        """
+        info = get_standard_hamiltonian(self.molecule)
+        self.n_qubits = info["n_qubits"]
+        self.hamiltonian = info["matrix"]
+        self.reference_energy = info["hf_energy"]
+        self.fci_energy = info["fci_energy"]
 
     def _build_h4_hamiltonian(self):
         """

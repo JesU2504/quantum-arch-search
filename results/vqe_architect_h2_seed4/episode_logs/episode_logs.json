@@ -1,0 +1,327 @@
+[
+  {
+    "timestamp": "2025-12-04T07:42:17.421541",
+    "episode": 1,
+    "molecule": "H2",
+    "bond_distance": 0.74,
+    "circuit_architecture": [
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      },
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      },
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      },
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      },
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      }
+    ],
+    "n_gates": 5,
+    "n_cnots": 0,
+    "n_rotation_gates": 5,
+    "initial_params": {
+      "0": 2.7838036127885077,
+      "1": 0.07117311340949772,
+      "2": 2.9923274543394056,
+      "3": -2.6336849359581276,
+      "4": 0.6745365862312105
+    },
+    "optimized_params": {
+      "0": 2.527191879197564,
+      "1": -0.1435486433343276,
+      "2": -0.43670476656484203,
+      "3": 0.7757721442167961,
+      "4": 3.5744966375747063
+    },
+    "initial_energy": -0.94359728538484,
+    "optimized_energy": -1.1169901693927777,
+    "energy_error_mha": 20.009830607222277,
+    "chemical_accuracy_achieved": false,
+    "optimization_success": true,
+    "optimization_iterations": 6,
+    "reference_energies": {
+      "hartree_fock": -1.117,
+      "fci": -1.137
+    }
+  },
+  {
+    "timestamp": "2025-12-04T07:42:17.605010",
+    "episode": 2,
+    "molecule": "H2",
+    "bond_distance": 0.74,
+    "circuit_architecture": [
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      },
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      },
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      },
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      },
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      }
+    ],
+    "n_gates": 5,
+    "n_cnots": 0,
+    "n_rotation_gates": 5,
+    "initial_params": {
+      "0": 1.9163898891237885,
+      "1": 1.9348490455536158,
+      "2": 0.0962933399642707,
+      "3": -1.3458496214483335,
+      "4": -2.8027360567794943
+    },
+    "optimized_params": {
+      "0": 1.9163898891237885,
+      "1": 1.9348490455536158,
+      "2": 0.0962933399642707,
+      "3": -1.3458496214483335,
+      "4": -2.601265584420325
+    },
+    "initial_energy": -1.1149856745097049,
+    "optimized_energy": -1.1169999913033086,
+    "energy_error_mha": 20.000008696691385,
+    "chemical_accuracy_achieved": false,
+    "optimization_success": true,
+    "optimization_iterations": 9,
+    "reference_energies": {
+      "hartree_fock": -1.117,
+      "fci": -1.137
+    }
+  },
+  {
+    "timestamp": "2025-12-04T07:42:17.709690",
+    "episode": 3,
+    "molecule": "H2",
+    "bond_distance": 0.74,
+    "circuit_architecture": [
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      },
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      },
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      },
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      },
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      }
+    ],
+    "n_gates": 5,
+    "n_cnots": 0,
+    "n_rotation_gates": 5,
+    "initial_params": {
+      "0": 0.2397936924265509,
+      "1": -0.9847581679958686,
+      "2": -0.8226747951461473,
+      "3": -0.788560078461733,
+      "4": 3.062707200397904
+    },
+    "optimized_params": {
+      "0": 1.7920333090860519,
+      "1": -2.8394751945374326,
+      "2": -1.8382133040260147,
+      "3": 3.1982705927845485,
+      "4": -0.42414760756750125
+    },
+    "initial_energy": -1.093063356161029,
+    "optimized_energy": -1.116378673341973,
+    "energy_error_mha": 20.621326658027073,
+    "chemical_accuracy_achieved": false,
+    "optimization_success": true,
+    "optimization_iterations": 2,
+    "reference_energies": {
+      "hartree_fock": -1.117,
+      "fci": -1.137
+    }
+  },
+  {
+    "timestamp": "2025-12-04T07:42:17.812248",
+    "episode": 4,
+    "molecule": "H2",
+    "bond_distance": 0.74,
+    "circuit_architecture": [
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      },
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      },
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      },
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      },
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      }
+    ],
+    "n_gates": 5,
+    "n_cnots": 0,
+    "n_rotation_gates": 5,
+    "initial_params": {
+      "0": 0.7859979977652181,
+      "1": 2.4957679180609933,
+      "2": 1.7321842783482628,
+      "3": -1.7265741463697049,
+      "4": -1.2555922625248999
+    },
+    "optimized_params": {
+      "0": -0.16177693451446723,
+      "1": 2.6154093867724058,
+      "2": 1.838849070774832,
+      "3": 0.05762555441661921,
+      "4": 3.0722272157111794
+    },
+    "initial_energy": -0.9725167073764309,
+    "optimized_energy": -1.0588367710584512,
+    "energy_error_mha": 78.16322894154881,
+    "chemical_accuracy_achieved": false,
+    "optimization_success": true,
+    "optimization_iterations": 2,
+    "reference_energies": {
+      "hartree_fock": -1.117,
+      "fci": -1.137
+    }
+  },
+  {
+    "timestamp": "2025-12-04T07:42:17.921430",
+    "episode": 5,
+    "molecule": "H2",
+    "bond_distance": 0.74,
+    "circuit_architecture": [
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      },
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      },
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      },
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      },
+      {
+        "gate_type": "Rx",
+        "qubit": 0,
+        "control": null,
+        "target": null
+      }
+    ],
+    "n_gates": 5,
+    "n_cnots": 0,
+    "n_rotation_gates": 5,
+    "initial_params": {
+      "0": -1.0871652493666746,
+      "1": 3.061650702589703,
+      "2": -1.1390733959787083,
+      "3": 1.8130064339467111,
+      "4": 2.3241283274666467
+    },
+    "optimized_params": {
+      "0": -0.4839046174727044,
+      "1": -1.5335966957736495,
+      "2": 0.3918058313075159,
+      "3": 0.6551621585403691,
+      "4": 0.9227361978659552
+    },
+    "initial_energy": -1.0427233265872655,
+    "optimized_energy": -1.1168857941349382,
+    "energy_error_mha": 20.11420586506185,
+    "chemical_accuracy_achieved": false,
+    "optimization_success": true,
+    "optimization_iterations": 1,
+    "reference_energies": {
+      "hartree_fock": -1.117,
+      "fci": -1.137
+    }
+  }
+]

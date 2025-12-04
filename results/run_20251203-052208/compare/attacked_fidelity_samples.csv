@@ -1,4 +1,0 @@
-run_idx,circuit_type,attacked_fidelity
-0,vanilla,0.32835293561220164
-0,robust,0.6304538846015929
-0,quantumnas,0.5272779315710068

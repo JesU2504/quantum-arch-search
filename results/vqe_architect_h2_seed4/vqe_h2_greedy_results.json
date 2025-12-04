@@ -1,0 +1,71 @@
+{
+  "metadata": {
+    "timestamp": "2025-12-04T07:42:17.927514",
+    "molecule": "H2",
+    "bond_distance": 0.74,
+    "n_qubits": 2,
+    "max_timesteps": 10,
+    "agent_type": "greedy",
+    "reference_energies": {
+      "hartree_fock": -1.117,
+      "fci": -1.137
+    }
+  },
+  "results": [
+    {
+      "episode": 1,
+      "n_gates": 5,
+      "n_cnots": 0,
+      "initial_energy": -0.94359728538484,
+      "optimized_energy": -1.1169901693927777,
+      "energy_error_ha": 0.02000983060722228,
+      "energy_error_mha": 20.009830607222277,
+      "chemical_accuracy": false,
+      "reward": -0.02000983060722228
+    },
+    {
+      "episode": 2,
+      "n_gates": 5,
+      "n_cnots": 0,
+      "initial_energy": -1.1149856745097049,
+      "optimized_energy": -1.1169999913033086,
+      "energy_error_ha": 0.020000008696691385,
+      "energy_error_mha": 20.000008696691385,
+      "chemical_accuracy": false,
+      "reward": -0.020000008696691385
+    },
+    {
+      "episode": 3,
+      "n_gates": 5,
+      "n_cnots": 0,
+      "initial_energy": -1.093063356161029,
+      "optimized_energy": -1.116378673341973,
+      "energy_error_ha": 0.020621326658027073,
+      "energy_error_mha": 20.621326658027073,
+      "chemical_accuracy": false,
+      "reward": -0.020621326658027073
+    },
+    {
+      "episode": 4,
+      "n_gates": 5,
+      "n_cnots": 0,
+      "initial_energy": -0.9725167073764309,
+      "optimized_energy": -1.0588367710584512,
+      "energy_error_ha": 0.07816322894154881,
+      "energy_error_mha": 78.16322894154881,
+      "chemical_accuracy": false,
+      "reward": -0.07816322894154881
+    },
+    {
+      "episode": 5,
+      "n_gates": 5,
+      "n_cnots": 0,
+      "initial_energy": -1.0427233265872655,
+      "optimized_energy": -1.1168857941349382,
+      "energy_error_ha": 0.02011420586506185,
+      "energy_error_mha": 20.11420586506185,
+      "chemical_accuracy": false,
+      "reward": -0.02011420586506185
+    }
+  ]
+}
