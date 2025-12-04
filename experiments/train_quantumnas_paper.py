@@ -7,6 +7,19 @@ This script is intentionally thin: it shells out to the QuantumNAS reference
 implementation (e.g., the TorchQuantum release) and standardizes the exported
 artifacts into ``results/<run>/quantumnas/circuit_quantumnas.json`` so the
 existing robustness and comparison tooling can consume the circuit directly.
+
+Included paper benchmarks
+-------------------------
+- **Classification:** default TorchQuantum QuantumNAS pipeline on ``mnist4`` (can
+  be overridden with ``--dataset``).
+- **VQE:** hydrogen molecule (``H2``) by default (configurable via
+  ``--vqe-molecule``).
+
+Prerequisites
+-------------
+Install the QuantumNAS/TorchQuantum dependencies in your environment before
+running this harness; the script will raise a clear ``ImportError`` if they are
+missing.
 """
 
 from __future__ import annotations
