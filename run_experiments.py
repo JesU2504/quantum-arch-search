@@ -29,6 +29,7 @@ if _src_root not in sys.path:
     sys.path.insert(0, _src_root)
 
 from qas_gym.utils import fidelity_pure_target
+from experiments.train_quantumnas_paper import DEFAULT_SEARCH_CMD
 
 
 def setup_logger(log_path):
@@ -393,7 +394,53 @@ def run_pipeline(args):
     # 1b) QuantumNAS baseline (experimental scaffold; off by default)
     quantumnas_dir = os.path.join(base, 'quantumnas')
     os.makedirs(quantumnas_dir, exist_ok=True)
-    if getattr(args, "run_quantumnas", False):
+    if getattr(args, "run_quantumnas_paper", False):
+        logger.info('Running QuantumNAS paper benchmark')
+        circuit_path = None
+        try:
+            import subprocess
+
+            paper_task = args.quantumnas_paper_task
+            if paper_task == 'auto':
+                paper_task = 'vqe' if args.task_mode == 'vqe' else 'classification'
+
+            cmd = [
+                sys.executable,
+                'experiments/train_quantumnas_paper.py',
+                '--task', paper_task,
+                '--out-dir', quantumnas_dir,
+            ]
+            if paper_task == 'classification':
+                cmd.extend(['--dataset', args.quantumnas_paper_dataset])
+            else:
+                cmd.extend(['--vqe-molecule', args.quantumnas_paper_molecule])
+            if args.seed is not None:
+                cmd.extend(['--seed', str(base_seed)])
+            if args.quantumnas_search_cmd:
+                cmd.extend(['--search-cmd', args.quantumnas_search_cmd])
+            if args.quantumnas_paper_config:
+                cmd.extend(['--config', args.quantumnas_paper_config])
+            if args.quantumnas_paper_max_epochs is not None:
+                cmd.extend(['--max-epochs', str(args.quantumnas_paper_max_epochs)])
+            if args.quantumnas_paper_extra:
+                cmd.extend(args.quantumnas_paper_extra)
+
+            logger.info('Executing: %s', ' '.join(cmd))
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            if result.stdout:
+                logger.info(result.stdout.strip())
+            if result.stderr and result.stderr.strip():
+                logger.warning(result.stderr.strip())
+            expected = Path(quantumnas_dir) / "circuit_quantumnas.json"
+            if expected.exists():
+                circuit_path = expected
+        except Exception as e:
+            logger.error('QuantumNAS paper benchmark failed: %s', e)
+        if circuit_path:
+            logger.info('QuantumNAS circuit saved to %s', circuit_path)
+        else:
+            logger.warning('QuantumNAS paper benchmark did not produce a circuit. See logs for details.')
+    elif getattr(args, "run_quantumnas", False):
         logger.info('Running QuantumNAS baseline')
         circuit_path = None
         try:
@@ -818,6 +865,23 @@ def parse_args():
     )
     p.add_argument('--attack-samples', type=int, default=3000,
                    help='Max attack placements sampled per circuit when computing robustness summaries')
+    # Experimental: QuantumNAS paper benchmark harness
+    p.add_argument('--run-quantumnas-paper', action='store_true',
+                   help='Run the official QuantumNAS paper benchmark via train_quantumnas_paper.py and export circuit_quantumnas.json.')
+    p.add_argument('--quantumnas-paper-task', type=str, default='auto', choices=['auto', 'classification', 'vqe'],
+                   help='Paper task to launch in the QuantumNAS harness (classification, VQE, or auto to follow task_mode).')
+    p.add_argument('--quantumnas-paper-dataset', type=str, default='mnist4',
+                   help='Dataset flag forwarded to the QuantumNAS paper harness for classification tasks.')
+    p.add_argument('--quantumnas-paper-molecule', type=str, default='H2',
+                   help='Molecule name forwarded to the QuantumNAS paper harness for VQE tasks.')
+    p.add_argument('--quantumnas-paper-max-epochs', type=int, default=None,
+                   help='Optional epoch override passed to the QuantumNAS paper harness.')
+    p.add_argument('--quantumnas-search-cmd', type=str, default=DEFAULT_SEARCH_CMD,
+                   help='QuantumNAS search command invoked by the paper harness (CLI string).')
+    p.add_argument('--quantumnas-paper-config', type=str, default=None,
+                   help='Optional config file forwarded to the QuantumNAS paper harness CLI.')
+    p.add_argument('--quantumnas-paper-extra', nargs='*', default=None,
+                   help='Additional arguments forwarded verbatim to the QuantumNAS paper harness CLI.')
     # Experimental: QuantumNAS baseline scaffold (off by default)
     p.add_argument('--run-quantumnas', action='store_true',
                    help='Run the QuantumNAS baseline scaffold (placeholder implementation).')
