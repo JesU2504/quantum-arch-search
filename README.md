@@ -79,6 +79,24 @@ Outputs (example): `results/run_YYYYMMDD-HHMMSS/`
   ```
 - You can also pass `--quantumnas-qasm / --quantumnas-op-history` to `run_experiments.py` to import external QuantumNAS circuits into the pipeline (saved as `quantumnas/circuit_quantumnas.json`).
 
+#### Importing an externally trained QuantumNAS circuit end-to-end
+1) Train QuantumNAS in the TorchQuantum repository (outside this repo) and export the discovered circuit as OpenQASM 2.0 (e.g., `quantumnas_best.qasm`).
+2) Convert that QASM file into the Cirq JSON format used here:
+   ```bash
+   python experiments/import_quantumnas_qasm.py \
+     --qasm path/to/quantumnas_best.qasm \
+     --out results/<run>/quantumnas/circuit_quantumnas.json
+   ```
+   (Alternatively, point `run_experiments.py` at the QASM directly: `python run_experiments.py --preset quick --quantumnas-qasm path/to/quantumnas_best.qasm`.)
+3) Re-run robustness comparisons so the imported circuit appears alongside the Architect/Saboteur circuits:
+   ```bash
+   python experiments/compare_circuits.py \
+     --base-results-dir results/<run>/compare \
+     --n-qubits <num_qubits> \
+     --quantumnas-circuit results/<run>/quantumnas/circuit_quantumnas.json
+   ```
+   or rerun the main pipeline to regenerate robustness plots/stats with the new `quantumnas/circuit_quantumnas.json` present. The comparison script now auto-detects `results/<run>/quantumnas/circuit_quantumnas.json` (or accepts an explicit `--quantumnas-circuit` path) so manual copying is unnecessary.
+
 
 ## Reproducing key artifacts
 

@@ -187,6 +187,7 @@ def compare_noise_resilience(
     p_x: float = 0.05,
     p_y: float = 0.0,
     p_z: float = 0.0,
+    quantumnas_circuit_path: str | None = None,
 ):
     """
     Aggregate and compare circuit robustness under multi-gate attacks.
@@ -201,6 +202,7 @@ def compare_noise_resilience(
         num_runs: Number of experimental runs to aggregate.
         n_qubits: Number of qubits for this analysis.
         samples: Number of saboteur attack samples per circuit.
+        quantumnas_circuit_path: Optional explicit path to a Cirq JSON circuit to include.
         logger: Optional logger for output.
         attack_mode: 'max' (default, worst-case), 'policy' (agent-driven), or 'random_high'.
     """
@@ -235,6 +237,19 @@ def compare_noise_resilience(
         fallback_error_idx = 0
         log("[compare_circuits] Failed to load saboteur model; falling back to no-noise attacks.")
 
+    # Shared QuantumNAS circuit fallback: either explicit flag or auto-discovery
+    shared_qnas_path = None
+    if quantumnas_circuit_path:
+        candidate = os.path.expanduser(quantumnas_circuit_path)
+        if os.path.exists(candidate):
+            shared_qnas_path = os.path.abspath(candidate)
+        else:
+            log(f"  Warning: Provided QuantumNAS circuit not found at {candidate}")
+    else:
+        default_candidate = os.path.abspath(os.path.join(base_results_dir, "..", "quantumnas", "circuit_quantumnas.json"))
+        if os.path.exists(default_candidate):
+            shared_qnas_path = default_candidate
+
     for i in range(num_runs):
         run_dir = os.path.join(base_results_dir, f"run_{i}")
         log(f"\nProcessing Run {i+1}/{num_runs} from {run_dir}")
@@ -247,11 +262,17 @@ def compare_noise_resilience(
             circuit_vanilla = load_circuit(vanilla_circuit_file)
             circuit_robust = load_circuit(robust_circuit_file)
             circuit_qnas = None
+            qnas_path_used = None
             if os.path.exists(quantumnas_circuit_file):
+                qnas_path_used = quantumnas_circuit_file
+            elif shared_qnas_path and os.path.exists(shared_qnas_path):
+                qnas_path_used = shared_qnas_path
+
+            if qnas_path_used:
                 try:
-                    circuit_qnas = load_circuit(quantumnas_circuit_file)
+                    circuit_qnas = load_circuit(qnas_path_used)
                 except Exception as exc:
-                    log(f"  Warning: Failed to load QuantumNAS circuit in {run_dir}: {exc}")
+                    log(f"  Warning: Failed to load QuantumNAS circuit from {qnas_path_used}: {exc}")
         except FileNotFoundError as e:
             log(f"  Warning: Could not find circuit files in {run_dir}. Skipping run. Error: {e}")
             continue
@@ -284,7 +305,7 @@ def compare_noise_resilience(
                 saboteur_budget=saboteur_budget, rng=rng, attack_mode=attack_mode,
                 epsilon_overrot=epsilon_overrot, p_x=p_x, p_y=p_y, p_z=p_z
             )
-            metrics_q["circuit_path"] = quantumnas_circuit_file
+            metrics_q["circuit_path"] = qnas_path_used or quantumnas_circuit_file
             all_metrics_qnas.append(metrics_q)
             for val in metrics_q["samples"]:
                 all_samples.append([i, "quantumnas", val])
@@ -445,6 +466,8 @@ if __name__ == "__main__":
     parser.add_argument('--p-x', type=float, default=0.05, help='Asymmetric noise p_x if attack-mode=asymmetric_noise')
     parser.add_argument('--p-y', type=float, default=0.0, help='Asymmetric noise p_y if attack-mode=asymmetric_noise')
     parser.add_argument('--p-z', type=float, default=0.0, help='Asymmetric noise p_z if attack-mode=asymmetric_noise')
+    parser.add_argument('--quantumnas-circuit', type=str, default=None,
+                        help='Optional path to a Cirq JSON QuantumNAS circuit. If omitted, looks under ../quantumnas/.')
     args = parser.parse_args()
 
     compare_noise_resilience(
@@ -457,4 +480,5 @@ if __name__ == "__main__":
         p_x=args.p_x,
         p_y=args.p_y,
         p_z=args.p_z,
+        quantumnas_circuit_path=args.quantumnas_circuit,
     )
