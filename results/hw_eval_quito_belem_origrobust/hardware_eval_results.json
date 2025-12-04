@@ -1,0 +1,150 @@
+{
+  "fake_quito": {
+    "baseline": {
+      "backend": "fake_quito",
+      "shots": 4096,
+      "success_prob": 0.788330078125,
+      "depth": 15,
+      "width": 5,
+      "gate_counts": {
+        "rz": 8,
+        "cx": 6,
+        "sx": 5,
+        "measure": 3,
+        "barrier": 1
+      },
+      "counts": {
+        "101": 145,
+        "100": 150,
+        "110": 152,
+        "001": 143,
+        "010": 134,
+        "000": 1636,
+        "011": 143,
+        "111": 1593
+      }
+    },
+    "robust": {
+      "backend": "fake_quito",
+      "shots": 4096,
+      "success_prob": 0.806396484375,
+      "depth": 15,
+      "width": 5,
+      "gate_counts": {
+        "rz": 8,
+        "cx": 6,
+        "sx": 5,
+        "measure": 3,
+        "barrier": 1
+      },
+      "counts": {
+        "001": 140,
+        "100": 165,
+        "101": 77,
+        "010": 83,
+        "000": 1672,
+        "110": 173,
+        "011": 155,
+        "111": 1631
+      }
+    },
+    "quantumnas": {
+      "backend": "fake_quito",
+      "shots": 4096,
+      "success_prob": 0.759033203125,
+      "depth": 19,
+      "width": 5,
+      "gate_counts": {
+        "sx": 18,
+        "rz": 18,
+        "cx": 6,
+        "measure": 3,
+        "barrier": 1
+      },
+      "counts": {
+        "101": 140,
+        "100": 135,
+        "110": 236,
+        "010": 125,
+        "000": 1582,
+        "001": 221,
+        "011": 130,
+        "111": 1527
+      }
+    }
+  },
+  "fake_belem": {
+    "baseline": {
+      "backend": "fake_belem",
+      "shots": 4096,
+      "success_prob": 0.86767578125,
+      "depth": 15,
+      "width": 5,
+      "gate_counts": {
+        "rz": 8,
+        "cx": 6,
+        "sx": 5,
+        "measure": 3,
+        "barrier": 1
+      },
+      "counts": {
+        "001": 103,
+        "100": 110,
+        "110": 105,
+        "101": 71,
+        "010": 70,
+        "000": 1795,
+        "011": 83,
+        "111": 1759
+      }
+    },
+    "robust": {
+      "backend": "fake_belem",
+      "shots": 4096,
+      "success_prob": 0.87744140625,
+      "depth": 15,
+      "width": 5,
+      "gate_counts": {
+        "rz": 8,
+        "cx": 6,
+        "sx": 5,
+        "measure": 3,
+        "barrier": 1
+      },
+      "counts": {
+        "001": 85,
+        "100": 101,
+        "101": 66,
+        "110": 102,
+        "010": 62,
+        "000": 1813,
+        "011": 86,
+        "111": 1781
+      }
+    },
+    "quantumnas": {
+      "backend": "fake_belem",
+      "shots": 4096,
+      "success_prob": 0.8486328125,
+      "depth": 19,
+      "width": 5,
+      "gate_counts": {
+        "sx": 18,
+        "rz": 18,
+        "cx": 6,
+        "measure": 3,
+        "barrier": 1
+      },
+      "counts": {
+        "101": 101,
+        "100": 86,
+        "110": 127,
+        "001": 122,
+        "010": 100,
+        "000": 1753,
+        "011": 84,
+        "111": 1723
+      }
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "experiment_name": "circuit_robustness_comparison",
+  "timestamp": "2025-12-04T01:23:22.766181",
+  "statistical_protocol": {
+    "n_seeds": 1,
+    "seeds_used": [
+      0
+    ],
+    "aggregation_method": "mean \u00b1 std (sample standard deviation with ddof=1)",
+    "confidence_level": 0.95
+  },
+  "hyperparameters": {
+    "n_qubits": 3,
+    "num_runs": 1,
+    "samples_per_circuit": 1
+  },
+  "aggregated_results": {
+    "vanilla_fidelity": {
+      "mean": 0.32835293561220164,
+      "std": 0.0,
+      "median": 0.32835293561220164,
+      "min": 0.32835293561220164,
+      "max": 0.32835293561220164,
+      "n": 1,
+      "sem": 0.0,
+      "ci_lower": 0.32835293561220164,
+      "ci_upper": 0.32835293561220164
+    },
+    "robust_fidelity": {
+      "mean": 0.6304538846015929,
+      "std": 0.0,
+      "median": 0.6304538846015929,
+      "min": 0.6304538846015929,
+      "max": 0.6304538846015929,
+      "n": 1,
+      "sem": 0.0,
+      "ci_lower": 0.6304538846015929,
+      "ci_upper": 0.6304538846015929
+    },
+    "quantumnas_fidelity": {
+      "mean": 0.5272779315710068,
+      "std": 0.0,
+      "median": 0.5272779315710068,
+      "min": 0.5272779315710068,
+      "max": 0.5272779315710068,
+      "n": 1,
+      "sem": 0.0,
+      "ci_lower": 0.5272779315710068,
+      "ci_upper": 0.5272779315710068
+    }
+  },
+  "commit_hash": "286acb64",
+  "additional_notes": "Robustness comparison using 1 saboteur attack samples per circuit."
+}

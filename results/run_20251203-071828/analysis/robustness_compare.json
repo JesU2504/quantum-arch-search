@@ -15,11 +15,11 @@
     "group": "quantumnas",
     "run": "quantumnas",
     "seed": null,
-    "clean_fidelity": 0.9999999254941939,
-    "attacked_mean": 0.8613100879347843,
-    "attacked_std": 0.039875722467906514,
-    "attacked_min": 0.751854121685028,
-    "attacked_max": 0.9666666239500044,
+    "clean_fidelity": 0.9999997615814207,
+    "attacked_mean": 0.8597534194977388,
+    "attacked_std": 0.040339036663725805,
+    "attacked_min": 0.7489203363656995,
+    "attacked_max": 0.9666665643453596,
     "n_attacks_evaluated": 575,
     "circuit_path": "quantumnas/circuit_quantumnas.json"
   }

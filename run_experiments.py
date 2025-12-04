@@ -751,6 +751,29 @@ def run_pipeline(args):
                 logger=logger
             )
 
+    # 8) Hardware-style evaluation on Fake IBM backends (optional)
+    if args.run_hw_eval:
+        try:
+            from experiments.qiskit_hw_eval import run_hw_eval, parse_success_bitstrings
+            logger.info("Running hardware-style eval on backends: %s", args.hw_backends)
+            hw_output_dir = os.path.join(base, "hardware_eval")
+            hw_quantumnas_path = os.path.join(compare_runs[0], 'circuit_quantumnas.json') if compare_runs else None
+            hw_robust = robust_for_downstream if robust_for_downstream and os.path.exists(robust_for_downstream) else None
+            success_bits = parse_success_bitstrings(None, args.n_qubits)
+            run_hw_eval(
+                baseline_circuit=vanilla_src if os.path.exists(vanilla_src) else None,
+                robust_circuit=hw_robust,
+                quantumnas_circuit=hw_quantumnas_path if (hw_quantumnas_path and os.path.exists(hw_quantumnas_path)) else None,
+                backends=args.hw_backends,
+                shots=args.hw_shots,
+                opt_level=args.hw_opt_level,
+                seed=base_seed,
+                target_bitstrings=success_bits,
+                output_dir=hw_output_dir,
+            )
+        except Exception as exc:
+            logger.error("Hardware eval failed: %s", exc)
+
     # 8) Analysis summaries (fidelity + robustness under attack)
     analysis_dir = os.path.join(base, 'analysis')
     try:
@@ -816,6 +839,12 @@ def parse_args():
                    help='Depth (rotation+CNOT layers) for the simple TorchQuantum baseline (default: 3 GHZ, 8 Toffoli).')
     p.add_argument('--quantumnas-simple-lr', type=float, default=0.05,
                    help='Learning rate for the simple TorchQuantum baseline.')
+    p.add_argument('--run-hw-eval', action='store_true',
+                   help='Run IBM-style hardware evaluation (Fake backends via Qiskit Aer).')
+    p.add_argument('--hw-backends', type=str, nargs='+', default=['fake_quito', 'fake_belem'],
+                   help='Backends for hardware eval (e.g., fake_quito fake_belem fake_athens fake_yorktown).')
+    p.add_argument('--hw-shots', type=int, default=4096, help='Shots for hardware eval.')
+    p.add_argument('--hw-opt-level', type=int, default=3, help='Transpiler optimization level for hardware eval.')
     return p.parse_args()
 
 

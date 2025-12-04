@@ -57,7 +57,11 @@ def evaluate_multi_gate_attacks(
     fallback_error_idx=0,
     saboteur_budget: int = 3,
     rng: np.random.Generator | None = None,
-    attack_mode: str = "max",  # 'max' (worst-case), 'policy' (agent), 'random_high' (high-level random)
+    attack_mode: str = "max",  # 'max' (worst-case), 'policy' (agent), 'random_high' (high-level random), 'over_rotation', 'asymmetric_noise'
+    epsilon_overrot: float = 0.1,
+    p_x: float = 0.05,
+    p_y: float = 0.0,
+    p_z: float = 0.0,
 ):
     """
     Evaluate circuit robustness under multi-gate attacks sampled from saboteur_agent.
@@ -88,13 +92,28 @@ def evaluate_multi_gate_attacks(
     valid_gate_count = min(len(ops), config.MAX_CIRCUIT_TIMESTEPS)
 
     for _ in range(samples):
+        # Deterministic noise modes bypass saboteur
+        if attack_mode in ("over_rotation", "asymmetric_noise"):
+            noisy_ops = []
+            for op in ops:
+                noisy_ops.append(op)
+                if attack_mode == "over_rotation":
+                    for q in op.qubits:
+                        noisy_ops.append(cirq.rx(epsilon_overrot).on(q))
+                else:
+                    for q in op.qubits:
+                        noisy_ops.append(cirq.asymmetric_depolarize(p_x=p_x, p_y=p_y, p_z=p_z).on(q))
+            noisy_circuit = cirq.Circuit(noisy_ops)
+            attacked_vals.append(fidelity_pure_target(noisy_circuit, target_state, qubits))
+            continue
+
         sab_action = None
         budget = min(saboteur_budget, valid_gate_count)
 
         if attack_mode == "max":
-            # Worst-case: hit all gates with max error rate
+            # Worst-case: assign max error to all gates but honor budgeted subset (tie-break randomly)
             sab_action = np.full(valid_gate_count, max_idx, dtype=int)
-            budget = valid_gate_count
+            budget = min(saboteur_budget, valid_gate_count)
         elif attack_mode == "policy":
             sab_obs = SaboteurMultiGateEnv.create_observation_from_circuit(
                 circuit, n_qubits=n_qubits, max_circuit_timesteps=config.MAX_CIRCUIT_TIMESTEPS
@@ -109,6 +128,7 @@ def evaluate_multi_gate_attacks(
             high_min = max(0, max_idx - 2)
             sab_action = rng.integers(high_min, max_idx + 1, size=valid_gate_count, dtype=int)
             budget = valid_gate_count
+
 
         # Fallback if policy failed
         if sab_action is None:
@@ -163,6 +183,10 @@ def compare_noise_resilience(
     seed: int | None = 42,
     logger=None,
     attack_mode: str = "max",
+    epsilon_overrot: float = 0.1,
+    p_x: float = 0.05,
+    p_y: float = 0.0,
+    p_z: float = 0.0,
 ):
     """
     Aggregate and compare circuit robustness under multi-gate attacks.
@@ -236,13 +260,15 @@ def compare_noise_resilience(
         metrics_v = evaluate_multi_gate_attacks(
             circuit_vanilla, saboteur_agent, target_state, n_qubits,
             samples=samples, fallback_error_idx=fallback_error_idx,
-            saboteur_budget=saboteur_budget, rng=rng, attack_mode=attack_mode
+            saboteur_budget=saboteur_budget, rng=rng, attack_mode=attack_mode,
+            epsilon_overrot=epsilon_overrot, p_x=p_x, p_y=p_y, p_z=p_z
         )
         metrics_v["circuit_path"] = vanilla_circuit_file
         metrics_r = evaluate_multi_gate_attacks(
             circuit_robust, saboteur_agent, target_state, n_qubits,
             samples=samples, fallback_error_idx=fallback_error_idx,
-            saboteur_budget=saboteur_budget, rng=rng, attack_mode=attack_mode
+            saboteur_budget=saboteur_budget, rng=rng, attack_mode=attack_mode,
+            epsilon_overrot=epsilon_overrot, p_x=p_x, p_y=p_y, p_z=p_z
         )
         metrics_r["circuit_path"] = robust_circuit_file
         all_metrics_vanilla.append(metrics_v)
@@ -255,7 +281,8 @@ def compare_noise_resilience(
             metrics_q = evaluate_multi_gate_attacks(
                 circuit_qnas, saboteur_agent, target_state, n_qubits,
                 samples=samples, fallback_error_idx=fallback_error_idx,
-                saboteur_budget=saboteur_budget, rng=rng, attack_mode=attack_mode
+                saboteur_budget=saboteur_budget, rng=rng, attack_mode=attack_mode,
+                epsilon_overrot=epsilon_overrot, p_x=p_x, p_y=p_y, p_z=p_z
             )
             metrics_q["circuit_path"] = quantumnas_circuit_file
             all_metrics_qnas.append(metrics_q)
@@ -411,8 +438,13 @@ if __name__ == "__main__":
     parser.add_argument('--num-runs', type=int, default=3, help='Number of experimental runs to aggregate (default: 3)')
     parser.add_argument('--n-qubits', type=int, required=True, help='Number of qubits for this analysis')
     parser.add_argument('--samples', type=int, default=32, help='Number of saboteur attack samples per circuit')
-    parser.add_argument('--attack-mode', type=str, default='max', choices=['max', 'policy', 'random_high'],
-                        help="Attack sampling mode: 'max' (worst-case, default), 'policy' (agent-driven), 'random_high' (random from high error levels).")
+    parser.add_argument('--attack-mode', type=str, default='max',
+                        choices=['max', 'policy', 'random_high', 'over_rotation', 'asymmetric_noise'],
+                        help="Noise/attack mode: 'max'/'policy'/'random_high' saboteur, or 'over_rotation'/'asymmetric_noise' for deterministic noise.")
+    parser.add_argument('--epsilon-overrot', type=float, default=0.1, help='Over-rotation angle (radians) if attack-mode=over_rotation')
+    parser.add_argument('--p-x', type=float, default=0.05, help='Asymmetric noise p_x if attack-mode=asymmetric_noise')
+    parser.add_argument('--p-y', type=float, default=0.0, help='Asymmetric noise p_y if attack-mode=asymmetric_noise')
+    parser.add_argument('--p-z', type=float, default=0.0, help='Asymmetric noise p_z if attack-mode=asymmetric_noise')
     args = parser.parse_args()
 
     compare_noise_resilience(
@@ -420,5 +452,9 @@ if __name__ == "__main__":
         num_runs=args.num_runs,
         n_qubits=args.n_qubits,
         samples=args.samples,
-        attack_mode=args.attack_mode
+        attack_mode=args.attack_mode,
+        epsilon_overrot=args.epsilon_overrot,
+        p_x=args.p_x,
+        p_y=args.p_y,
+        p_z=args.p_z,
     )

@@ -1,0 +1,3 @@
+group,run,seed,clean_fidelity,attacked_mean,attacked_std,attacked_min,attacked_max,n_attacks_evaluated,circuit_path
+architect_baseline,baseline,,0.9999999403953551,0.7941229094111402,0.039841071511409684,0.7400773167610167,0.9666665196418761,575,baseline/circuit_vanilla.json
+quantumnas,quantumnas,,0.9999317824840543,0.8667048316934834,0.038792670482117396,0.7621046751737593,0.9666006714105605,575,quantumnas/circuit_quantumnas.json
