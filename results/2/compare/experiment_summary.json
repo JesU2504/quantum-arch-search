@@ -1,0 +1,76 @@
+{
+  "experiment_name": "circuit_robustness_comparison",
+  "timestamp": "2025-12-08T03:00:04.389629",
+  "statistical_protocol": {
+    "n_seeds": 5,
+    "seeds_used": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "aggregation_method": "mean \u00b1 std (sample standard deviation with ddof=1)",
+    "confidence_level": 0.95
+  },
+  "hyperparameters": {
+    "n_qubits": 3,
+    "num_runs": 5,
+    "samples_per_circuit": 32
+  },
+  "aggregated_results": {
+    "vanilla_fidelity": {
+      "mean": 0.7091872472316026,
+      "std": 0.004041517886704481,
+      "median": 0.7083378648385406,
+      "min": 0.7041648253798485,
+      "max": 0.715371805243194,
+      "n": 5,
+      "sem": 0.0018074217453905026,
+      "ci_lower": 0.7041690399735852,
+      "ci_upper": 0.7142054544896201
+    },
+    "robust_fidelity": {
+      "mean": 0.8031118024140594,
+      "std": 0.013424489585416808,
+      "median": 0.8026837967336177,
+      "min": 0.7912706434726713,
+      "max": 0.8248701570555566,
+      "n": 5,
+      "sem": 0.00600361425524599,
+      "ci_lower": 0.786443097001586,
+      "ci_upper": 0.8197805078265329
+    },
+    "quantumnas_fidelity": {
+      "mean": 0.8490814965218304,
+      "std": 0.00410502964935535,
+      "median": 0.8489430202171204,
+      "min": 0.8455589180812237,
+      "max": 0.8557936805300412,
+      "n": 5,
+      "sem": 0.0018358250691221378,
+      "ci_lower": 0.8439844289946669,
+      "ci_upper": 0.854178564048994
+    },
+    "vanilla_counts": {
+      "gate_count_mean": 16.0,
+      "gate_count_std": 0.0,
+      "cnot_count_mean": 15.0,
+      "cnot_count_std": 0.0
+    },
+    "robust_counts": {
+      "gate_count_mean": 4.8,
+      "gate_count_std": 1.16619037896906,
+      "cnot_count_mean": 3.4,
+      "cnot_count_std": 1.3564659966250538
+    },
+    "quantumnas_counts": {
+      "gate_count_mean": 15.0,
+      "gate_count_std": 0.0,
+      "cnot_count_mean": 6.0,
+      "cnot_count_std": 0.0
+    }
+  },
+  "commit_hash": "73bdbbc3",
+  "additional_notes": "Robustness comparison using 32 saboteur attack samples per circuit."
+}

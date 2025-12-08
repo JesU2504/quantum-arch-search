@@ -78,6 +78,7 @@ def train_adversarial_vqe(
     steps: int = 200,
     lr: float = 0.1,
     seed: int = 0,
+    noise_samples_per_step: int = 0,
 ) -> Tuple[HardwareEfficientAnsatz, dict, list]:
     info = get_standard_hamiltonian(molecule)
     n_wires, hamiltonian = info["n_qubits"], info["pauli_terms"]
@@ -98,9 +99,16 @@ def train_adversarial_vqe(
 
     for step_idx in range(1, steps + 1):
         opt.zero_grad()
-        qdev = model(record_op=False)
+        # record_op=True to enable per-step circuit logging
+        qdev = model(record_op=True)
         clean_e = energy(qdev, hamiltonian)
-        robust_e = (1 - noise_tensor) * clean_e + noise_tensor * mixed_energy
+        # Optionally augment with random noise samples each step
+        if noise_samples_per_step > 0:
+            rand = torch.rand(noise_samples_per_step, device=device) * noise_tensor.max()
+            noise_use = torch.cat([noise_tensor, rand])
+        else:
+            noise_use = noise_tensor
+        robust_e = (1 - noise_use) * clean_e + noise_use * mixed_energy
         worst_e = robust_e.max()
 
         worst_e.backward()
@@ -126,10 +134,11 @@ def train_adversarial_vqe(
                 "step": step_idx,
                 "clean_energy": clean_e.item(),
                 "worst_energy": worst_e.item(),
+                "qasm": _dump_qasm(op_history2qiskit(model.n_wires, qdev.op_history)),
             }
         )
 
-    return model, best, history
+    return model, best, history, info
 
 
 def export_artifacts(
@@ -140,6 +149,8 @@ def export_artifacts(
     best: dict,
     history: list,
     ham_info: dict,
+    seed: int,
+    eval_sweep: List[Tuple[float, float]] = None,
 ):
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -165,6 +176,8 @@ def export_artifacts(
         "hf_energy": ham_info.get("hf_energy"),
         "fci_energy": ham_info.get("fci_energy"),
         "history": history,
+        "seed": seed,
+        "eval_sweep": eval_sweep,
     }
     (out_dir / "results.json").write_text(json.dumps(results, indent=2))
     print(f"Saved adversarial VQE artifacts to {out_dir}")
@@ -192,6 +205,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lr", type=float, default=0.1, help="Adam learning rate.")
     parser.add_argument("--seed", type=int, default=0, help="Random seed.")
     parser.add_argument(
+        "--noise-samples-per-step",
+        type=int,
+        default=0,
+        help="Extra random noise samples per step (uniform in [0,max(noise_levels)]).",
+    )
+    parser.add_argument(
+        "--eval-noise-levels",
+        type=float,
+        nargs="+",
+        default=None,
+        help="Noise levels to evaluate after training (defaults to training list).",
+    )
+    parser.add_argument(
         "--out-dir",
         required=True,
         help="Where to store QASM/op_history/results artifacts.",
@@ -202,16 +228,36 @@ def parse_args() -> argparse.Namespace:
 def main():
     args = parse_args()
     out_dir = Path(args.out_dir).expanduser().resolve()
-    model, best, history = train_adversarial_vqe(
+    eval_noise = args.eval_noise_levels if args.eval_noise_levels is not None else args.noise_levels
+    model, best, history, ham_info = train_adversarial_vqe(
         molecule=args.molecule,
         noise_levels=args.noise_levels,
         n_layers=args.n_layers,
         steps=args.steps,
         lr=args.lr,
         seed=args.seed,
+        noise_samples_per_step=args.noise_samples_per_step,
     )
-    ham_info = get_standard_hamiltonian(args.molecule)
-    export_artifacts(model, out_dir, args.molecule, args.noise_levels, best, history, ham_info)
+    # Evaluate final model over a sweep of noise levels
+    eval_sweep = []
+    with torch.no_grad():
+        qdev = model(record_op=False)
+        clean_e = energy(qdev, ham_info["pauli_terms"]).item()
+        mixed_e = _mixed_state_energy(ham_info["pauli_terms"], ham_info["n_qubits"])
+        for p in eval_noise:
+            eval_sweep.append((p, (1 - p) * clean_e + p * mixed_e))
+
+    export_artifacts(
+        model,
+        out_dir,
+        args.molecule,
+        args.noise_levels,
+        best,
+        history,
+        ham_info,
+        args.seed,
+        eval_sweep,
+    )
 
 
 if __name__ == "__main__":

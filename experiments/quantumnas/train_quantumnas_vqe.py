@@ -105,13 +105,15 @@ def train_vqe(
     history = []
     for step in range(1, steps + 1):
         opt.zero_grad()
-        qdev = model(record_op=False)
+        qdev = model(record_op=True)
         e = energy(qdev, hamiltonian)
         e.backward()
         opt.step()
         if best_e is None or e.item() < best_e:
             best_e = e.item()
-        history.append({"step": step, "energy": e.item()})
+        # Capture per-step circuit for downstream noisy evaluation
+        circ = op_history2qiskit(model.n_wires, qdev.op_history)
+        history.append({"step": step, "energy": e.item(), "qasm": _dump_qasm(circ)})
         if step % 50 == 0 or step == steps:
             print(f"[step {step}] energy={e.item():.6f}, best={best_e:.6f}")
     return model, best_e, history

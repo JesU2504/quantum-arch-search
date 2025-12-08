@@ -62,6 +62,9 @@ def evaluate_multi_gate_attacks(
     p_x: float = 0.05,
     p_y: float = 0.0,
     p_z: float = 0.0,
+    gamma_amp: float = 0.05,
+    gamma_phase: float = 0.05,
+    p_readout: float = 0.03,
 ):
     """
     Evaluate circuit robustness under multi-gate attacks sampled from saboteur_agent.
@@ -93,16 +96,21 @@ def evaluate_multi_gate_attacks(
 
     for _ in range(samples):
         # Deterministic noise modes bypass saboteur
-        if attack_mode in ("over_rotation", "asymmetric_noise"):
+        if attack_mode in ("over_rotation", "asymmetric_noise", "amplitude_damping", "phase_damping", "readout"):
             noisy_ops = []
             for op in ops:
                 noisy_ops.append(op)
-                if attack_mode == "over_rotation":
-                    for q in op.qubits:
+                for q in op.qubits:
+                    if attack_mode == "over_rotation":
                         noisy_ops.append(cirq.rx(epsilon_overrot).on(q))
-                else:
-                    for q in op.qubits:
+                    elif attack_mode == "asymmetric_noise":
                         noisy_ops.append(cirq.asymmetric_depolarize(p_x=p_x, p_y=p_y, p_z=p_z).on(q))
+                    elif attack_mode == "amplitude_damping":
+                        noisy_ops.append(cirq.amplitude_damp(gamma_amp).on(q))
+                    elif attack_mode == "phase_damping":
+                        noisy_ops.append(cirq.phase_damp(gamma_phase).on(q))
+                    elif attack_mode == "readout":
+                        noisy_ops.append(cirq.bit_flip(p_readout).on(q))
             noisy_circuit = cirq.Circuit(noisy_ops)
             attacked_vals.append(fidelity_pure_target(noisy_circuit, target_state, qubits))
             continue
@@ -173,6 +181,14 @@ def calculate_fidelity(circuit: cirq.Circuit, target_state: np.ndarray) -> float
     return fidelity_pure_target(circuit, target_state, qubits) if qubits else 0.0
 
 
+def _count_gates_and_cnots(circuit: cirq.Circuit) -> tuple[int, int]:
+    """Return total gate count and CNOT count for a circuit."""
+    ops = list(circuit.all_operations())
+    total = len(ops)
+    cnots = sum(1 for op in ops if isinstance(op.gate, cirq.CNotPowGate))
+    return total, cnots
+
+
 # --- Move compare_noise_resilience to top-level for import ---
 def compare_noise_resilience(
     base_results_dir,
@@ -182,12 +198,17 @@ def compare_noise_resilience(
     saboteur_budget: int = 3,
     seed: int | None = 42,
     logger=None,
-    attack_mode: str = "max",
+    attack_mode: str = "random_high",
+    attack_modes: list[str] | None = None,
     epsilon_overrot: float = 0.1,
     p_x: float = 0.05,
     p_y: float = 0.0,
     p_z: float = 0.0,
+    gamma_amp: float = 0.05,
+    gamma_phase: float = 0.05,
+    p_readout: float = 0.03,
     quantumnas_circuit_path: str | None = None,
+    ignore_saboteur: bool = False,
 ):
     """
     Aggregate and compare circuit robustness under multi-gate attacks.
@@ -202,10 +223,17 @@ def compare_noise_resilience(
         num_runs: Number of experimental runs to aggregate.
         n_qubits: Number of qubits for this analysis.
         samples: Number of saboteur attack samples per circuit.
+        attack_modes: Optional list of attack modes to sweep (e.g., ['random_high', 'asymmetric_noise', 'over_rotation', 'amplitude_damping']).
         quantumnas_circuit_path: Optional explicit path to a Cirq JSON circuit to include.
         logger: Optional logger for output.
-        attack_mode: 'max' (default, worst-case), 'policy' (agent-driven), or 'random_high'.
+        attack_mode: Kept for backward compatibility; if attack_modes is provided, this is ignored.
+        gamma_amp: Amplitude damping probability for 'amplitude_damping' attack mode.
+        gamma_phase: Phase damping (dephasing) probability for 'phase_damping' attack mode.
+        p_readout: Readout error probability for 'readout' attack mode (applied as bit-flip channel).
     """
+    attack_modes = attack_modes or [attack_mode]
+    primary_mode = attack_modes[0]
+
     def log(msg):
         if logger:
             logger.info(msg)
@@ -218,20 +246,27 @@ def compare_noise_resilience(
     # Use central config to get target state for circuit robustness evaluation
     target_state = config.get_target_state(n_qubits)
 
-    all_metrics_vanilla = []
-    all_metrics_robust = []
-    all_metrics_qnas = []
-    all_samples = []
+    per_mode_metrics = {
+        mode: {
+            "vanilla": [],
+            "robust": [],
+            "quantumnas": [],
+            "samples": [],
+        }
+        for mode in attack_modes
+    }
 
     # Attack policy: prefer a trained saboteur; otherwise fall back to the strongest error level.
     try:
         from stable_baselines3 import PPO
         from qas_gym.envs.saboteur_env import SaboteurMultiGateEnv
         saboteur_model_path = os.path.join(base_results_dir, "../saboteur/saboteur_trained_on_architect_model.zip")
-        saboteur_agent = PPO.load(saboteur_model_path) if os.path.exists(saboteur_model_path) else None
+        saboteur_agent = None
+        if not ignore_saboteur and os.path.exists(saboteur_model_path):
+            saboteur_agent = PPO.load(saboteur_model_path)
         fallback_error_idx = len(SaboteurMultiGateEnv.all_error_rates) - 1  # worst-case level
         if saboteur_agent is None:
-            log(f"[compare_circuits] No saboteur model found at {saboteur_model_path}; using budgeted max-level fallback.")
+            log(f"[compare_circuits] No saboteur model found or ignored (ignore_saboteur={ignore_saboteur}); using budgeted max-level fallback.")
     except Exception:
         saboteur_agent = None
         fallback_error_idx = 0
@@ -277,62 +312,89 @@ def compare_noise_resilience(
             log(f"  Warning: Could not find circuit files in {run_dir}. Skipping run. Error: {e}")
             continue
 
-        rng = np.random.default_rng(None if seed is None else seed + i)
-        metrics_v = evaluate_multi_gate_attacks(
-            circuit_vanilla, saboteur_agent, target_state, n_qubits,
-            samples=samples, fallback_error_idx=fallback_error_idx,
-            saboteur_budget=saboteur_budget, rng=rng, attack_mode=attack_mode,
-            epsilon_overrot=epsilon_overrot, p_x=p_x, p_y=p_y, p_z=p_z
-        )
-        metrics_v["circuit_path"] = vanilla_circuit_file
-        metrics_r = evaluate_multi_gate_attacks(
-            circuit_robust, saboteur_agent, target_state, n_qubits,
-            samples=samples, fallback_error_idx=fallback_error_idx,
-            saboteur_budget=saboteur_budget, rng=rng, attack_mode=attack_mode,
-            epsilon_overrot=epsilon_overrot, p_x=p_x, p_y=p_y, p_z=p_z
-        )
-        metrics_r["circuit_path"] = robust_circuit_file
-        all_metrics_vanilla.append(metrics_v)
-        all_metrics_robust.append(metrics_r)
-        for val in metrics_v["samples"]:
-            all_samples.append([i, "vanilla", val])
-        for val in metrics_r["samples"]:
-            all_samples.append([i, "robust", val])
-        if circuit_qnas is not None:
-            metrics_q = evaluate_multi_gate_attacks(
-                circuit_qnas, saboteur_agent, target_state, n_qubits,
+        for mode in attack_modes:
+            rng = np.random.default_rng(None if seed is None else seed + i)
+            metrics_v = evaluate_multi_gate_attacks(
+                circuit_vanilla, saboteur_agent, target_state, n_qubits,
                 samples=samples, fallback_error_idx=fallback_error_idx,
-                saboteur_budget=saboteur_budget, rng=rng, attack_mode=attack_mode,
-                epsilon_overrot=epsilon_overrot, p_x=p_x, p_y=p_y, p_z=p_z
+                saboteur_budget=saboteur_budget, rng=rng, attack_mode=mode,
+                epsilon_overrot=epsilon_overrot, p_x=p_x, p_y=p_y, p_z=p_z,
+                gamma_amp=gamma_amp, gamma_phase=gamma_phase, p_readout=p_readout
             )
-            metrics_q["circuit_path"] = qnas_path_used or quantumnas_circuit_file
-            all_metrics_qnas.append(metrics_q)
-            for val in metrics_q["samples"]:
-                all_samples.append([i, "quantumnas", val])
+            metrics_v["circuit_path"] = vanilla_circuit_file
+            gates_v, cnots_v = _count_gates_and_cnots(circuit_vanilla)
+            metrics_v["gate_count"] = gates_v
+            metrics_v["cnot_count"] = cnots_v
+            per_mode_metrics[mode]["vanilla"].append(metrics_v)
+            for val in metrics_v["samples"]:
+                per_mode_metrics[mode]["samples"].append([i, "vanilla", mode, val])
 
-    # Compute aggregated statistics across runs
-    if all_metrics_vanilla and all_metrics_robust:
-        vanilla_means = [m["mean_attacked"] for m in all_metrics_vanilla]
-        vanilla_stds = [m["std_attacked"] for m in all_metrics_vanilla]
-        robust_means = [m["mean_attacked"] for m in all_metrics_robust]
-        robust_stds = [m["std_attacked"] for m in all_metrics_robust]
-        qnas_means = [m["mean_attacked"] for m in all_metrics_qnas] if all_metrics_qnas else []
-        qnas_stds = [m["std_attacked"] for m in all_metrics_qnas] if all_metrics_qnas else []
-        
-        # Aggregate across runs
+            metrics_r = evaluate_multi_gate_attacks(
+                circuit_robust, saboteur_agent, target_state, n_qubits,
+                samples=samples, fallback_error_idx=fallback_error_idx,
+                saboteur_budget=saboteur_budget, rng=rng, attack_mode=mode,
+                epsilon_overrot=epsilon_overrot, p_x=p_x, p_y=p_y, p_z=p_z,
+                gamma_amp=gamma_amp, gamma_phase=gamma_phase, p_readout=p_readout
+            )
+            metrics_r["circuit_path"] = robust_circuit_file
+            gates_r, cnots_r = _count_gates_and_cnots(circuit_robust)
+            metrics_r["gate_count"] = gates_r
+            metrics_r["cnot_count"] = cnots_r
+            per_mode_metrics[mode]["robust"].append(metrics_r)
+            for val in metrics_r["samples"]:
+                per_mode_metrics[mode]["samples"].append([i, "robust", mode, val])
+
+            if circuit_qnas is not None:
+                metrics_q = evaluate_multi_gate_attacks(
+                    circuit_qnas, saboteur_agent, target_state, n_qubits,
+                    samples=samples, fallback_error_idx=fallback_error_idx,
+                    saboteur_budget=saboteur_budget, rng=rng, attack_mode=mode,
+                    epsilon_overrot=epsilon_overrot, p_x=p_x, p_y=p_y, p_z=p_z,
+                    gamma_amp=gamma_amp, gamma_phase=gamma_phase, p_readout=p_readout
+                )
+                metrics_q["circuit_path"] = qnas_path_used or quantumnas_circuit_file
+                gates_q, cnots_q = _count_gates_and_cnots(circuit_qnas)
+                metrics_q["gate_count"] = gates_q
+                metrics_q["cnot_count"] = cnots_q
+                per_mode_metrics[mode]["quantumnas"].append(metrics_q)
+                for val in metrics_q["samples"]:
+                    per_mode_metrics[mode]["samples"].append([i, "quantumnas", mode, val])
+
+    aggregated_by_mode = {}
+    for mode, buckets in per_mode_metrics.items():
+        vm = buckets["vanilla"]
+        rm = buckets["robust"]
+        qm = buckets["quantumnas"]
+        if not vm or not rm:
+            continue
+        vanilla_means = [m["mean_attacked"] for m in vm]
+        robust_means = [m["mean_attacked"] for m in rm]
+        qnas_means = [m["mean_attacked"] for m in qm] if qm else []
+
         vanilla_overall = aggregate_metrics(vanilla_means)
         robust_overall = aggregate_metrics(robust_means)
         qnas_overall = aggregate_metrics(qnas_means) if qnas_means else None
-        
-        log(f"\nOverall Statistics (n={len(vanilla_means)} runs, {samples} samples each):")
+
+        aggregated_by_mode[mode] = {
+            "vanilla": vanilla_overall,
+            "robust": robust_overall,
+            "quantumnas": qnas_overall,
+        }
+
+        log(f"\nOverall Statistics [{mode}] (n={len(vanilla_means)} runs, {samples} samples each):")
         log(f"  Vanilla: {format_metric_with_error(vanilla_overall['mean'], vanilla_overall['std'], vanilla_overall['n'])}")
         log(f"  Robust:  {format_metric_with_error(robust_overall['mean'], robust_overall['std'], robust_overall['n'])}")
         if qnas_overall:
             log(f"  QuantumNAS: {format_metric_with_error(qnas_overall['mean'], qnas_overall['std'], qnas_overall['n'])}")
-    else:
-        vanilla_overall = None
-        robust_overall = None
-        qnas_overall = None
+
+    # Backward-compatible primary mode aliases
+    primary_metrics = per_mode_metrics.get(primary_mode, {})
+    all_metrics_vanilla = primary_metrics.get("vanilla", [])
+    all_metrics_robust = primary_metrics.get("robust", [])
+    all_metrics_qnas = primary_metrics.get("quantumnas", [])
+    vanilla_overall = aggregated_by_mode.get(primary_mode, {}).get("vanilla")
+    robust_overall = aggregated_by_mode.get(primary_mode, {}).get("robust")
+    qnas_overall = aggregated_by_mode.get(primary_mode, {}).get("quantumnas")
 
     # Save results to JSON with statistical info
     results_data = {
@@ -341,32 +403,41 @@ def compare_noise_resilience(
             "n_qubits": n_qubits,
             "num_runs": num_runs,
             "samples_per_circuit": samples,
+            "primary_attack_mode": primary_mode,
+            "attack_modes": attack_modes,
             "statistical_protocol": {
                 "aggregation_method": "mean ± std",
                 "samples_per_circuit": samples,
             },
         },
+        "per_mode": {
+            mode: {
+                "vanilla": buckets["vanilla"],
+                "robust": buckets["robust"],
+                "quantumnas": buckets["quantumnas"],
+                "aggregated": aggregated_by_mode.get(mode, {}),
+            }
+            for mode, buckets in per_mode_metrics.items()
+        },
+        # Backward-compatible aliases for the primary mode
         "vanilla": all_metrics_vanilla,
         "robust": all_metrics_robust,
         "quantumnas": all_metrics_qnas,
     }
     
     if vanilla_overall and robust_overall:
-        results_data["aggregated"] = {
-            "vanilla": vanilla_overall,
-            "robust": robust_overall,
-            "quantumnas": qnas_overall,
-        }
+        results_data["aggregated"] = aggregated_by_mode.get(primary_mode, {})
     
     with open(summary_json, "w") as f:
         json.dump(results_data, f, indent=2)
     log(f"\nRobustness summary saved to {summary_json}")
 
-    # Write all sample values to CSV
+    # Write all sample values to CSV (with attack_mode column)
     with open(samples_csv, "w", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["run_idx", "circuit_type", "attacked_fidelity"])
-        writer.writerows(all_samples)
+        writer.writerow(["run_idx", "circuit_type", "attack_mode", "attacked_fidelity"])
+        for mode, buckets in per_mode_metrics.items():
+            writer.writerows(buckets["samples"])
     log(f"Attacked fidelity samples saved to {samples_csv}")
 
     # --- Plot comparison of vanilla vs robust with error bars ---
@@ -403,10 +474,13 @@ def compare_noise_resilience(
                                label="Robust", color="tab:orange", capsize=5, alpha=0.8))
             if means_q:
                 bars.append(ax.bar(x + width, means_q, width, yerr=stds_q,
-                                   label="QuantumNAS", color="tab:green", capsize=5, alpha=0.8))
+                                   label="HEA baseline", color="tab:green", capsize=5, alpha=0.8))
 
             ax.set_ylabel("Mean Attacked Fidelity")
-            ax.set_title(f"Robustness Comparison: Vanilla vs Robust vs QuantumNAS\n(n={samples} attack samples per circuit, error bars: ±1 std)")
+            ax.set_title(
+                "Robustness Comparison (Primary Attack Mode)\n"
+                f"Mode: {primary_mode} | n={samples} samples/circuit (±1 std)"
+            )
             ax.set_xticks(x)
             ax.set_xticklabels(labels)
             ax.legend()
@@ -414,6 +488,23 @@ def compare_noise_resilience(
 
             max_height = max(means_v + means_r + (means_q if means_q else [0]))
             ax.set_ylim(0, max(1.05, max_height + 0.1))
+
+            # Annotate gate counts (mean across circuits if available)
+            def _mean_count(metrics, key):
+                return np.mean([m.get(key, 0) for m in metrics]) if metrics else None
+            gate_v = _mean_count(all_metrics_vanilla, "gate_count")
+            gate_r = _mean_count(all_metrics_robust, "gate_count")
+            gate_q = _mean_count(all_metrics_qnas, "gate_count") if all_metrics_qnas else None
+            info = []
+            if gate_v is not None:
+                info.append(f"Vanilla gates≈{gate_v:.1f}")
+            if gate_r is not None:
+                info.append(f"Robust gates≈{gate_r:.1f}")
+            if gate_q is not None:
+                info.append(f"HEA gates≈{gate_q:.1f}")
+            if info:
+                ax.text(0.02, 0.02, "\n".join(info), transform=ax.transAxes,
+                        fontsize=9, bbox=dict(boxstyle='round,pad=0.35', fc='white', alpha=0.85))
 
             plt.tight_layout()
             out_path = os.path.join(base_results_dir, "robustness_comparison.png")
@@ -437,6 +528,22 @@ def compare_noise_resilience(
         }
         if qnas_overall:
             aggregated_results["quantumnas_fidelity"] = qnas_overall
+        # Gate/CNOT aggregates
+        def _agg_counts(metrics):
+            if not metrics:
+                return None
+            gates = [m.get("gate_count", 0) for m in metrics]
+            cnots = [m.get("cnot_count", 0) for m in metrics]
+            return {
+                "gate_count_mean": float(np.mean(gates)),
+                "gate_count_std": float(np.std(gates)),
+                "cnot_count_mean": float(np.mean(cnots)),
+                "cnot_count_std": float(np.std(cnots)),
+            }
+        aggregated_results["vanilla_counts"] = _agg_counts(all_metrics_vanilla)
+        aggregated_results["robust_counts"] = _agg_counts(all_metrics_robust)
+        if all_metrics_qnas:
+            aggregated_results["quantumnas_counts"] = _agg_counts(all_metrics_qnas)
         
         summary = create_experiment_summary(
             experiment_name="circuit_robustness_comparison",
@@ -445,7 +552,10 @@ def compare_noise_resilience(
             hyperparameters=hyperparameters,
             aggregated_results=aggregated_results,
             commit_hash=get_git_commit_hash(),
-            additional_notes=f"Robustness comparison using {samples} saboteur attack samples per circuit."
+            additional_notes=(
+                f"Robustness comparison using {samples} attack samples per circuit. "
+                f"Primary attack mode: {primary_mode}. Other evaluated modes: {', '.join(attack_modes)}"
+            )
         )
         save_experiment_summary(summary, base_results_dir, 'experiment_summary.json')
 
@@ -459,15 +569,23 @@ if __name__ == "__main__":
     parser.add_argument('--num-runs', type=int, default=3, help='Number of experimental runs to aggregate (default: 3)')
     parser.add_argument('--n-qubits', type=int, required=True, help='Number of qubits for this analysis')
     parser.add_argument('--samples', type=int, default=32, help='Number of saboteur attack samples per circuit')
-    parser.add_argument('--attack-mode', type=str, default='max',
-                        choices=['max', 'policy', 'random_high', 'over_rotation', 'asymmetric_noise'],
-                        help="Noise/attack mode: 'max'/'policy'/'random_high' saboteur, or 'over_rotation'/'asymmetric_noise' for deterministic noise.")
+    parser.add_argument('--attack-mode', type=str, default='random_high',
+                        choices=['max', 'policy', 'random_high', 'over_rotation', 'asymmetric_noise', 'amplitude_damping', 'phase_damping', 'readout'],
+                        help=("Primary attack mode: saboteur-based ('max','policy','random_high') or deterministic noise "
+                              "('over_rotation','asymmetric_noise','amplitude_damping','phase_damping','readout')."))
+    parser.add_argument('--attack-modes', nargs='+', default=None,
+                        help=("Optional list of attack modes to sweep; first entry is used for plotting/back-compat. "
+                              "Examples: random_high max asymmetric_noise over_rotation amplitude_damping phase_damping readout"))
     parser.add_argument('--epsilon-overrot', type=float, default=0.1, help='Over-rotation angle (radians) if attack-mode=over_rotation')
     parser.add_argument('--p-x', type=float, default=0.05, help='Asymmetric noise p_x if attack-mode=asymmetric_noise')
     parser.add_argument('--p-y', type=float, default=0.0, help='Asymmetric noise p_y if attack-mode=asymmetric_noise')
     parser.add_argument('--p-z', type=float, default=0.0, help='Asymmetric noise p_z if attack-mode=asymmetric_noise')
+    parser.add_argument('--gamma-amp', type=float, default=0.05, help='Amplitude damping probability if attack-mode=amplitude_damping')
+    parser.add_argument('--gamma-phase', type=float, default=0.05, help='Phase damping probability if attack-mode=phase_damping')
+    parser.add_argument('--p-readout', type=float, default=0.03, help='Readout bit-flip probability if attack-mode=readout')
     parser.add_argument('--quantumnas-circuit', type=str, default=None,
                         help='Optional path to a Cirq JSON QuantumNAS circuit. If omitted, looks under ../quantumnas/.')
+    parser.add_argument('--ignore-saboteur', action='store_true', help='Skip loading saboteur policy and use non-policy attacks.')
     args = parser.parse_args()
 
     compare_noise_resilience(
@@ -476,9 +594,14 @@ if __name__ == "__main__":
         n_qubits=args.n_qubits,
         samples=args.samples,
         attack_mode=args.attack_mode,
+        attack_modes=args.attack_modes,
         epsilon_overrot=args.epsilon_overrot,
         p_x=args.p_x,
         p_y=args.p_y,
         p_z=args.p_z,
+        gamma_amp=args.gamma_amp,
+        gamma_phase=args.gamma_phase,
+        p_readout=args.p_readout,
         quantumnas_circuit_path=args.quantumnas_circuit,
+        ignore_saboteur=args.ignore_saboteur,
     )

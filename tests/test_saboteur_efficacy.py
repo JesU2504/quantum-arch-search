@@ -67,7 +67,8 @@ def test_saboteur_drops_ghz_fidelity():
     )
 
     # Apply max noise for one step
-    noisy_circuit, noisy_qubits = saboteur.apply_max_noise()
+    noisy_circuit, _ = saboteur.apply_max_noise()
+    noisy_qubits = saboteur.qubits
 
     # Step 4: Compute fidelity after noise and verify it dropped
     # Use density matrix simulator for noisy circuit

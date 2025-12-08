@@ -19,6 +19,7 @@ import glob
 import itertools
 import random
 from pathlib import Path
+import cirq
 
 # Add repository root and src to sys.path for standalone execution
 _repo_root = os.path.abspath(os.path.dirname(__file__))
@@ -34,6 +35,8 @@ from experiments.quantumnas.train_quantumnas_paper import (
     SUPPORTED_CLASSIFICATION_DATASETS,
     SUPPORTED_VQE_MOLECULES,
 )
+from qas_gym.envs.saboteur_env import SUPPORTED_NOISE_FAMILIES
+from experiments.analysis.robustness_sweep import sweep_circuit_entries
 
 
 def setup_logger(log_path):
@@ -56,6 +59,30 @@ def setup_logger(log_path):
 def save_metadata(path, metadata):
     with open(path, 'w') as f:
         json.dump(metadata, f, indent=2, sort_keys=True)
+
+
+def truncate_circuit_json(json_path: str, max_ops: int, logger=None) -> None:
+    """
+    Trim a Cirq JSON circuit file to the first max_ops operations in-place.
+    This enforces the global gate budget (default 15) for external baselines like QuantumNAS.
+    """
+    log = logger.info if logger else print
+    try:
+        circuit = cirq.read_json(json_path)
+        ops = list(circuit.all_operations())
+    except Exception as exc:  # pragma: no cover - defensive
+        if logger:
+            logger.warning("Could not read circuit %s for truncation: %s", json_path, exc)
+        else:
+            print(f"[truncate] Could not read {json_path}: {exc}")
+        return
+
+    if len(ops) <= max_ops:
+        return
+
+    trimmed = cirq.Circuit(ops[:max_ops])
+    Path(json_path).write_text(cirq.to_json(trimmed))
+    log(f"Truncated circuit at {json_path} from {len(ops)} to {max_ops} gates")
 
 
 def set_global_seed(seed, logger=None):
@@ -192,19 +219,23 @@ def _evaluate_circuit_under_attacks(circuit: "cirq.Circuit", target_state, rate:
     }
 
 
-def summarize_robustness(base_dir: str, analysis_dir: str, max_samples: int, logger=None):
+def summarize_robustness(
+    base_dir: str,
+    analysis_dir: str,
+    max_samples: int,
+    noise_families: list[str],
+    budgets: list[int],
+    rate: float,
+    noise_kwargs: dict | None = None,
+    logger=None,
+):
     """
-    Compute robustness under attack for both adversarial (robust) circuits and baseline circuits.
+    Compute robustness under attack for circuits across multiple noise families/budgets.
     Produces JSON/CSV in analysis_dir.
     """
     import csv
-    import cirq
-    import numpy as np
-    from qas_gym.envs.saboteur_env import SaboteurMultiGateEnv
     from experiments import config as exp_config
 
-    rate = max(SaboteurMultiGateEnv.all_error_rates)
-    budget = 3
     random.seed(0)
 
     base_path = Path(base_dir)
@@ -215,49 +246,39 @@ def summarize_robustness(base_dir: str, analysis_dir: str, max_samples: int, log
     if baseline_path.exists():
         circuit_entries.append({"group": "architect_baseline", "run": "baseline", "seed": None, "path": baseline_path})
 
-    # Adversarial robust champions
-    for path in base_path.glob("**/adversarial/seed_*/adversarial_training_*/circuit_robust.json"):
-        seed_label = next((p for p in path.parts if p.startswith("seed_")), "")
-        run_label = str(path.relative_to(base_path).parts[0]) if path.relative_to(base_path).parts else ""
-        circuit_entries.append({"group": "adversarial", "run": run_label, "seed": seed_label, "path": path})
+    # Adversarial robust champions (various layouts)
+    for pattern in [
+        "**/adversarial/seed_*/adversarial_training_*/circuit_robust.json",
+        "**/adversarial/seed_*/circuit_robust.json",
+        "**/adversarial/circuit_robust.json",
+        "**/compare/run_*/circuit_robust.json",
+    ]:
+        for path in base_path.glob(pattern):
+            seed_label = next((p for p in path.parts if p.startswith("seed_")), "")
+            try:
+                run_label = str(path.relative_to(base_path).parts[0]) if path.relative_to(base_path).parts else ""
+            except Exception:
+                run_label = ""
+            circuit_entries.append({"group": "adversarial", "run": run_label, "seed": seed_label, "path": path})
 
     # QuantumNAS baseline (if produced)
     for path in base_path.glob("**/quantumnas/circuit_quantumnas.json"):
-        run_label = str(path.relative_to(base_path).parts[0]) if path.relative_to(base_path).parts else ""
+        try:
+            run_label = str(path.relative_to(base_path).parts[0]) if path.relative_to(base_path).parts else ""
+        except Exception:
+            run_label = ""
         circuit_entries.append({"group": "quantumnas", "run": run_label, "seed": None, "path": path})
 
-    rows = []
-    for entry in sorted(circuit_entries, key=lambda e: (e["group"], e.get("run", ""), str(e.get("seed")), str(e["path"]))):
-        path = entry["path"]
-        try:
-            circuit = cirq.read_json(json_text=path.read_text())
-        except Exception as e:
-            if logger:
-                logger.error("Failed to load circuit at %s: %s", path, e)
-            continue
-        n_qubits = len(circuit.all_qubits())
-        target_state = exp_config.get_target_state(n_qubits)
-
-        stats = _evaluate_circuit_under_attacks(
-            circuit=circuit,
-            target_state=target_state,
-            rate=rate,
-            budget=budget,
-            max_samples=max_samples,
-        )
-
-        rows.append({
-            "group": entry["group"],
-            "run": entry.get("run"),
-            "seed": entry.get("seed"),
-            "clean_fidelity": stats["clean_fidelity"],
-            "attacked_mean": stats["attacked_mean"],
-            "attacked_std": stats["attacked_std"],
-            "attacked_min": stats["attacked_min"],
-            "attacked_max": stats["attacked_max"],
-            "n_attacks_evaluated": stats["n_attacks_evaluated"],
-            "circuit_path": str(path.relative_to(base_path)),
-        })
+    target_state_fn = exp_config.get_target_state
+    rows = sweep_circuit_entries(
+        circuit_entries=sorted(circuit_entries, key=lambda e: (e["group"], e.get("run", ""), str(e.get("seed")), str(e["path"]))),
+        noise_families=noise_families,
+        budgets=budgets,
+        rate=rate,
+        max_samples=max_samples,
+        target_state_fn=target_state_fn,
+        noise_kwargs=noise_kwargs,
+    )
 
     if not rows:
         if logger:
@@ -265,16 +286,38 @@ def summarize_robustness(base_dir: str, analysis_dir: str, max_samples: int, log
         return
 
     os.makedirs(analysis_dir, exist_ok=True)
-    json_path = Path(analysis_dir) / "robustness_compare.json"
-    csv_path = Path(analysis_dir) / "robustness_compare.csv"
+    json_path = Path(analysis_dir) / "robustness_sweep.json"
+    csv_path = Path(analysis_dir) / "robustness_sweep.csv"
     with json_path.open("w") as f:
         json.dump(rows, f, indent=2)
     with csv_path.open("w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
         writer.writeheader()
         writer.writerows(rows)
-    if logger:
-        logger.info("Robustness comparison written to %s and %s", json_path, csv_path)
+
+    # Backward-compatible single-scenario summary (first family/budget)
+    primary_family = noise_families[0] if noise_families else "depolarizing"
+    primary_budget = budgets[0] if budgets else 1
+    filtered = [r for r in rows if r["noise_family"] == primary_family and r["attack_budget"] == primary_budget]
+    if filtered:
+        legacy_json = Path(analysis_dir) / "robustness_compare.json"
+        legacy_csv = Path(analysis_dir) / "robustness_compare.csv"
+        with legacy_json.open("w") as f:
+            json.dump(filtered, f, indent=2)
+        with legacy_csv.open("w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=list(filtered[0].keys()))
+            writer.writeheader()
+            writer.writerows(filtered)
+        if logger:
+            logger.info(
+                "Robustness sweep written to %s/%s (legacy compare uses family=%s, budget=%s)",
+                json_path,
+                csv_path,
+                primary_family,
+                primary_budget,
+            )
+    elif logger:
+        logger.info("Robustness sweep written to %s and %s", json_path, csv_path)
 
 
 def plot_coevolution_per_seed(run_dirs, logger=None):
@@ -489,24 +532,29 @@ def run_pipeline(args):
             else:
                 # Run simple TorchQuantum trainer to produce a circuit from scratch
                 task = 'ghz' if exp_config.TARGET_TYPE.lower() == 'ghz' else 'toffoli'
-                epochs_default = 200 if task == 'ghz' else 800
-                depth_default = 3 if task == 'ghz' else 8
+                epochs_default = 400 if task == 'ghz' else 2000
+                depth_default = 4 if task == 'ghz' else 12
+                # Optionally double depth to better match adversarial circuit sizes
+                augment_depth = True
                 epochs = args.quantumnas_simple_epochs or epochs_default
                 depth = args.quantumnas_simple_depth or depth_default
                 lr = args.quantumnas_simple_lr
-                logger.info('Running simple TorchQuantum baseline (task=%s, epochs=%d, depth=%d, lr=%.4f)', task, epochs, depth, lr)
-                result = subprocess.run(
-                    [
-                        'python', 'experiments/architect/tq_train_simple_baseline.py',
-                        '--task', task,
-                        '--epochs', str(epochs),
-                        '--lr', str(lr),
-                        '--depth', str(depth),
-                        '--out-dir', quantumnas_dir,
-                    ],
-                    capture_output=True,
-                    text=True,
-                )
+                logger.info('Running simple TorchQuantum baseline (task=%s, epochs=%d, depth=%d, lr=%.4f, augment_depth=%s)', task, epochs, depth, lr, augment_depth)
+                cmd = [
+                    'python', 'experiments/architect/tq_train_simple_baseline.py',
+                    '--task', task,
+                    '--epochs', str(epochs),
+                    '--lr', str(lr),
+                    '--depth', str(depth),
+                    '--out-dir', quantumnas_dir,
+                ]
+                if augment_depth:
+                    cmd.append('--augment-depth')
+                if args.max_circuit_gates:
+                    cmd.extend(['--max-gates', str(args.max_circuit_gates)])
+                if base_seed is not None:
+                    cmd.extend(['--seed', str(base_seed)])
+                result = subprocess.run(cmd, capture_output=True, text=True)
                 if result.stdout:
                     logger.info(result.stdout.strip())
                 if result.stderr and result.stderr.strip():
@@ -533,7 +581,7 @@ def run_pipeline(args):
             elif args.quantumnas_op_history:
                 op_path = Path(args.quantumnas_op_history).expanduser().resolve()
                 try:
-                    from experiments.export_tq_op_history import main as export_op_history_main
+                    from experiments.quantumnas.export_tq_op_history import main as export_op_history_main
                     # Reuse export script logic via subprocess-like call
                     import sys as _sys
                     _argv_backup = list(_sys.argv)
@@ -562,6 +610,11 @@ def run_pipeline(args):
                 logger.error("No valid QASM/op_history provided for QuantumNAS import.")
         except Exception as exc:
             logger.error("QuantumNAS import failed: %s", exc)
+
+    # Enforce gate budget on QuantumNAS circuit (if produced)
+    qnas_json = Path(quantumnas_dir) / "circuit_quantumnas.json"
+    if qnas_json.exists():
+        truncate_circuit_json(str(qnas_json), max_ops=args.max_circuit_gates, logger=logger)
 
     # 1.5) Lambda Sweep
     lambda_sweep_dir = os.path.join(base, 'lambda_sweep')
@@ -642,6 +695,13 @@ def run_pipeline(args):
                 task_mode=args.task_mode,
                 champion_save_last_steps=args.champion_save_last_steps,
                 hall_of_fame_size=args.hall_of_fame_size,
+                saboteur_noise_family=args.saboteur_noise_family,
+                saboteur_error_rates=args.saboteur_error_rates,
+                saboteur_budget=args.saboteur_budget,
+                saboteur_budget_fraction=args.saboteur_budget_fraction,
+                saboteur_start_budget_scale=args.saboteur_start_budget_scale,
+                alpha_start=args.alpha_start,
+                alpha_end=args.alpha_end,
             )
             adv_training_dirs.append(log_dir)
 
@@ -752,6 +812,7 @@ def run_pipeline(args):
                     target_path = Path(run_dir) / "circuit_quantumnas.json"
                     target_path.parent.mkdir(parents=True, exist_ok=True)
                     target_path.write_text(qnas_circuit.read_text())
+                    truncate_circuit_json(str(target_path), max_ops=args.max_circuit_gates, logger=logger)
                 logger.info("QuantumNAS circuit copied into compare runs for analysis.")
             except Exception as exc:
                 logger.error("Failed to copy QuantumNAS circuit into compare runs: %s", exc)
@@ -803,7 +864,7 @@ def run_pipeline(args):
             )
 
     # 8) Hardware-style evaluation on Fake IBM backends (optional)
-    if args.run_hw_eval:
+    if args.run_hw_eval and not getattr(args, "skip_hw_eval", False):
         try:
             from experiments.qiskit_hw_eval import run_hw_eval, parse_success_bitstrings
             logger.info("Running hardware-style eval on backends: %s", args.hw_backends)
@@ -832,7 +893,30 @@ def run_pipeline(args):
     except Exception as e:
         logger.error('Error summarizing fidelities: %s', e)
     try:
-        summarize_robustness(base, analysis_dir, max_samples=args.attack_samples, logger=logger)
+        from qas_gym.envs.saboteur_env import SaboteurMultiGateEnv
+
+        robustness_families = args.robustness_noise_families or list(
+            dict.fromkeys([args.saboteur_noise_family, "depolarizing"])
+        )
+        default_budget = args.saboteur_budget if args.saboteur_budget is not None else 3
+        robustness_budgets = args.robustness_budgets or [1, default_budget]
+        robustness_budgets = [b for b in robustness_budgets if b is not None and b >= 0]
+        if not robustness_budgets:
+            robustness_budgets = [default_budget or 1]
+        robustness_rate = (
+            args.robustness_rate
+            if args.robustness_rate is not None
+            else (max(args.saboteur_error_rates) if args.saboteur_error_rates else max(SaboteurMultiGateEnv.all_error_rates))
+        )
+        summarize_robustness(
+            base,
+            analysis_dir,
+            max_samples=args.attack_samples,
+            noise_families=robustness_families,
+            budgets=robustness_budgets,
+            rate=robustness_rate,
+            logger=logger,
+        )
     except Exception as e:
         logger.error('Error summarizing robustness: %s', e)
 
@@ -840,6 +924,21 @@ def run_pipeline(args):
 
 
 def parse_args():
+    def _parse_error_rates(value):
+        if value is None:
+            return None
+        try:
+            return [float(x) for x in value.split(",") if x.strip() != ""]
+        except ValueError as exc:
+            raise argparse.ArgumentTypeError(f"Invalid saboteur-error-rates '{value}': {exc}") from exc
+    def _parse_int_list(value):
+        if value is None:
+            return None
+        try:
+            return [int(x) for x in value.split(",") if x.strip() != ""]
+        except ValueError as exc:
+            raise argparse.ArgumentTypeError(f"Invalid budget list '{value}': {exc}") from exc
+
     p = argparse.ArgumentParser(description='Run the experiment pipeline')
     p.add_argument('--n-qubits', type=int, default=4, help="Number of qubits (3=Quick, 4=Full, 5=Long)")
     p.add_argument('--base-dir', type=str, default=None)
@@ -867,6 +966,28 @@ def parse_args():
         default=None,
         choices=['state_preparation', 'unitary_preparation']
     )
+    p.add_argument('--saboteur-noise-family', type=str, default='depolarizing',
+                   choices=sorted(SUPPORTED_NOISE_FAMILIES),
+                   help='Noise family used by the saboteur (for training + evaluation).')
+    p.add_argument('--saboteur-error-rates', type=_parse_error_rates, default=None,
+                   help='Comma-separated list of saboteur error rates (e.g., "0.0,0.01,0.02").')
+    p.add_argument('--saboteur-budget', type=int, default=3,
+                   help='Max gates the saboteur can attack per episode (before fractional scaling).')
+    p.add_argument('--saboteur-budget-fraction', type=float, default=0.2,
+                   help='Fractional attack budget relative to circuit length (set None to disable).')
+    p.add_argument('--saboteur-start-budget-scale', type=float, default=0.3,
+                   help='Initial scale for the saboteur budget ramp (1.0 disables ramp-up).')
+    p.add_argument('--alpha-start', type=float, default=0.6,
+                   help='Starting alpha for clean vs attacked reward mixing.')
+    p.add_argument('--alpha-end', type=float, default=0.0,
+                   help='Ending alpha for clean vs attacked reward mixing.')
+    p.add_argument('--robustness-noise-families', nargs='+', default=None,
+                   choices=sorted(SUPPORTED_NOISE_FAMILIES),
+                   help='Noise families to sweep in robustness summary (default: saboteur noise + depolarizing).')
+    p.add_argument('--robustness-budgets', type=_parse_int_list, default=None,
+                   help='Comma-separated attack budgets to sweep in robustness summary (default: 1 and saboteur budget).')
+    p.add_argument('--robustness-rate', type=float, default=None,
+                   help='Noise rate used in robustness sweep (default: max saboteur error rate).')
     p.add_argument('--attack-samples', type=int, default=3000,
                    help='Max attack placements sampled per circuit when computing robustness summaries')
     # Experimental: QuantumNAS paper benchmark harness
@@ -927,6 +1048,8 @@ def parse_args():
                    help='Learning rate for the simple TorchQuantum baseline.')
     p.add_argument('--run-hw-eval', action='store_true',
                    help='Run IBM-style hardware evaluation (Fake backends via Qiskit Aer).')
+    p.add_argument('--skip-hw-eval', action='store_true',
+                   help='Skip hardware-style evaluation even if --run-hw-eval is set (compatibility flag).')
     p.add_argument('--hw-backends', type=str, nargs='+', default=['fake_quito', 'fake_belem'],
                    help='Backends for hardware eval (e.g., fake_quito fake_belem fake_athens fake_yorktown).')
     p.add_argument('--hw-shots', type=int, default=4096, help='Shots for hardware eval.')

@@ -429,6 +429,7 @@ def run_cross_noise_robustness(
     }
 
     # Optional: over-rotation for QuantumNAS
+    qnas_over_rotation_results = None
     if quantumnas_circuit is not None:
         qnas_over_rotation_results = run_over_rotation_sweep(
             quantumnas_circuit, target_state, epsilon_values, clean_reference=clean_reference
@@ -459,8 +460,8 @@ def run_cross_noise_robustness(
     robust_retentions = [r['retention_ratio'] for r in robust_over_rotation_results]
     baseline_noisy = [r['noisy_fidelity'] for r in baseline_over_rotation_results]
     robust_noisy = [r['noisy_fidelity'] for r in robust_over_rotation_results]
-    qnas_retentions = [r['retention_ratio'] for r in qnas_over_rotation_results] if qnas_over_rotation_results else None
-    qnas_noisy = [r['noisy_fidelity'] for r in qnas_over_rotation_results] if qnas_over_rotation_results else None
+    qnas_retentions = [r['retention_ratio'] for r in qnas_over_rotation_results] if quantumnas_circuit is not None else None
+    qnas_noisy = [r['noisy_fidelity'] for r in qnas_over_rotation_results] if quantumnas_circuit is not None else None
     
     ax1.plot(epsilon_values, baseline_retentions, marker='o', linestyle='-', color=colors["baseline"],
              label='Baseline', markersize=4)
@@ -478,13 +479,17 @@ def run_cross_noise_robustness(
     info_lines = [
         f"Clean ref: {clean_reference:.4f}",
         f"ε_max={epsilon_values[-1]:.3f}",
-        f"Baseline noisy: {baseline_noisy[-1]:.3f}",
-        f"Robust noisy: {robust_noisy[-1]:.3f}",
+        f"Baseline noisy(end): {baseline_noisy[-1]:.3f}",
+        f"Robust noisy(end): {robust_noisy[-1]:.3f}",
+        f"Baseline avg retention: {baseline_retention_avg:.3f}",
+        f"Robust avg retention: {robust_retention_avg:.3f}",
     ]
     if qnas_noisy is not None:
-        info_lines.append(f"QNAS noisy: {qnas_noisy[-1]:.3f}")
+        info_lines.append(f"QNAS noisy(end): {qnas_noisy[-1]:.3f}")
+    if 'quantumnas_over_rotation_avg_retention' in all_results.get('summary', {}):
+        info_lines.append(f"QNAS avg retention: {all_results['summary']['quantumnas_over_rotation_avg_retention']:.3f}")
     ax1.text(
-        0.65, 0.10,
+        0.62, 0.02,
         "\n".join(info_lines),
         transform=ax1.transAxes,
         fontsize=9,
@@ -494,6 +499,8 @@ def run_cross_noise_robustness(
     # Right plot: Asymmetric noise comparison (bar chart, first p_x entry)
     ax2 = axes[1]
     first_asym = asymmetric_results[0]
+    p_y_val = first_asym.get('p_y', 0.0)
+    p_z_val = first_asym.get('p_z', 0.0)
     circuit_types = ['Baseline', 'Robust']
     retention_values = [
         first_asym['baseline_mean'],
@@ -504,7 +511,7 @@ def run_cross_noise_robustness(
         retention_values.append(first_asym['quantumnas_mean'])
     bars = ax2.bar(circuit_types, retention_values, color=colors["bars"][:len(circuit_types)])
     ax2.set_ylabel('Fidelity Retention Ratio')
-    ax2.set_title(f"Asymmetric Pauli Noise (p_x={first_asym['p_x']})")
+    ax2.set_title(f"Asymmetric Pauli Noise (p_x={first_asym['p_x']}, p_y={p_y_val}, p_z={p_z_val})")
     ax2.set_ylim(0, 1.05)
     ax2.grid(True, alpha=0.3, axis='y')
     

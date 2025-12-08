@@ -1,0 +1,634 @@
+{
+  "metadata": {
+    "timestamp": "20251208-031642",
+    "n_qubits": 3,
+    "baseline_circuit_path": "results/1/compare/run_0/circuit_vanilla.json",
+    "robust_circuit_path": "results/1/compare/run_0/circuit_robust.json",
+    "quantumnas_circuit_path": "results/1/compare/run_0/circuit_quantumnas.json",
+    "epsilon_range": [
+      0.0,
+      0.2
+    ],
+    "n_epsilon_points": 20,
+    "p_x_asymmetric": 0.05,
+    "n_seeds": 5,
+    "base_seed": 42,
+    "statistical_protocol": {
+      "aggregation_method": "mean across epsilon values",
+      "note": "Noise application is deterministic (density matrix simulation). Statistics summarize variation across the sweep range, not stochastic trials."
+    }
+  },
+  "over_rotation": {
+    "epsilon_values": [
+      0.0,
+      0.010526315789473684,
+      0.021052631578947368,
+      0.031578947368421054,
+      0.042105263157894736,
+      0.05263157894736842,
+      0.06315789473684211,
+      0.07368421052631578,
+      0.08421052631578947,
+      0.09473684210526316,
+      0.10526315789473684,
+      0.11578947368421053,
+      0.12631578947368421,
+      0.1368421052631579,
+      0.14736842105263157,
+      0.15789473684210525,
+      0.16842105263157894,
+      0.17894736842105263,
+      0.18947368421052632,
+      0.2
+    ],
+    "baseline": [
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9999999403953551,
+        "retention_ratio": 1.0,
+        "epsilon": 0.0
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.998810365796089,
+        "retention_ratio": 0.9988104253298297,
+        "epsilon": 0.010526315789473684
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9952463954687116,
+        "retention_ratio": 0.9952464547900232,
+        "epsilon": 0.021052631578947368
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9893288910388944,
+        "retention_ratio": 0.9893289500074952,
+        "epsilon": 0.031578947368421054
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9810929298400877,
+        "retention_ratio": 0.9810929883177868,
+        "epsilon": 0.042105263157894736
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.970591679215431,
+        "retention_ratio": 0.9705917370672068,
+        "epsilon": 0.05263157894736842
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9578836411237714,
+        "retention_ratio": 0.9578836982180892,
+        "epsilon": 0.06315789473684211
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9430477619171141,
+        "retention_ratio": 0.9430478181271444,
+        "epsilon": 0.07368421052631578
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9261682480573652,
+        "retention_ratio": 0.9261683032612981,
+        "epsilon": 0.08421052631578947
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9073475450277326,
+        "retention_ratio": 0.9073475991098641,
+        "epsilon": 0.09473684210526316
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.8866955786943435,
+        "retention_ratio": 0.8866956315455217,
+        "epsilon": 0.10526315789473684
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.8643324673175812,
+        "retention_ratio": 0.8643325188358141,
+        "epsilon": 0.11578947368421053
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.840386852622032,
+        "retention_ratio": 0.840386902712995,
+        "epsilon": 0.12631578947368421
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.814996302127838,
+        "retention_ratio": 0.8149963507054061,
+        "epsilon": 0.1368421052631579
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.788304254412651,
+        "retention_ratio": 0.7883043013992489,
+        "epsilon": 0.14736842105263157
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.7604637742042539,
+        "retention_ratio": 0.7604638195314298,
+        "epsilon": 0.15789473684210525
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.7316261082887648,
+        "retention_ratio": 0.7316261518970818,
+        "epsilon": 0.16842105263157894
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.7019528597593306,
+        "retention_ratio": 0.701952901598984,
+        "epsilon": 0.17894736842105263
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.6716063767671584,
+        "retention_ratio": 0.6716064167980204,
+        "epsilon": 0.18947368421052632
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.6407457441091536,
+        "retention_ratio": 0.6407457823005784,
+        "epsilon": 0.2
+      }
+    ],
+    "robust": [
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9999999403953551,
+        "retention_ratio": 1.0,
+        "epsilon": 0.0
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9998339414596555,
+        "retention_ratio": 0.9998340010544061,
+        "epsilon": 0.010526315789473684
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9993355870246886,
+        "retention_ratio": 0.999335646589735,
+        "epsilon": 0.021052631578947368
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9985051751136779,
+        "retention_ratio": 0.9985052346292278,
+        "epsilon": 0.031578947368421054
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9973435401916502,
+        "retention_ratio": 0.9973435996379613,
+        "epsilon": 0.042105263157894736
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9958519339561461,
+        "retention_ratio": 0.9958519933135506,
+        "epsilon": 0.05263157894736842
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9940311908721923,
+        "retention_ratio": 0.994031250121072,
+        "epsilon": 0.06315789473684211
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9918834567070005,
+        "retention_ratio": 0.9918835158278653,
+        "epsilon": 0.07368421052631578
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9894094467163085,
+        "retention_ratio": 0.9894095056897108,
+        "epsilon": 0.08421052631578947
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9866123199462888,
+        "retention_ratio": 0.9866123787529694,
+        "epsilon": 0.09473684210526316
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9834939837455748,
+        "retention_ratio": 0.9834940423663879,
+        "epsilon": 0.10526315789473684
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9800570607185362,
+        "retention_ratio": 0.9800571191344927,
+        "epsilon": 0.11578947368421053
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9763042330741881,
+        "retention_ratio": 0.9763042912664587,
+        "epsilon": 0.12631578947368421
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9722386002540587,
+        "retention_ratio": 0.9722386582039987,
+        "epsilon": 0.1368421052631579
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9678635001182555,
+        "retention_ratio": 0.9678635578074192,
+        "epsilon": 0.14736842105263157
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9631827473640441,
+        "retention_ratio": 0.9631828047742131,
+        "epsilon": 0.15789473684210525
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9581997990608213,
+        "retention_ratio": 0.9581998561739835,
+        "epsilon": 0.16842105263157894
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9529190659523008,
+        "retention_ratio": 0.9529191227507067,
+        "epsilon": 0.17894736842105263
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9473456144332885,
+        "retention_ratio": 0.9473456708994907,
+        "epsilon": 0.18947368421052632
+      },
+      {
+        "clean_fidelity": 0.9999999403953551,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9414832592010496,
+        "retention_ratio": 0.9414833153178283,
+        "epsilon": 0.2
+      }
+    ],
+    "quantumnas": [
+      {
+        "clean_fidelity": 0.9999998062849045,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9999998062849045,
+        "retention_ratio": 0.9999998658895414,
+        "epsilon": 0.0
+      },
+      {
+        "clean_fidelity": 0.9999998062849045,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9993757903575896,
+        "retention_ratio": 0.9993758499250323,
+        "epsilon": 0.010526315789473684
+      },
+      {
+        "clean_fidelity": 0.9999998062849045,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9975031465291975,
+        "retention_ratio": 0.9975032059850218,
+        "epsilon": 0.021052631578947368
+      },
+      {
+        "clean_fidelity": 0.9999998062849045,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9943867772817611,
+        "retention_ratio": 0.9943868365518354,
+        "epsilon": 0.031578947368421054
+      },
+      {
+        "clean_fidelity": 0.9999998062849045,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9900356084108352,
+        "retention_ratio": 0.9900356674215596,
+        "epsilon": 0.042105263157894736
+      },
+      {
+        "clean_fidelity": 0.9999998062849045,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9844638705253599,
+        "retention_ratio": 0.9844639292039827,
+        "epsilon": 0.05263157894736842
+      },
+      {
+        "clean_fidelity": 0.9999998062849045,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9776842743158339,
+        "retention_ratio": 0.9776843325903614,
+        "epsilon": 0.06315789473684211
+      },
+      {
+        "clean_fidelity": 0.9999998062849045,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9697184264659879,
+        "retention_ratio": 0.9697184842657138,
+        "epsilon": 0.07368421052631578
+      },
+      {
+        "clean_fidelity": 0.9999998062849045,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9605865925550459,
+        "retention_ratio": 0.960586649810472,
+        "epsilon": 0.08421052631578947
+      },
+      {
+        "clean_fidelity": 0.9999998062849045,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9503160715103147,
+        "retention_ratio": 0.95031612815357,
+        "epsilon": 0.09473684210526316
+      },
+      {
+        "clean_fidelity": 0.9999998062849045,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9389362037181852,
+        "retention_ratio": 0.9389362596831475,
+        "epsilon": 0.10526315789473684
+      },
+      {
+        "clean_fidelity": 0.9999998062849045,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9264792799949644,
+        "retention_ratio": 0.9264793352174362,
+        "epsilon": 0.11578947368421053
+      },
+      {
+        "clean_fidelity": 0.9999998062849045,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.9129812270402907,
+        "retention_ratio": 0.9129812814582158,
+        "epsilon": 0.12631578947368421
+      },
+      {
+        "clean_fidelity": 0.9999998062849045,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.8984806239604948,
+        "retention_ratio": 0.8984806775141165,
+        "epsilon": 0.1368421052631579
+      },
+      {
+        "clean_fidelity": 0.9999998062849045,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.883020296692848,
+        "retention_ratio": 0.8830203493249623,
+        "epsilon": 0.14736842105263157
+      },
+      {
+        "clean_fidelity": 0.9999998062849045,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.8666470199823378,
+        "retention_ratio": 0.8666470716385288,
+        "epsilon": 0.15789473684210525
+      },
+      {
+        "clean_fidelity": 0.9999998062849045,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.8494072556495664,
+        "retention_ratio": 0.8494073062781873,
+        "epsilon": 0.16842105263157894
+      },
+      {
+        "clean_fidelity": 0.9999998062849045,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.8313548862934113,
+        "retention_ratio": 0.8313549358460269,
+        "epsilon": 0.17894736842105263
+      },
+      {
+        "clean_fidelity": 0.9999998062849045,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.8125460147857665,
+        "retention_ratio": 0.8125460632172861,
+        "epsilon": 0.18947368421052632
+      },
+      {
+        "clean_fidelity": 0.9999998062849045,
+        "clean_reference": 0.9999999403953551,
+        "noisy_fidelity": 0.7930353432893753,
+        "retention_ratio": 0.7930353905579681,
+        "epsilon": 0.2
+      }
+    ]
+  },
+  "asymmetric_noise": [
+    {
+      "p_x": 0.05,
+      "baseline": [
+        {
+          "clean_fidelity": 0.9999999403953551,
+          "clean_reference": 0.9999999403953551,
+          "noisy_fidelity": 0.37396070361137385,
+          "retention_ratio": 0.37396072590117013,
+          "p_x": 0.05,
+          "p_y": 0.0,
+          "p_z": 0.0
+        },
+        {
+          "clean_fidelity": 0.9999999403953551,
+          "clean_reference": 0.9999999403953551,
+          "noisy_fidelity": 0.37396070361137385,
+          "retention_ratio": 0.37396072590117013,
+          "p_x": 0.05,
+          "p_y": 0.0,
+          "p_z": 0.0
+        },
+        {
+          "clean_fidelity": 0.9999999403953551,
+          "clean_reference": 0.9999999403953551,
+          "noisy_fidelity": 0.37396070361137385,
+          "retention_ratio": 0.37396072590117013,
+          "p_x": 0.05,
+          "p_y": 0.0,
+          "p_z": 0.0
+        },
+        {
+          "clean_fidelity": 0.9999999403953551,
+          "clean_reference": 0.9999999403953551,
+          "noisy_fidelity": 0.37396070361137385,
+          "retention_ratio": 0.37396072590117013,
+          "p_x": 0.05,
+          "p_y": 0.0,
+          "p_z": 0.0
+        },
+        {
+          "clean_fidelity": 0.9999999403953551,
+          "clean_reference": 0.9999999403953551,
+          "noisy_fidelity": 0.37396070361137385,
+          "retention_ratio": 0.37396072590117013,
+          "p_x": 0.05,
+          "p_y": 0.0,
+          "p_z": 0.0
+        }
+      ],
+      "robust": [
+        {
+          "clean_fidelity": 0.9999999403953551,
+          "clean_reference": 0.9999999403953551,
+          "noisy_fidelity": 0.8169997334480283,
+          "retention_ratio": 0.8169997821450102,
+          "p_x": 0.05,
+          "p_y": 0.0,
+          "p_z": 0.0
+        },
+        {
+          "clean_fidelity": 0.9999999403953551,
+          "clean_reference": 0.9999999403953551,
+          "noisy_fidelity": 0.8169997334480283,
+          "retention_ratio": 0.8169997821450102,
+          "p_x": 0.05,
+          "p_y": 0.0,
+          "p_z": 0.0
+        },
+        {
+          "clean_fidelity": 0.9999999403953551,
+          "clean_reference": 0.9999999403953551,
+          "noisy_fidelity": 0.8169997334480283,
+          "retention_ratio": 0.8169997821450102,
+          "p_x": 0.05,
+          "p_y": 0.0,
+          "p_z": 0.0
+        },
+        {
+          "clean_fidelity": 0.9999999403953551,
+          "clean_reference": 0.9999999403953551,
+          "noisy_fidelity": 0.8169997334480283,
+          "retention_ratio": 0.8169997821450102,
+          "p_x": 0.05,
+          "p_y": 0.0,
+          "p_z": 0.0
+        },
+        {
+          "clean_fidelity": 0.9999999403953551,
+          "clean_reference": 0.9999999403953551,
+          "noisy_fidelity": 0.8169997334480283,
+          "retention_ratio": 0.8169997821450102,
+          "p_x": 0.05,
+          "p_y": 0.0,
+          "p_z": 0.0
+        }
+      ],
+      "baseline_mean": 0.37396072590117013,
+      "robust_mean": 0.8169997821450103,
+      "quantumnas": [
+        {
+          "clean_fidelity": 0.9999998062849045,
+          "clean_reference": 0.9999999403953551,
+          "noisy_fidelity": 0.4846898913383483,
+          "retention_ratio": 0.48468992022811885,
+          "p_x": 0.05,
+          "p_y": 0.0,
+          "p_z": 0.0
+        },
+        {
+          "clean_fidelity": 0.9999998062849045,
+          "clean_reference": 0.9999999403953551,
+          "noisy_fidelity": 0.4846898913383483,
+          "retention_ratio": 0.48468992022811885,
+          "p_x": 0.05,
+          "p_y": 0.0,
+          "p_z": 0.0
+        },
+        {
+          "clean_fidelity": 0.9999998062849045,
+          "clean_reference": 0.9999999403953551,
+          "noisy_fidelity": 0.4846898913383483,
+          "retention_ratio": 0.48468992022811885,
+          "p_x": 0.05,
+          "p_y": 0.0,
+          "p_z": 0.0
+        },
+        {
+          "clean_fidelity": 0.9999998062849045,
+          "clean_reference": 0.9999999403953551,
+          "noisy_fidelity": 0.4846898913383483,
+          "retention_ratio": 0.48468992022811885,
+          "p_x": 0.05,
+          "p_y": 0.0,
+          "p_z": 0.0
+        },
+        {
+          "clean_fidelity": 0.9999998062849045,
+          "clean_reference": 0.9999999403953551,
+          "noisy_fidelity": 0.4846898913383483,
+          "retention_ratio": 0.48468992022811885,
+          "p_x": 0.05,
+          "p_y": 0.0,
+          "p_z": 0.0
+        }
+      ],
+      "quantumnas_mean": 0.48468992022811885
+    }
+  ],
+  "summary": {
+    "baseline_over_rotation_avg_retention": 0.8685314375776908,
+    "robust_over_rotation_avg_retention": 0.979794778215574,
+    "baseline_asymmetric_retention": 0.37396072590117013,
+    "robust_asymmetric_retention": 0.8169997821450103,
+    "quantumnas_asymmetric_retention": 0.48468992022811885,
+    "quantumnas_over_rotation_avg_retention": 0.9268479810266482
+  },
+  "clean_fidelity": {
+    "baseline": 0.9999999403953551,
+    "robust": 0.9999999403953551,
+    "quantumnas": 0.9999998062849045,
+    "reference_used": 0.9999999403953551
+  }
+}

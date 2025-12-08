@@ -1,0 +1,315 @@
+2025-12-05 05:26:52,619 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-05 05:26:52,620 INFO: Starting pipeline with metadata: {'timestamp': '20251205-052652', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 20480, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-05 05:26:52,621 INFO: Running baseline architect (noiseless)
+2025-12-05 05:43:00,912 INFO: Skipping QuantumNAS baseline (disabled by default)
+2025-12-05 05:43:00,913 INFO: Running lambda sweep experiment (ExpPlan Part 1, Exp 1.1) with n_seeds=5
+2025-12-05 05:43:00,914 INFO: === Lambda Sweep Experiment (ExpPlan Part 1, Exp 1.1) ===
+2025-12-05 05:43:00,914 INFO: Target: ghz, Mode: state_preparation
+2025-12-05 05:43:00,914 INFO: Experiment label: ghz_state_preparation
+2025-12-05 05:43:00,914 INFO: Lambda values: [0.001, 0.005, 0.01, 0.05, 0.1]
+2025-12-05 05:43:00,914 INFO: Seeds per lambda: 5
+2025-12-05 05:43:00,914 INFO: Qubits: 3
+2025-12-05 05:43:00,914 INFO: Training steps per trial: 60000
+2025-12-05 05:43:00,914 INFO: Steps per update (PPO n_steps): 2048
+2025-12-05 05:43:00,914 INFO: Include rotations: True (types=['Rz', 'Rx'])
+2025-12-05 05:43:00,914 INFO: Results directory: results/run_20251205-052652/lambda_sweep
+2025-12-05 05:43:00,914 INFO: 
+--- Lambda = 0.001 ---
+2025-12-05 05:43:00,914 INFO:   Seed 1/5...
+2025-12-05 05:59:17,660 INFO:     Best fidelity: 1.0000, CNOT count: 14, Success: True
+2025-12-05 05:59:17,661 INFO:   Seed 2/5...
+2025-12-05 06:15:27,610 INFO:     Best fidelity: 1.0000, CNOT count: 15, Success: True
+2025-12-05 06:15:27,610 INFO:   Seed 3/5...
+2025-12-05 06:31:43,305 INFO:     Best fidelity: 1.0000, CNOT count: 14, Success: True
+2025-12-05 06:31:43,306 INFO:   Seed 4/5...
+2025-12-05 06:47:52,996 INFO:     Best fidelity: 1.0000, CNOT count: 13, Success: True
+2025-12-05 06:47:52,997 INFO:   Seed 5/5...
+2025-12-05 07:04:01,102 INFO:     Best fidelity: 1.0000, CNOT count: 12, Success: True
+2025-12-05 07:04:01,104 INFO:   Summary for λ=0.001:
+2025-12-05 07:04:01,104 INFO:     Success rate: 100.00% (n=5)
+2025-12-05 07:04:01,104 INFO:     Fidelity: 1.0000 ± 0.0000 (n=5)
+2025-12-05 07:04:01,104 INFO:     CNOT count: 13.6000 ± 1.1402 (n=5)
+2025-12-05 07:04:01,104 INFO: 
+--- Lambda = 0.005 ---
+2025-12-05 07:04:01,104 INFO:   Seed 1/5...
+2025-12-05 07:20:13,373 INFO:     Best fidelity: 1.0000, CNOT count: 11, Success: True
+2025-12-05 07:20:13,373 INFO:   Seed 2/5...
+2025-12-05 07:36:29,784 INFO:     Best fidelity: 1.0000, CNOT count: 15, Success: True
+2025-12-05 07:36:29,784 INFO:   Seed 3/5...
+2025-12-05 07:52:31,583 INFO:     Best fidelity: 1.0000, CNOT count: 15, Success: True
+2025-12-05 07:52:31,583 INFO:   Seed 4/5...
+2025-12-05 08:08:37,954 INFO:     Best fidelity: 1.0000, CNOT count: 11, Success: True
+2025-12-05 08:08:37,954 INFO:   Seed 5/5...
+2025-12-05 08:24:43,775 INFO:     Best fidelity: 1.0000, CNOT count: 15, Success: True
+2025-12-05 08:24:43,776 INFO:   Summary for λ=0.005:
+2025-12-05 08:24:43,776 INFO:     Success rate: 100.00% (n=5)
+2025-12-05 08:24:43,776 INFO:     Fidelity: 1.0000 ± 0.0000 (n=5)
+2025-12-05 08:24:43,776 INFO:     CNOT count: 13.4000 ± 2.1909 (n=5)
+2025-12-05 08:24:43,776 INFO: 
+--- Lambda = 0.01 ---
+2025-12-05 08:24:43,776 INFO:   Seed 1/5...
+2025-12-05 08:40:53,761 INFO:     Best fidelity: 1.0000, CNOT count: 14, Success: True
+2025-12-05 08:40:53,761 INFO:   Seed 2/5...
+2025-12-05 08:57:06,139 INFO:     Best fidelity: 1.0000, CNOT count: 14, Success: True
+2025-12-05 08:57:06,139 INFO:   Seed 3/5...
+2025-12-05 09:13:23,618 INFO:     Best fidelity: 1.0000, CNOT count: 15, Success: True
+2025-12-05 09:13:23,618 INFO:   Seed 4/5...
+2025-12-05 09:30:01,931 INFO:     Best fidelity: 1.0000, CNOT count: 13, Success: True
+2025-12-05 09:30:01,931 INFO:   Seed 5/5...
+2025-12-05 09:46:15,045 INFO:     Best fidelity: 1.0000, CNOT count: 12, Success: True
+2025-12-05 09:46:15,046 INFO:   Summary for λ=0.01:
+2025-12-05 09:46:15,046 INFO:     Success rate: 100.00% (n=5)
+2025-12-05 09:46:15,047 INFO:     Fidelity: 1.0000 ± 0.0000 (n=5)
+2025-12-05 09:46:15,047 INFO:     CNOT count: 13.6000 ± 1.1402 (n=5)
+2025-12-05 09:46:15,047 INFO: 
+--- Lambda = 0.05 ---
+2025-12-05 09:46:15,047 INFO:   Seed 1/5...
+2025-12-05 10:02:35,993 INFO:     Best fidelity: 1.0000, CNOT count: 14, Success: True
+2025-12-05 10:02:35,993 INFO:   Seed 2/5...
+2025-12-05 10:19:05,682 INFO:     Best fidelity: 1.0000, CNOT count: 14, Success: True
+2025-12-05 10:19:05,682 INFO:   Seed 3/5...
+2025-12-05 10:35:31,926 INFO:     Best fidelity: 1.0000, CNOT count: 13, Success: True
+2025-12-05 10:35:31,926 INFO:   Seed 4/5...
+2025-12-05 10:51:57,362 INFO:     Best fidelity: 1.0000, CNOT count: 14, Success: True
+2025-12-05 10:51:57,362 INFO:   Seed 5/5...
+2025-12-05 11:08:23,159 INFO:     Best fidelity: 1.0000, CNOT count: 14, Success: True
+2025-12-05 11:08:23,160 INFO:   Summary for λ=0.05:
+2025-12-05 11:08:23,160 INFO:     Success rate: 100.00% (n=5)
+2025-12-05 11:08:23,160 INFO:     Fidelity: 1.0000 ± 0.0000 (n=5)
+2025-12-05 11:08:23,160 INFO:     CNOT count: 13.8000 ± 0.4472 (n=5)
+2025-12-05 11:08:23,160 INFO: 
+--- Lambda = 0.1 ---
+2025-12-05 11:08:23,160 INFO:   Seed 1/5...
+2025-12-05 11:24:52,706 INFO:     Best fidelity: 1.0000, CNOT count: 15, Success: True
+2025-12-05 11:24:52,706 INFO:   Seed 2/5...
+2025-12-05 11:41:35,585 INFO:     Best fidelity: 1.0000, CNOT count: 13, Success: True
+2025-12-05 11:41:35,585 INFO:   Seed 3/5...
+2025-12-05 11:58:39,942 INFO:     Best fidelity: 1.0000, CNOT count: 13, Success: True
+2025-12-05 11:58:39,942 INFO:   Seed 4/5...
+2025-12-05 12:15:15,774 INFO:     Best fidelity: 1.0000, CNOT count: 13, Success: True
+2025-12-05 12:15:15,774 INFO:   Seed 5/5...
+2025-12-05 12:31:37,127 INFO:     Best fidelity: 1.0000, CNOT count: 14, Success: True
+2025-12-05 12:31:37,128 INFO:   Summary for λ=0.1:
+2025-12-05 12:31:37,128 INFO:     Success rate: 100.00% (n=5)
+2025-12-05 12:31:37,128 INFO:     Fidelity: 1.0000 ± 0.0000 (n=5)
+2025-12-05 12:31:37,128 INFO:     CNOT count: 13.6000 ± 0.8944 (n=5)
+2025-12-05 12:31:37,279 INFO: 
+Results saved to results/run_20251205-052652/lambda_sweep/lambda_sweep_results.json
+2025-12-05 12:31:37,880 INFO: Plot with error bars saved to results/run_20251205-052652/lambda_sweep/lambda_sweep_plot.png
+2025-12-05 12:31:37,892 INFO: Summary files saved to results/run_20251205-052652/lambda_sweep
+2025-12-05 12:31:37,893 INFO: Lambda sweep complete. Results saved to results/run_20251205-052652/lambda_sweep
+2025-12-05 12:31:37,894 INFO: Skipping saboteur-only as requested
+2025-12-05 12:31:37,894 INFO: Skipping adversarial as requested
+2025-12-05 12:31:37,898 WARNING: Robust circuit not found for comparison.
+2025-12-05 12:31:37,949 INFO: Fidelity summary written to results/run_20251205-052652/analysis/fidelity_raw_data.csv
+2025-12-05 12:31:41,013 INFO: Robustness sweep written to results/run_20251205-052652/analysis/robustness_sweep.json/results/run_20251205-052652/analysis/robustness_sweep.csv (legacy compare uses family=depolarizing, budget=1)
+2025-12-05 12:31:41,013 INFO: Pipeline finished. Results in results/run_20251205-052652
+2025-12-07 01:06:35,442 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-07 01:06:35,444 INFO: Starting pipeline with metadata: {'timestamp': '20251207-010635', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 20480, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-07 01:06:35,445 INFO: Skipping baseline as requested
+2025-12-07 01:06:35,445 INFO: Skipping QuantumNAS baseline (disabled by default)
+2025-12-07 01:06:35,446 INFO: Skipping lambda sweep as requested
+2025-12-07 01:06:35,446 INFO: Skipping saboteur-only as requested
+2025-12-07 01:06:35,447 INFO: Skipping adversarial as requested
+2025-12-07 01:06:35,452 WARNING: Robust circuit not found for comparison.
+2025-12-07 01:06:35,535 INFO: Fidelity summary written to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251205-052652/analysis/fidelity_raw_data.csv
+2025-12-07 01:06:39,813 INFO: Robustness sweep written to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251205-052652/analysis/robustness_sweep.json//home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251205-052652/analysis/robustness_sweep.csv (legacy compare uses family=depolarizing, budget=1)
+2025-12-07 01:06:39,814 INFO: Pipeline finished. Results in /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251205-052652
+2025-12-07 01:42:28,823 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-07 01:42:28,825 INFO: Starting pipeline with metadata: {'timestamp': '20251207-014228', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 20480, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-07 01:42:28,826 INFO: Skipping baseline as requested
+2025-12-07 01:42:28,826 INFO: Running QuantumNAS baseline
+2025-12-07 01:42:28,827 INFO: Running simple TorchQuantum baseline (task=ghz, epochs=200, depth=3, lr=0.0500)
+2025-12-07 01:42:39,402 INFO: [GHZ] epoch 20/200 fidelity 0.968886
+[GHZ] epoch 40/200 fidelity 0.996764
+[GHZ] epoch 60/200 fidelity 0.999585
+[GHZ] epoch 80/200 fidelity 0.999784
+[GHZ] epoch 100/200 fidelity 0.999951
+[GHZ] epoch 120/200 fidelity 0.999981
+[GHZ] epoch 140/200 fidelity 0.999990
+[GHZ] epoch 160/200 fidelity 0.999995
+[GHZ] epoch 180/200 fidelity 0.999997
+[GHZ] epoch 200/200 fidelity 0.999999
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/quantumnas/circuit_quantumnas.json
+2025-12-07 01:42:39,403 INFO: QuantumNAS circuit saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/quantumnas/circuit_quantumnas.json
+2025-12-07 01:42:39,404 INFO: Skipping lambda sweep as requested
+2025-12-07 01:42:39,405 INFO: Skipping saboteur-only as requested
+2025-12-07 01:42:39,405 INFO: Skipping adversarial as requested
+2025-12-07 01:42:39,410 INFO: Discovered 5 existing adversarial run(s) with robust circuits
+2025-12-07 01:42:39,418 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/adversarial/seed_0 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/compare/run_0
+2025-12-07 01:42:39,443 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/adversarial/seed_1 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/compare/run_1
+2025-12-07 01:42:39,448 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/adversarial/seed_2 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/compare/run_2
+2025-12-07 01:42:39,470 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/adversarial/seed_3 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/compare/run_3
+2025-12-07 01:42:39,476 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/adversarial/seed_4 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/compare/run_4
+2025-12-07 01:42:39,485 INFO: QuantumNAS circuit copied into compare runs for analysis.
+2025-12-07 01:42:39,485 INFO: Running comparison across runs
+2025-12-07 01:42:45,672 INFO: Running parameter recovery experiment
+2025-12-07 01:42:45,672 INFO: === Parameter Recovery Experiment ===
+2025-12-07 01:42:45,673 INFO: Qubits: 3
+2025-12-07 01:42:45,673 INFO: Noise parameters to test: [0.02, 0.05, 0.08, 0.12, 0.16, 0.2, 0.25]
+2025-12-07 01:42:45,673 INFO: Shots per trial: 150
+2025-12-07 01:42:45,673 INFO: Repetitions per p (seeds): 5
+2025-12-07 01:42:45,673 INFO: Base seed: 42
+2025-12-07 01:42:45,673 INFO: Results directory: /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/parameter_recovery
+2025-12-07 01:42:45,673 INFO: Loaded baseline circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/baseline/circuit_vanilla.json
+2025-12-07 01:42:45,674 INFO: Loaded robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/compare/run_0/circuit_robust.json
+2025-12-07 01:42:45,674 INFO: 
+  Testing baseline circuit (n_repetitions=5):
+2025-12-07 01:42:46,745 INFO:     p=0.020: recovered=0.0200±0.0004 (n=5), fidelity=0.6138±0.0055
+2025-12-07 01:42:47,814 INFO:     p=0.050: recovered=0.0498±0.0002 (n=5), fidelity=0.3299±0.0010
+2025-12-07 01:42:48,947 INFO:     p=0.080: recovered=0.0799±0.0005 (n=5), fidelity=0.2113±0.0013
+2025-12-07 01:42:50,019 INFO:     p=0.120: recovered=0.1230±0.0005 (n=5), fidelity=0.1510±0.0004
+2025-12-07 01:42:51,110 INFO:     p=0.160: recovered=0.1576±0.0063 (n=5), fidelity=0.1354±0.0018
+2025-12-07 01:42:52,408 INFO:     p=0.200: recovered=0.2329±0.0661 (n=5), fidelity=0.1275±0.0018
+2025-12-07 01:42:53,692 INFO:     p=0.250: recovered=0.2388±0.0625 (n=5), fidelity=0.1271±0.0013
+2025-12-07 01:42:53,694 INFO: 
+  Testing robust circuit (n_repetitions=5):
+2025-12-07 01:42:53,878 INFO:     p=0.020: recovered=0.0199±0.0003 (n=5), fidelity=0.9168±0.0014
+2025-12-07 01:42:54,045 INFO:     p=0.050: recovered=0.0505±0.0005 (n=5), fidelity=0.8013±0.0018
+2025-12-07 01:42:54,224 INFO:     p=0.080: recovered=0.0804±0.0008 (n=5), fidelity=0.7011±0.0026
+2025-12-07 01:42:54,393 INFO:     p=0.120: recovered=0.1193±0.0010 (n=5), fidelity=0.5879±0.0027
+2025-12-07 01:42:54,563 INFO:     p=0.160: recovered=0.1604±0.0009 (n=5), fidelity=0.4877±0.0020
+2025-12-07 01:42:54,748 INFO:     p=0.200: recovered=0.2022±0.0019 (n=5), fidelity=0.4036±0.0035
+2025-12-07 01:42:54,918 INFO:     p=0.250: recovered=0.2502±0.0020 (n=5), fidelity=0.3262±0.0028
+2025-12-07 01:42:54,920 INFO: 
+  Testing quantumnas circuit (n_repetitions=5):
+2025-12-07 01:42:55,652 INFO:     p=0.020: recovered=0.0199±0.0002 (n=5), fidelity=0.7318±0.0024
+2025-12-07 01:42:56,397 INFO:     p=0.050: recovered=0.0500±0.0004 (n=5), fidelity=0.4746±0.0024
+2025-12-07 01:42:57,129 INFO:     p=0.080: recovered=0.0799±0.0008 (n=5), fidelity=0.3284±0.0028
+2025-12-07 01:42:57,848 INFO:     p=0.120: recovered=0.1208±0.0012 (n=5), fidelity=0.2233±0.0022
+2025-12-07 01:42:58,626 INFO:     p=0.160: recovered=0.1612±0.0021 (n=5), fidelity=0.1737±0.0017
+2025-12-07 01:42:59,377 INFO:     p=0.200: recovered=0.2025±0.0092 (n=5), fidelity=0.1493±0.0038
+2025-12-07 01:43:00,018 INFO:     p=0.250: recovered=0.2504±0.0135 (n=5), fidelity=0.1361±0.0027
+2025-12-07 01:43:00,022 INFO: 
+Results saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/parameter_recovery/parameter_recovery_results.json
+2025-12-07 01:43:00,369 INFO: Plot saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/parameter_recovery/parameter_recovery_plot.png
+2025-12-07 01:43:00,377 INFO: Summary saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/parameter_recovery/parameter_recovery_summary.txt
+2025-12-07 01:43:00,377 INFO: 
+=== Parameter Recovery Experiment Complete ===
+2025-12-07 01:43:00,378 INFO: Running cross-noise robustness experiment
+2025-12-07 01:43:00,378 INFO: === Cross-Noise Robustness Experiment (ExpPlan Part 2, Exp 2.1) ===
+2025-12-07 01:43:00,378 INFO: Baseline circuit: /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/compare/run_0/circuit_vanilla.json
+2025-12-07 01:43:00,378 INFO: Robust circuit: /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/compare/run_0/circuit_robust.json
+2025-12-07 01:43:00,378 INFO: Output directory: /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/cross_noise/cross_noise_20251207-014300
+2025-12-07 01:43:00,379 INFO: Number of qubits: 3
+2025-12-07 01:43:00,379 INFO: Number of seeds: 5
+2025-12-07 01:43:00,379 INFO: Base seed: 42
+2025-12-07 01:43:00,380 INFO: Loaded baseline circuit with 16 operations
+2025-12-07 01:43:00,381 INFO: Loaded robust circuit with 3 operations
+2025-12-07 01:43:00,381 INFO: Loaded QuantumNAS circuit with 15 operations
+2025-12-07 01:43:00,387 INFO: Clean fidelities — baseline: 1.0000, robust: 1.0000, quantumnas: 1.0000; using shared reference 1.0000
+2025-12-07 01:43:00,387 INFO: 
+--- Over-rotation sweep (ε ∈ [0.0, 0.2]) ---
+2025-12-07 01:43:00,566 INFO: Baseline avg retention ratio (over-rotation): 0.6255
+2025-12-07 01:43:00,566 INFO: Robust avg retention ratio (over-rotation): 0.9798
+2025-12-07 01:43:00,566 INFO: 
+--- Asymmetric Pauli noise sweep (p_x in [0.05], p_y=0.0, p_z=0.0) ---
+2025-12-07 01:43:00,735 INFO: p_x=0.050 | Baseline retention: 0.2988 | Robust retention: 0.8170 | QuantumNAS retention: 0.4921
+2025-12-07 01:43:00,862 INFO: 
+Results saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/cross_noise/cross_noise_20251207-014300/cross_noise_results.json
+2025-12-07 01:43:01,120 INFO: Plot saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/cross_noise/cross_noise_20251207-014300/cross_noise_robustness.png
+2025-12-07 01:43:01,122 INFO: Summary saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/cross_noise/cross_noise_20251207-014300/cross_noise_summary.txt
+2025-12-07 01:43:01,126 INFO: 
+=== Cross-Noise Robustness Experiment Complete ===
+2025-12-07 01:43:01,183 INFO: Fidelity summary written to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/analysis/fidelity_raw_data.csv
+2025-12-07 01:43:14,477 INFO: Robustness sweep written to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/analysis/robustness_sweep.json//home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/analysis/robustness_sweep.csv (legacy compare uses family=depolarizing, budget=1)
+2025-12-07 01:43:14,478 INFO: Pipeline finished. Results in /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3
+2025-12-07 01:43:55,805 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-07 01:43:55,806 INFO: Starting pipeline with metadata: {'timestamp': '20251207-014355', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 20480, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-07 01:43:55,806 INFO: Skipping baseline as requested
+2025-12-07 01:43:55,806 INFO: Running QuantumNAS baseline
+2025-12-07 01:43:55,807 INFO: Running simple TorchQuantum baseline (task=ghz, epochs=200, depth=3, lr=0.0500)
+2025-12-07 01:44:04,803 INFO: [GHZ] epoch 20/200 fidelity 0.924435
+[GHZ] epoch 40/200 fidelity 0.997849
+[GHZ] epoch 60/200 fidelity 0.998157
+[GHZ] epoch 80/200 fidelity 0.999887
+[GHZ] epoch 100/200 fidelity 0.999989
+[GHZ] epoch 120/200 fidelity 0.999998
+[GHZ] epoch 140/200 fidelity 1.000000
+[GHZ] epoch 160/200 fidelity 1.000000
+[GHZ] epoch 180/200 fidelity 1.000000
+[GHZ] epoch 200/200 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/quantumnas/circuit_quantumnas.json
+2025-12-07 01:44:04,803 INFO: QuantumNAS circuit saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/quantumnas/circuit_quantumnas.json
+2025-12-07 01:44:04,804 INFO: Skipping lambda sweep as requested
+2025-12-07 01:44:04,805 INFO: Skipping saboteur-only as requested
+2025-12-07 01:44:04,805 INFO: Skipping adversarial as requested
+2025-12-07 01:44:04,807 INFO: Discovered 5 existing adversarial run(s) with robust circuits
+2025-12-07 01:44:04,812 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/adversarial/seed_0 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/compare/run_0
+2025-12-07 01:44:04,818 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/adversarial/seed_1 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/compare/run_1
+2025-12-07 01:44:04,821 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/adversarial/seed_2 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/compare/run_2
+2025-12-07 01:44:04,825 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/adversarial/seed_3 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/compare/run_3
+2025-12-07 01:44:04,829 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/adversarial/seed_4 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/compare/run_4
+2025-12-07 01:44:04,837 INFO: QuantumNAS circuit copied into compare runs for analysis.
+2025-12-07 01:44:04,837 INFO: Running comparison across runs
+2025-12-07 01:44:10,122 INFO: Running parameter recovery experiment
+2025-12-07 01:44:10,123 INFO: === Parameter Recovery Experiment ===
+2025-12-07 01:44:10,123 INFO: Qubits: 3
+2025-12-07 01:44:10,123 INFO: Noise parameters to test: [0.02, 0.05, 0.08, 0.12, 0.16, 0.2, 0.25]
+2025-12-07 01:44:10,123 INFO: Shots per trial: 150
+2025-12-07 01:44:10,123 INFO: Repetitions per p (seeds): 5
+2025-12-07 01:44:10,123 INFO: Base seed: 42
+2025-12-07 01:44:10,123 INFO: Results directory: /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/parameter_recovery
+2025-12-07 01:44:10,124 INFO: Loaded baseline circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/baseline/circuit_vanilla.json
+2025-12-07 01:44:10,125 INFO: Loaded robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/compare/run_0/circuit_robust.json
+2025-12-07 01:44:10,125 INFO: 
+  Testing baseline circuit (n_repetitions=5):
+2025-12-07 01:44:11,218 INFO:     p=0.020: recovered=0.0200±0.0004 (n=5), fidelity=0.6138±0.0055
+2025-12-07 01:44:12,310 INFO:     p=0.050: recovered=0.0498±0.0002 (n=5), fidelity=0.3299±0.0010
+2025-12-07 01:44:13,457 INFO:     p=0.080: recovered=0.0799±0.0005 (n=5), fidelity=0.2113±0.0013
+2025-12-07 01:44:14,552 INFO:     p=0.120: recovered=0.1230±0.0005 (n=5), fidelity=0.1510±0.0004
+2025-12-07 01:44:15,656 INFO:     p=0.160: recovered=0.1576±0.0063 (n=5), fidelity=0.1354±0.0018
+2025-12-07 01:44:16,977 INFO:     p=0.200: recovered=0.2329±0.0661 (n=5), fidelity=0.1275±0.0018
+2025-12-07 01:44:18,282 INFO:     p=0.250: recovered=0.2388±0.0625 (n=5), fidelity=0.1271±0.0013
+2025-12-07 01:44:18,284 INFO: 
+  Testing robust circuit (n_repetitions=5):
+2025-12-07 01:44:18,474 INFO:     p=0.020: recovered=0.0199±0.0003 (n=5), fidelity=0.9168±0.0014
+2025-12-07 01:44:18,646 INFO:     p=0.050: recovered=0.0505±0.0005 (n=5), fidelity=0.8013±0.0018
+2025-12-07 01:44:18,825 INFO:     p=0.080: recovered=0.0804±0.0008 (n=5), fidelity=0.7011±0.0026
+2025-12-07 01:44:18,996 INFO:     p=0.120: recovered=0.1193±0.0010 (n=5), fidelity=0.5879±0.0027
+2025-12-07 01:44:19,168 INFO:     p=0.160: recovered=0.1604±0.0009 (n=5), fidelity=0.4877±0.0020
+2025-12-07 01:44:19,355 INFO:     p=0.200: recovered=0.2022±0.0019 (n=5), fidelity=0.4036±0.0035
+2025-12-07 01:44:19,526 INFO:     p=0.250: recovered=0.2502±0.0020 (n=5), fidelity=0.3262±0.0028
+2025-12-07 01:44:19,529 INFO: 
+  Testing quantumnas circuit (n_repetitions=5):
+2025-12-07 01:44:20,215 INFO:     p=0.020: recovered=0.0199±0.0002 (n=5), fidelity=0.7631±0.0023
+2025-12-07 01:44:20,951 INFO:     p=0.050: recovered=0.0500±0.0004 (n=5), fidelity=0.5235±0.0024
+2025-12-07 01:44:21,707 INFO:     p=0.080: recovered=0.0799±0.0008 (n=5), fidelity=0.3770±0.0029
+2025-12-07 01:44:22,400 INFO:     p=0.120: recovered=0.1207±0.0011 (n=5), fidelity=0.2616±0.0023
+2025-12-07 01:44:23,170 INFO:     p=0.160: recovered=0.1609±0.0017 (n=5), fidelity=0.2004±0.0018
+2025-12-07 01:44:23,924 INFO:     p=0.200: recovered=0.2016±0.0064 (n=5), fidelity=0.1666±0.0040
+2025-12-07 01:44:24,604 INFO:     p=0.250: recovered=0.2499±0.0086 (n=5), fidelity=0.1453±0.0028
+2025-12-07 01:44:24,609 INFO: 
+Results saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/parameter_recovery/parameter_recovery_results.json
+2025-12-07 01:44:24,952 INFO: Plot saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/parameter_recovery/parameter_recovery_plot.png
+2025-12-07 01:44:24,963 INFO: Summary saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/parameter_recovery/parameter_recovery_summary.txt
+2025-12-07 01:44:24,963 INFO: 
+=== Parameter Recovery Experiment Complete ===
+2025-12-07 01:44:24,963 INFO: Running cross-noise robustness experiment
+2025-12-07 01:44:24,964 INFO: === Cross-Noise Robustness Experiment (ExpPlan Part 2, Exp 2.1) ===
+2025-12-07 01:44:24,964 INFO: Baseline circuit: /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/compare/run_0/circuit_vanilla.json
+2025-12-07 01:44:24,964 INFO: Robust circuit: /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/compare/run_0/circuit_robust.json
+2025-12-07 01:44:24,964 INFO: Output directory: /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/cross_noise/cross_noise_20251207-014424
+2025-12-07 01:44:24,964 INFO: Number of qubits: 3
+2025-12-07 01:44:24,964 INFO: Number of seeds: 5
+2025-12-07 01:44:24,964 INFO: Base seed: 42
+2025-12-07 01:44:24,965 INFO: Loaded baseline circuit with 16 operations
+2025-12-07 01:44:24,965 INFO: Loaded robust circuit with 3 operations
+2025-12-07 01:44:24,966 INFO: Loaded QuantumNAS circuit with 15 operations
+2025-12-07 01:44:24,970 INFO: Clean fidelities — baseline: 1.0000, robust: 1.0000, quantumnas: 1.0000; using shared reference 1.0000
+2025-12-07 01:44:24,970 INFO: 
+--- Over-rotation sweep (ε ∈ [0.0, 0.2]) ---
+2025-12-07 01:44:25,152 INFO: Baseline avg retention ratio (over-rotation): 0.6255
+2025-12-07 01:44:25,152 INFO: Robust avg retention ratio (over-rotation): 0.9798
+2025-12-07 01:44:25,152 INFO: 
+--- Asymmetric Pauli noise sweep (p_x in [0.05], p_y=0.0, p_z=0.0) ---
+2025-12-07 01:44:25,323 INFO: p_x=0.050 | Baseline retention: 0.2988 | Robust retention: 0.8170 | QuantumNAS retention: 0.5735
+2025-12-07 01:44:25,451 INFO: 
+Results saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/cross_noise/cross_noise_20251207-014424/cross_noise_results.json
+2025-12-07 01:44:25,709 INFO: Plot saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/cross_noise/cross_noise_20251207-014424/cross_noise_robustness.png
+2025-12-07 01:44:25,710 INFO: Summary saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/cross_noise/cross_noise_20251207-014424/cross_noise_summary.txt
+2025-12-07 01:44:25,718 INFO: 
+=== Cross-Noise Robustness Experiment Complete ===
+2025-12-07 01:44:25,775 INFO: Fidelity summary written to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/analysis/fidelity_raw_data.csv
+2025-12-07 01:44:39,272 INFO: Robustness sweep written to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/analysis/robustness_sweep.json//home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3/analysis/robustness_sweep.csv (legacy compare uses family=depolarizing, budget=1)
+2025-12-07 01:44:39,272 INFO: Pipeline finished. Results in /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/3

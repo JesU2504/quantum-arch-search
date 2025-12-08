@@ -1,0 +1,15 @@
+{
+  "n_qubits": 3,
+  "n_generations": 5,
+  "architect_steps_per_generation": 12000,
+  "saboteur_steps_per_generation": 4096,
+  "max_circuit_gates": 15,
+  "lambda_penalty": 0.5,
+  "task_mode": "state_preparation",
+  "target_type": "ghz",
+  "timestamp": "20251205-133154",
+  "champion_save_last_steps": null,
+  "champion_min_step": 0,
+  "hall_of_fame_size": 5,
+  "hall_of_fame_count": 5
+}

@@ -13,6 +13,7 @@ import json
 import os
 from datetime import datetime
 from typing import Dict, List, Tuple
+from pathlib import Path
 
 import numpy as np
 
@@ -27,19 +28,28 @@ except Exception:  # pragma: no cover - fallback for older installs
 from qiskit import transpile
 import matplotlib.pyplot as plt
 
-# Resolve Fake backends across qiskit versions
+# Resolve Fake backends across qiskit versions (include newer devices like Lagos/Oslo)
 FakeBackendMap: Dict[str, object] = {}
-for mod_name, cls_candidates in [
-    ("qiskit.providers.fake_provider", ["FakeQuito", "FakeBelem", "FakeAthens", "FakeYorktown"]),
+fake_class_candidates = [
+    # Legacy provider namespace
+    ("qiskit.providers.fake_provider", [
+        "FakeQuito", "FakeBelem", "FakeAthens", "FakeYorktown",
+        "FakeLagos", "FakeOslo",
+    ]),
+    # Runtime namespace (newer qiskit-ibm-runtime)
     ("qiskit_ibm_runtime.fake_provider", [
         "FakeQuito", "FakeQuitoV2", "FakeBelem", "FakeBelemV2",
-        "FakeAthens", "FakeAthensV2", "FakeYorktown"
+        "FakeAthens", "FakeAthensV2", "FakeYorktown",
+        "FakeLagos", "FakeLagosV2", "FakeOslo", "FakeOsloV2",
     ]),
+    # Deprecated ibm_provider namespace
     ("qiskit_ibm_provider.fake_provider", [
         "FakeQuito", "FakeQuitoV2", "FakeBelem", "FakeBelemV2",
-        "FakeAthens", "FakeAthensV2", "FakeYorktown"
+        "FakeAthens", "FakeAthensV2", "FakeYorktown",
+        "FakeLagos", "FakeLagosV2", "FakeOslo", "FakeOsloV2",
     ]),
-]:
+]
+for mod_name, cls_candidates in fake_class_candidates:
     try:
         mod = __import__(mod_name, fromlist=cls_candidates)
         for cls_name in cls_candidates:
@@ -88,7 +98,7 @@ def compute_success_prob(counts: Dict[str, int], success_bitstrings: List[str]) 
 
 
 def evaluate_on_backend(
-    circuits: Dict[str, str],
+    circuits: Dict[str, list[str]],
     backend_name: str,
     backend_obj,
     shots: int,
@@ -97,57 +107,51 @@ def evaluate_on_backend(
     seed: int,
     initial_layout: List[int] | None = None,
 ) -> Dict[str, Dict]:
-    results = {}
+    results = []
     sim = AerSimulator.from_backend(backend_obj)
-    for label, path in circuits.items():
-        qc = load_qiskit_circuit_from_json(path)
-        qc_meas = ensure_measurements(qc)
-        tqc = transpile(
-            qc_meas,
-            backend=backend_obj,
-            optimization_level=opt_level,
-            seed_transpiler=seed,
-            initial_layout=initial_layout,
-        )
-        job = sim.run(tqc, shots=shots, seed_simulator=seed)
-        res = job.result()
-        counts = res.get_counts()
-        success_prob = compute_success_prob(counts, target_bitstrings)
+    for label, paths in circuits.items():
+        for path in paths:
+            qc = load_qiskit_circuit_from_json(path)
+            qc_meas = ensure_measurements(qc)
+            tqc = transpile(
+                qc_meas,
+                backend=backend_obj,
+                optimization_level=opt_level,
+                seed_transpiler=seed,
+                initial_layout=initial_layout,
+            )
+            job = sim.run(tqc, shots=shots, seed_simulator=seed)
+            res = job.result()
+            counts = res.get_counts()
+            success_prob = compute_success_prob(counts, target_bitstrings)
 
-        results[label] = {
-            "backend": backend_name,
-            "shots": shots,
-            "success_prob": success_prob,
-            "depth": tqc.depth(),
-            "width": tqc.num_qubits,
-            "gate_counts": gate_counts(tqc),
-            "counts": counts,
-        }
+            results.append({
+                "backend": backend_name,
+                "circuit": label,
+                "circuit_path": path,
+                "shots": shots,
+                "success_prob": success_prob,
+                "depth": tqc.depth(),
+                "width": tqc.num_qubits,
+                "gate_counts": gate_counts(tqc),
+                "counts": counts,
+            })
     return results
 
 
 def plot_backend_results(all_results: Dict[str, Dict[str, Dict]], out_dir: str):
     os.makedirs(out_dir, exist_ok=True)
-    for backend, circuit_results in all_results.items():
-        labels = list(circuit_results.keys())
-        probs = [circuit_results[l]["success_prob"] for l in labels]
-        fig, ax = plt.subplots(figsize=(6, 4))
-        ax.bar(labels, probs, color=["#2c3e50", "#16a085", "#8e44ad"][: len(labels)])
-        ax.set_ylim(0, 1.0)
-        ax.set_ylabel("Success probability")
-        ax.set_title(f"Success probability on {backend}")
-        for i, p in enumerate(probs):
-            ax.text(i, p + 0.02, f"{p:.3f}", ha="center", va="bottom", fontsize=8)
-        fig.tight_layout()
-        out_path = os.path.join(out_dir, f"{backend}_success.png")
-        fig.savefig(out_path, dpi=200)
-        plt.close(fig)
+    # Skip plotting here; consolidated plotting handled by plot_hw_fidelity.py
+    return
 
 
 def run_hw_eval(
     baseline_circuit: str = None,
     robust_circuit: str = None,
     quantumnas_circuit: str = None,
+    baseline_circuits: list[str] | None = None,
+    robust_circuits: list[str] | None = None,
+    quantumnas_circuits: list[str] | None = None,
     backends: List[str] = None,
     shots: int = 4096,
     opt_level: int = 3,
@@ -156,13 +160,17 @@ def run_hw_eval(
     output_dir: str = None,
     initial_layout: List[int] | None = None,
 ):
-    circuits = {}
-    if baseline_circuit and os.path.exists(baseline_circuit):
-        circuits["baseline"] = baseline_circuit
-    if robust_circuit and os.path.exists(robust_circuit):
-        circuits["robust"] = robust_circuit
-    if quantumnas_circuit and os.path.exists(quantumnas_circuit):
-        circuits["quantumnas"] = quantumnas_circuit
+    circuits: Dict[str, list[str]] = {"baseline": [], "robust": [], "quantumnas": []}
+    for path in baseline_circuits or ([] if baseline_circuit is None else [baseline_circuit]):
+        if path and os.path.exists(path):
+            circuits["baseline"].append(path)
+    for path in robust_circuits or ([] if robust_circuit is None else [robust_circuit]):
+        if path and os.path.exists(path):
+            circuits["robust"].append(path)
+    for path in quantumnas_circuits or ([] if quantumnas_circuit is None else [quantumnas_circuit]):
+        if path and os.path.exists(path):
+            circuits["quantumnas"].append(path)
+    circuits = {k: v for k, v in circuits.items() if v}
     if not circuits:
         raise ValueError("No valid circuit paths provided.")
 
@@ -216,8 +224,15 @@ def cli():
     parser.add_argument("--baseline-circuit", type=str, help="Path to baseline circuit JSON")
     parser.add_argument("--robust-circuit", type=str, help="Path to robust circuit JSON")
     parser.add_argument("--quantumnas-circuit", type=str, help="Path to QuantumNAS circuit JSON")
-    parser.add_argument("--backends", type=str, nargs="+", default=["fake_quito", "fake_belem"],
-                        help="Backends to use (e.g., fake_quito fake_belem fake_athens fake_yorktown)")
+    parser.add_argument("--compare-dir", type=str, default=None,
+                        help="Optional compare directory; if provided, evaluate all run_*/ circuits for baseline/robust/quantumnas.")
+    parser.add_argument(
+        "--backends",
+        type=str,
+        nargs="+",
+        default=["fake_quito", "fake_belem", "fake_athens", "fake_lagos", "fake_oslo"],
+        help="Backends to use (e.g., fake_quito fake_belem fake_athens fake_lagos fake_oslo)",
+    )
     parser.add_argument("--shots", type=int, default=4096, help="Number of shots")
     parser.add_argument("--opt-level", type=int, default=3, help="Transpiler optimization level (0-3)")
     parser.add_argument("--seed", type=int, default=1234, help="Seed for transpiler and simulator")
@@ -234,10 +249,33 @@ def cli():
 
     success_bitstrings = parse_success_bitstrings(args.success_bitstrings, args.n_qubits)
     init_layout = parse_initial_layout(args.initial_layout)
+    baseline_list = None
+    robust_list = None
+    qnas_list = None
+    if args.compare_dir:
+        base = Path(args.compare_dir)
+        run_dirs = sorted([p for p in base.glob("run_*") if p.is_dir()])
+        baseline_list = []
+        robust_list = []
+        qnas_list = []
+        for rd in run_dirs:
+            b = rd / "circuit_vanilla.json"
+            r = rd / "circuit_robust.json"
+            q = rd / "circuit_quantumnas.json"
+            if b.exists():
+                baseline_list.append(str(b))
+            if r.exists():
+                robust_list.append(str(r))
+            if q.exists():
+                qnas_list.append(str(q))
+
     run_hw_eval(
         baseline_circuit=args.baseline_circuit,
         robust_circuit=args.robust_circuit,
         quantumnas_circuit=args.quantumnas_circuit,
+        baseline_circuits=baseline_list,
+        robust_circuits=robust_list,
+        quantumnas_circuits=qnas_list,
         backends=args.backends,
         shots=args.shots,
         opt_level=args.opt_level,

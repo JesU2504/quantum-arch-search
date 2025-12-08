@@ -34,13 +34,17 @@ import time
 import argparse
 from datetime import datetime
 from typing import Dict, List, Optional, Callable
+from pathlib import Path
 
 import numpy as np
 import cirq
 import matplotlib.pyplot as plt
 
-# Add project root to path for imports
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add project root and src to path for imports
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+for p in (str(_REPO_ROOT), str(_REPO_ROOT / "src")):
+    if p not in sys.path:
+        sys.path.insert(0, p)
 
 from src.qas_gym.envs import VQEArchitectEnv
 from src.utils.metrics import state_energy

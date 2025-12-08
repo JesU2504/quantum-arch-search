@@ -3,6 +3,11 @@ import numpy as np
 import cirq
 from gymnasium import spaces
 
+# Default error rates for noise channels (kept for backward compatibility)
+DEFAULT_ERROR_RATES = [0.0, 0.005, 0.01, 0.02, 0.05]
+SUPPORTED_NOISE_FAMILIES = {"depolarizing", "amplitude_damping", "coherent_overrotation", "readout", "bitflip"}
+
+
 def robust_measure_observables(simulator, circuit, qubits):
     """
     Robustly compute expectation values for X and Y observables.
@@ -46,10 +51,22 @@ class SaboteurMultiGateEnv(gym.Env):
     2. Rates: Lowered max error rate to prevent 'carpet bombing' the circuit.
     """
     # MODIFICATION 1: Error rates (includes stronger levels; keep 0.0 as "No Attack").
-    all_error_rates = [0.0, 0.005, 0.01, 0.02, 0.05]
+    all_error_rates = DEFAULT_ERROR_RATES.copy()
 
-    def __init__(self, architect_circuit, target_state, max_circuit_timesteps=20, 
-                 discrete=True, episode_length=1, lambda_penalty=0.5, **kwargs):
+    def __init__(
+        self,
+        architect_circuit,
+        target_state,
+        max_circuit_timesteps=20,
+        discrete=True,
+        episode_length=1,
+        lambda_penalty=0.5,
+        error_rates=None,
+        noise_family: str = "depolarizing",
+        noise_kwargs: dict | None = None,
+        max_concurrent_attacks: int = 5,
+        **kwargs
+    ):
         super().__init__()
         self.target_state = target_state
         self.max_gates = max_circuit_timesteps 
@@ -63,11 +80,19 @@ class SaboteurMultiGateEnv(gym.Env):
         # Penalty coefficient for using strong noise
         self.lambda_penalty = lambda_penalty
         
-        # MODIFICATION 2: Define the Attack Budget
-        self.max_concurrent_attacks = 5
+        # MODIFICATION 2: Define the Attack Budget (configurable)
+        self.max_concurrent_attacks = max_concurrent_attacks
+
+        # Noise configuration
+        self.error_rates = list(error_rates) if error_rates is not None else self.all_error_rates
+        self.all_error_rates = self.error_rates  # keep alias for backward compatibility
+        self.noise_family = noise_family
+        self.noise_kwargs = noise_kwargs.copy() if noise_kwargs is not None else {}
+        if self.noise_family not in SUPPORTED_NOISE_FAMILIES:
+            raise ValueError(f"Unsupported noise_family={noise_family}. Supported: {sorted(SUPPORTED_NOISE_FAMILIES)}")
 
         # --- Fixed Action Space (Padding) ---
-        self.num_error_levels = len(self.all_error_rates)
+        self.num_error_levels = len(self.error_rates)
         self.action_space = spaces.MultiDiscrete([
             self.num_error_levels] * self.max_gates)
 
@@ -143,7 +168,12 @@ class SaboteurMultiGateEnv(gym.Env):
         }
 
     @staticmethod
-    def create_observation_from_circuit(circuit: cirq.Circuit, n_qubits: int, max_circuit_timesteps: int | None = None):
+    def create_observation_from_circuit(
+        circuit: cirq.Circuit,
+        n_qubits: int,
+        max_circuit_timesteps: int | None = None,
+        **env_kwargs,
+    ):
         """
         Convenience helper to build the saboteur observation for an arbitrary circuit
         without requiring a full environment to be set up by the caller.
@@ -156,54 +186,97 @@ class SaboteurMultiGateEnv(gym.Env):
             target_state=dummy_target,
             max_circuit_timesteps=max_steps,
             n_qubits=n_qubits,
+            **env_kwargs,
         )
         return env._get_obs(circuit)
+
+    @staticmethod
+    def _noise_ops_for(rate: float, op: cirq.Operation, noise_family: str, noise_kwargs: dict):
+        """Return a list of noise operations to apply for a given rate and noise family."""
+        if rate <= 0:
+            return []
+        family = noise_family.lower()
+        if family == "depolarizing":
+            return [cirq.DepolarizingChannel(rate).on(q) for q in op.qubits]
+        if family == "amplitude_damping":
+            gamma = min(max(rate, 0.0), 1.0)
+            try:
+                channel = cirq.amplitude_damp(gamma)
+                return [channel.on(q) for q in op.qubits]
+            except Exception:
+                try:
+                    return [cirq.AmplitudeDampingChannel(gamma).on(q) for q in op.qubits]
+                except Exception:
+                    # Fallback to depolarizing if amplitude damping channel is unavailable
+                    return [cirq.DepolarizingChannel(gamma).on(q) for q in op.qubits]
+        if family in {"bitflip", "readout"}:
+            p = min(max(rate, 0.0), 1.0)
+            return [cirq.BitFlipChannel(p).on(q) for q in op.qubits]
+        if family == "coherent_overrotation":
+            angle_scale = noise_kwargs.get("coherent_angle_scale", np.pi)
+            axis = noise_kwargs.get("coherent_axis", "z")
+            angle = rate * angle_scale
+            gate_fn = {"x": cirq.rx, "y": cirq.ry}.get(axis.lower(), cirq.rz)
+            return [gate_fn(angle).on(q) for q in op.qubits]
+        # Fallback to depolarizing if an unknown family somehow slips through validation
+        return [cirq.DepolarizingChannel(rate).on(q) for q in op.qubits]
+
+    @classmethod
+    def build_noisy_circuit(
+        cls,
+        circuit: cirq.Circuit,
+        action,
+        error_rates,
+        noise_family: str,
+        max_concurrent_attacks: int,
+        max_gates: int | None = None,
+        noise_kwargs: dict | None = None,
+    ):
+        """Apply the saboteur action to a circuit and return the noisy circuit.
+
+        Returns (noisy_circuit, applied_error_rates, effective_action).
+        """
+        ops = list(circuit.all_operations())
+        max_gates = max_gates if max_gates is not None else len(ops)
+        valid_gate_count = min(len(ops), max_gates)
+        effective_action = np.zeros(valid_gate_count, dtype=int)
+
+        if valid_gate_count > 0:
+            raw_action = np.array(action[:valid_gate_count], dtype=int)
+            budget = min(max_concurrent_attacks, valid_gate_count)
+            top_k_indices = np.argsort(raw_action)[-budget:]
+            effective_action[top_k_indices] = raw_action[top_k_indices]
+
+        noisy_ops = []
+        applied_rates = []
+        rates = np.array(error_rates, dtype=float)
+        for i in range(valid_gate_count):
+            op = ops[i]
+            noisy_ops.append(op)
+
+            idx = int(np.clip(effective_action[i], 0, len(rates) - 1))
+            rate = float(rates[idx])
+            noise_ops = cls._noise_ops_for(rate, op, noise_family, noise_kwargs or {})
+            if noise_ops:
+                applied_rates.append(rate)
+                noisy_ops.extend(noise_ops)
+
+        noisy_circuit = cirq.Circuit(noisy_ops)
+        return noisy_circuit, applied_rates, effective_action
 
     def step(self, action):
         if self.current_circuit is None:
             return self._get_obs(), 0.0, True, False, {}
 
-        ops = list(self.current_circuit.all_operations())
-        noisy_ops = []
-        applied_errors = []
-
-        # --- BUDGET CONSTRAINT LOGIC ---
-        # 1. Identify the 'bids' (actions) for each gate.
-        # 2. Keep only the Top-K highest bids (strongest attacks).
-        # 3. Mask the rest to 0 (No Attack).
-        
-        # Ensure we don't crash if circuit is smaller than budget
-        valid_gate_count = min(len(ops), self.max_gates)
-        effective_action = np.zeros(valid_gate_count, dtype=int)
-
-        if valid_gate_count > 0:
-            raw_action = action[:valid_gate_count]
-            # Get indices of the top K actions
-            # argsort sorts ascending, so we take the last K indices
-            budget = min(self.max_concurrent_attacks, valid_gate_count)
-            top_k_indices = np.argsort(raw_action)[-budget:]
-            
-            # Apply the actions ONLY at these indices
-            effective_action[top_k_indices] = raw_action[top_k_indices]
-
-        # --- EXECUTE NOISY CIRCUIT ---
-        for i in range(valid_gate_count):
-            op = ops[i]
-            noisy_ops.append(op)
-            
-            error_idx = effective_action[i]
-            # Clip safety
-            error_idx = max(0, min(error_idx, self.num_error_levels - 1))
-            
-            rate = self.all_error_rates[error_idx]
-            
-            # Only append noise channel if rate > 0
-            if rate > 0.0:
-                applied_errors.append(rate)
-                for q in op.qubits:
-                    noisy_ops.append(cirq.DepolarizingChannel(rate).on(q))
-
-        noisy_circuit = cirq.Circuit(noisy_ops)
+        noisy_circuit, applied_errors, _ = self.build_noisy_circuit(
+            circuit=self.current_circuit,
+            action=action,
+            error_rates=self.error_rates,
+            noise_family=self.noise_family,
+            max_concurrent_attacks=self.max_concurrent_attacks,
+            max_gates=self.max_gates,
+            noise_kwargs=self.noise_kwargs,
+        )
         
         # --- FIDELITY CALCULATION ---
         all_qubits = cirq.LineQubit.range(self.n_qubits)
@@ -252,27 +325,75 @@ class Saboteur(gym.Env):
     """
     metadata = {'render_modes': []}
 
-    def __init__(self, target_circuit, target_state, max_concurrent_attacks=2):
+    def __init__(
+        self,
+        target_circuit,
+        target_state,
+        qubits=None,
+        max_concurrent_attacks=2,
+        max_gates=None,
+        error_rates=None,
+        noise_family: str = "depolarizing",
+        noise_kwargs: dict | None = None,
+        lambda_penalty: float = 0.5,
+    ):
         super().__init__()
 
         self.target_circuit = target_circuit
         self.target_state = target_state
         self.max_concurrent_attacks = max_concurrent_attacks
+        self.qubits = qubits if qubits is not None else sorted(target_circuit.all_qubits())
+        self.max_gates = max_gates if max_gates is not None else len(list(target_circuit.all_operations()))
+        self.error_rates = list(error_rates) if error_rates is not None else DEFAULT_ERROR_RATES.copy()
+        self.noise_family = noise_family
+        self.noise_kwargs = noise_kwargs.copy() if noise_kwargs is not None else {}
+        self.lambda_penalty = lambda_penalty
 
-        # Define action space (for each gate: choose an error rate index)
-        self.num_gates = len(list(target_circuit.all_operations()))
-        self.num_error_levels = len(self.all_error_rates)
-        self.action_space = spaces.MultiDiscrete([self.num_error_levels] * self.num_gates)
+        # Backing SaboteurMultiGateEnv for observations/stepping
+        self._multi_env = SaboteurMultiGateEnv(
+            architect_circuit=self.target_circuit,
+            target_state=self.target_state,
+            max_circuit_timesteps=self.max_gates,
+            n_qubits=len(self.qubits),
+            max_concurrent_attacks=self.max_concurrent_attacks,
+            error_rates=self.error_rates,
+            noise_family=self.noise_family,
+            noise_kwargs=self.noise_kwargs,
+            lambda_penalty=self.lambda_penalty,
+        )
 
-        # Observation space: Fidelity and optionally other features
-        self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(1,), dtype=np.float32)
+        # Define action/observation spaces to mirror the underlying env
+        self.action_space = self._multi_env.action_space
+        self.observation_space = self._multi_env.observation_space
 
     def reset(self, *, seed=None, options=None):
         super().reset(seed=seed)
-        return np.array([1.0], dtype=np.float32), {}
+        self._multi_env.set_circuit(self.target_circuit)
+        return self._multi_env.reset(seed=seed, options=options)
 
     def step(self, action):
-        # For simplicity, we reuse the MultiGate environment's step logic
-        env = SaboteurMultiGateEnv(self.target_circuit, self.target_state)
-        obs, reward, terminated, truncated, info = env.step(action)
-        return np.array([info['fidelity']], dtype=np.float32), reward, terminated, truncated, info
+        self._multi_env.set_circuit(self.target_circuit)
+        return self._multi_env.step(action)
+
+    def apply_noise(self, circuit=None, action=None):
+        """Apply a specific noise action to the circuit and return (noisy_circuit, num_attacks)."""
+        if circuit is None:
+            circuit = self.target_circuit
+        if action is None:
+            action = [0] * self.max_gates
+        noisy_circuit, applied_rates, _ = SaboteurMultiGateEnv.build_noisy_circuit(
+            circuit=circuit,
+            action=action,
+            error_rates=self.error_rates,
+            noise_family=self.noise_family,
+            max_concurrent_attacks=self.max_concurrent_attacks,
+            max_gates=self.max_gates,
+            noise_kwargs=self.noise_kwargs,
+        )
+        return noisy_circuit, len(applied_rates)
+
+    def apply_max_noise(self):
+        """Apply the strongest available noise to every gate (respecting the budget)."""
+        max_idx = len(self.error_rates) - 1
+        action = [max_idx] * self.max_gates
+        return self.apply_noise(self.target_circuit, action)

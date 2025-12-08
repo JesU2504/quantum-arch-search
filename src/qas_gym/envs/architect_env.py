@@ -3,17 +3,37 @@ import cirq
 from .qas_env import QuantumArchSearchEnv
 # We must import the Saboteur class to access the static helper and error rates
 from .saboteur_env import SaboteurMultiGateEnv
+from src.utils.metrics import state_energy
+
+try:
+    from utils.standard_hamiltonians import get_standard_hamiltonian  # type: ignore
+except Exception:
+    get_standard_hamiltonian = None
 
 class ArchitectEnv(QuantumArchSearchEnv):
     """
     An environment for the architect agent that uses a sophisticated reward function.
     """
-    def __init__(self, complexity_penalty_weight: float = 0.01, **kwargs):
+    def __init__(
+        self,
+        complexity_penalty_weight: float = 0.01,
+        hamiltonian_matrix=None,
+        hamiltonian_name: str | None = None,
+        **kwargs
+    ):
         super().__init__(**kwargs)
         # Track best metric seen within an episode for improvement-based shaping
         self.best_episode_metric = 0.0
         # NEW: store λ for the sweep
         self.complexity_penalty_weight = complexity_penalty_weight
+        self.hamiltonian_matrix = hamiltonian_matrix
+        self.hamiltonian_name = hamiltonian_name
+        if self.hamiltonian_matrix is None and hamiltonian_name and get_standard_hamiltonian:
+            try:
+                info = get_standard_hamiltonian(hamiltonian_name)
+                self.hamiltonian_matrix = info.get("matrix")
+            except Exception:
+                self.hamiltonian_matrix = None
 
 
     def reset(self, seed=None, options=None):
@@ -27,9 +47,22 @@ class ArchitectEnv(QuantumArchSearchEnv):
         """
         obs, reward, terminated, truncated, info = super().step(action)
         
+        gate_count = info.get('total_gates', 0)
+
+        # VQE reward override: reward = -energy with complexity penalty
+        if self.task_mode == 'vqe' and self.hamiltonian_matrix is not None:
+            circuit = self._get_cirq()
+            sim = cirq.Simulator()
+            result = sim.simulate(circuit, qubit_order=self.qubits)
+            state_vec = result.final_state_vector
+            energy = state_energy(state_vec, self.hamiltonian_matrix)
+            reward = -energy - self.complexity_penalty_weight * gate_count
+            info['energy'] = energy
+            info['shaped_reward'] = reward
+            return obs, reward, terminated, truncated, info
+
         # Use process fidelity when available (unitary mode), otherwise state fidelity
         metric = info.get('process_fidelity', info.get('fidelity', 0.0))
-        gate_count = info.get('total_gates', 0)
 
         # In unitary_preparation, when the environment provides process fidelity at
         # termination, pass it through directly so PPO optimizes the correct metric.
@@ -70,6 +103,11 @@ class AdversarialArchitectEnv(ArchitectEnv):
         saboteur_budget: int = 3,
         saboteur_budget_fraction: float | None = 0.2,
         saboteur_start_budget_scale: float = 0.3,
+        saboteur_error_rates=None,
+        saboteur_noise_family: str = "depolarizing",
+        saboteur_noise_kwargs: dict | None = None,
+        alpha_start: float = 0.6,
+        alpha_end: float = 0.0,
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -81,8 +119,8 @@ class AdversarialArchitectEnv(ArchitectEnv):
         self.global_step = 0
 
         # Start mostly clean (structure), end fully robustness-focused
-        self.alpha_start = 0.6
-        self.alpha_end = 0.0
+        self.alpha_start = alpha_start
+        self.alpha_end = alpha_end
 
         # Attack budget (number of gates that can be attacked per episode)
         self.saboteur_budget = saboteur_budget
@@ -90,6 +128,15 @@ class AdversarialArchitectEnv(ArchitectEnv):
         self.saboteur_budget_fraction = saboteur_budget_fraction
         # Start the ramp at a smaller fraction for stability (1.0 disables ramp)
         self.saboteur_start_budget_scale = saboteur_start_budget_scale
+        # Noise configuration shared with the saboteur policy
+        rates = list(saboteur_error_rates) if saboteur_error_rates is not None else SaboteurMultiGateEnv.all_error_rates
+        if saboteur_max_error_level is not None and saboteur_max_error_level > 0:
+            rates = rates[:saboteur_max_error_level]
+        if len(rates) == 0:
+            rates = SaboteurMultiGateEnv.all_error_rates
+        self.saboteur_error_rates = rates
+        self.saboteur_noise_family = saboteur_noise_family
+        self.saboteur_noise_kwargs = saboteur_noise_kwargs.copy() if saboteur_noise_kwargs is not None else {}
 
     def step(self, action):
         # 1. Execute Architect Step (Get Clean Fidelity & curriculum reward)
@@ -107,30 +154,32 @@ class AdversarialArchitectEnv(ArchitectEnv):
 
         # 2. If Episode Ends (Circuit Complete), Apply Saboteur Attack
         if terminated and self.saboteur_agent is not None:
+            import numpy as _np
             final_circuit = self._get_cirq()
 
             # Guard for empty circuits
             if final_circuit is not None and len(list(final_circuit.all_operations())) > 0:
                 # A. Build saboteur observation from the final circuit
-                sab_obs = SaboteurMultiGateEnv._get_obs(
-                    SaboteurMultiGateEnv(
-                        architect_circuit=final_circuit,
-                        target_state=self.target,
-                        max_circuit_timesteps=self.max_timesteps,
-                        n_qubits=len(self.qubits),
-                    ),
-                    final_circuit,
+                saboteur_target = self.target
+                if saboteur_target is None:
+                    saboteur_target = _np.zeros(2 ** len(self.qubits), dtype=complex)
+                sab_env = SaboteurMultiGateEnv(
+                    architect_circuit=final_circuit,
+                    target_state=saboteur_target,
+                    max_circuit_timesteps=self.max_timesteps,
+                    n_qubits=len(self.qubits),
+                    error_rates=self.saboteur_error_rates,
+                    noise_family=self.saboteur_noise_family,
+                    noise_kwargs=self.saboteur_noise_kwargs,
+                    max_concurrent_attacks=self.saboteur_budget if self.saboteur_budget is not None else self.max_timesteps,
                 )
+                sab_obs = SaboteurMultiGateEnv._get_obs(sab_env, final_circuit)
 
                 # B. Saboteur policy (deterministic: approximate worst-case)
                 sab_action, _ = self.saboteur_agent.predict(sab_obs, deterministic=True)
 
                 # C. Apply Noise with budgeted top-K attack
                 ops = list(final_circuit.all_operations())
-                noisy_ops = []
-                all_rates = SaboteurMultiGateEnv.all_error_rates
-
-                import numpy as _np
                 valid_gate_count = min(len(ops), self.max_timesteps)
                 raw_action = _np.array(sab_action[:valid_gate_count], dtype=int)
 
@@ -142,25 +191,19 @@ class AdversarialArchitectEnv(ArchitectEnv):
                     target_budget = frac_budget if target_budget is None else min(target_budget, frac_budget)
                 progress = min(1.0, self.global_step / self.total_training_steps) if self.total_training_steps > 0 else 1.0
                 budget_scale = self.saboteur_start_budget_scale + progress * (1.0 - self.saboteur_start_budget_scale)
-                budget = int(_np.ceil(target_budget * budget_scale))
-                budget = max(1, min(budget, valid_gate_count))
+                budget = int(_np.ceil(target_budget * budget_scale)) if target_budget is not None else valid_gate_count
+                budget = max(0, min(budget, valid_gate_count))
 
-                effective_action = _np.zeros_like(raw_action)
-                if budget > 0:
-                    top_k_indices = _np.argsort(raw_action)[-budget:]
-                    effective_action[top_k_indices] = raw_action[top_k_indices]
-
-                for i, op in enumerate(ops):
-                    noisy_ops.append(op)
-                    if i < len(effective_action):
-                        idx = int(effective_action[i])
-                        idx = max(0, min(idx, len(all_rates) - 1))
-                        error_rate = all_rates[idx]
-                        if error_rate > 0:
-                            for q in op.qubits:
-                                noisy_ops.append(cirq.DepolarizingChannel(error_rate).on(q))
-
-                noisy_circuit = cirq.Circuit(noisy_ops)
+                noisy_circuit, applied_rates, _ = SaboteurMultiGateEnv.build_noisy_circuit(
+                    circuit=final_circuit,
+                    action=raw_action,
+                    error_rates=self.saboteur_error_rates,
+                    noise_family=self.saboteur_noise_family,
+                    max_concurrent_attacks=budget,
+                    max_gates=self.max_timesteps,
+                    noise_kwargs=self.saboteur_noise_kwargs,
+                )
+                info["mean_error_rate"] = float(_np.mean(applied_rates)) if applied_rates else 0.0
 
                 # D. Measure Robustness (state fidelity)
                 fidelity_under_attack = self.get_fidelity(noisy_circuit)

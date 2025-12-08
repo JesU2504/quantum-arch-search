@@ -11,6 +11,8 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import cirq
+from pathlib import Path
 
 COLORS = {
     "best": "#72b7b2",
@@ -125,6 +127,46 @@ def find_run_dir(root_dir: str, seed: int | None):
     return None
 
 
+def find_robust_circuit_path(run_dir: str) -> str | None:
+    """Heuristic search for the robust circuit used in comparisons."""
+    run_dir = os.path.abspath(run_dir)
+    parents = [
+        run_dir,
+        os.path.dirname(run_dir),
+        os.path.dirname(os.path.dirname(run_dir)),
+    ]
+
+    candidates: list[str] = []
+    for base in parents:
+        if not base:
+            continue
+        for name in ("circuit_robust.json", "circuit_robust_final.json", "robust_circuit.json"):
+            candidates.append(os.path.join(base, name))
+        candidates.append(os.path.join(base, "compare", "run_0", "circuit_robust.json"))
+
+    seen = set()
+    deduped = []
+    for c in candidates:
+        if c and c not in seen:
+            deduped.append(c)
+            seen.add(c)
+
+    for path in deduped:
+        if os.path.exists(path):
+            return path
+    return None
+
+
+def load_gate_count(circuit_path: str) -> int | None:
+    try:
+        circuit_text = Path(circuit_path).read_text()
+        circuit = cirq.read_json(json_text=circuit_text)
+        return len(list(circuit.all_operations()))
+    except Exception as exc:  # pragma: no cover - diagnostic
+        print(f"[plot_coevolution] Warning: failed to read circuit {circuit_path}: {exc}")
+        return None
+
+
 def plot_coevolution_single(run_dir, save_name, window_frac=0.02):
     print(f"--- Generating Co-Evolution Plot for {run_dir} ---")
 
@@ -200,6 +242,17 @@ def plot_coevolution_single(run_dir, save_name, window_frac=0.02):
     ax.margins(x=0.01)
     ax.grid(True, alpha=0.25)
 
+    robust_circuit_path = find_robust_circuit_path(run_dir)
+    robust_gate_count = None
+    if robust_circuit_path:
+        robust_gate_count = load_gate_count(robust_circuit_path)
+        if robust_gate_count is None:
+            print(f"[plot_coevolution] Could not infer gate count from {robust_circuit_path}")
+        else:
+            print(f"[plot_coevolution] Robust circuit {robust_circuit_path} has {robust_gate_count} gates")
+    else:
+        print("[plot_coevolution] Robust circuit not found for gate count annotation")
+
     handles, labels = ax.get_legend_handles_labels()
     order = [
         "Best Clean So Far",
@@ -217,7 +270,8 @@ def plot_coevolution_single(run_dir, save_name, window_frac=0.02):
         f"Final best clean: {best_clean[-1]:.3f}\n"
         f"Final EMA clean: {clean_ema[-1] if len(clean_ema) else float('nan'):.3f}\n"
         f"Final EMA attacked: {noisy_ema_aligned[-1] if len(noisy_ema_aligned) else float('nan'):.3f}\n"
-        f"Best attacked: {best_attacked:.3f}",
+        f"Best attacked: {best_attacked:.3f}\n"
+        f"Robust circuit gates: {robust_gate_count if robust_gate_count is not None else 'N/A'}",
         transform=ax.transAxes,
         fontsize=9,
         bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.7)

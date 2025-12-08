@@ -231,6 +231,14 @@ def train_adversarial(
     task_mode: str = None,
     champion_save_last_steps: int | None = None,
     hall_of_fame_size: int = 5,
+    saboteur_noise_family: str = "depolarizing",
+    saboteur_error_rates: list[float] | None = None,
+    saboteur_noise_kwargs: dict | None = None,
+    saboteur_budget: int | None = 3,
+    saboteur_budget_fraction: float | None = 0.2,
+    saboteur_start_budget_scale: float = 0.3,
+    alpha_start: float = 0.6,
+    alpha_end: float = 0.0,
 ):
     # --- Configuration ---
     effective_task_mode = task_mode if task_mode is not None else config.TASK_MODE
@@ -277,8 +285,13 @@ def train_adversarial(
         target_state = None
         ideal_U = get_ideal_unitary(n_qubits, config.TARGET_TYPE, silent=False)
 
+    saboteur_target_state = target_state if target_state is not None else config.get_target_state(n_qubits)
+    sab_error_rates = list(saboteur_error_rates) if saboteur_error_rates is not None else list(SaboteurMultiGateEnv.all_error_rates)
+    if len(sab_error_rates) == 0:
+        sab_error_rates = list(SaboteurMultiGateEnv.all_error_rates)
+
     # --- Initialize Environments ---
-    max_saboteur_level = len(SaboteurMultiGateEnv.all_error_rates)
+    max_saboteur_level = len(sab_error_rates)
     qubits = [cirq.LineQubit(i) for i in range(n_qubits)]
     action_gates = config.get_action_gates(qubits, include_rotations=include_rotations)
     
@@ -302,11 +315,15 @@ def train_adversarial(
     # to set its observation space size correctly.
     saboteur_env = SaboteurMultiGateEnv(
         architect_circuit=dummy_circuit,
-        target_state=target_state,
+        target_state=saboteur_target_state,
         max_circuit_timesteps=max_circuit_gates, # Ensure this matches architect
-        max_error_level=4,
+        max_concurrent_attacks=saboteur_budget if saboteur_budget is not None else max_circuit_gates,
         discrete=True,
-        lambda_penalty=lambda_penalty
+        lambda_penalty=lambda_penalty,
+        error_rates=sab_error_rates,
+        noise_family=saboteur_noise_family,
+        noise_kwargs=saboteur_noise_kwargs,
+        n_qubits=n_qubits,
     )
 
     # --- Initialize Agents (Persistent Saboteur) ---
@@ -317,7 +334,14 @@ def train_adversarial(
         saboteur_agent=saboteur_agent,
         saboteur_max_error_level=max_saboteur_level,
         total_training_steps=total_steps,
-        saboteur_budget=3,
+        saboteur_budget=saboteur_budget,
+        saboteur_budget_fraction=saboteur_budget_fraction,
+        saboteur_start_budget_scale=saboteur_start_budget_scale,
+        saboteur_error_rates=sab_error_rates,
+        saboteur_noise_family=saboteur_noise_family,
+        saboteur_noise_kwargs=saboteur_noise_kwargs,
+        alpha_start=alpha_start,
+        alpha_end=alpha_end,
         **arch_env_kwargs
     )
     architect_agent = PPO('MlpPolicy', initial_arch_env, **config.AGENT_PARAMS)
@@ -344,7 +368,14 @@ def train_adversarial(
             saboteur_agent=saboteur_agent,
             saboteur_max_error_level=max_saboteur_level,
             total_training_steps=total_steps,
-            saboteur_budget=3,
+            saboteur_budget=saboteur_budget,
+            saboteur_budget_fraction=saboteur_budget_fraction,
+            saboteur_start_budget_scale=saboteur_start_budget_scale,
+            saboteur_error_rates=sab_error_rates,
+            saboteur_noise_family=saboteur_noise_family,
+            saboteur_noise_kwargs=saboteur_noise_kwargs,
+            alpha_start=alpha_start,
+            alpha_end=alpha_end,
             **arch_env_kwargs
         )
         architect_agent.set_env(arch_env)

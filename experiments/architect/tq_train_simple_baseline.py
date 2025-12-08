@@ -14,6 +14,7 @@ import os
 import sys
 from pathlib import Path
 from typing import List
+import random
 
 import torch
 import torch.nn as nn
@@ -220,29 +221,62 @@ def parse_args():
     p.add_argument('--epochs', type=int, default=None, help="Training epochs (default: 400 for GHZ, 2000 for Toffoli)")
     p.add_argument('--lr', type=float, default=0.05)
     p.add_argument('--depth', type=int, default=None, help="Ansatz depth (layers of rotations + CNOT chain)")
+    p.add_argument('--augment-depth', action='store_true', help="Double the default depth to increase circuit size for fairer comparison.")
+    p.add_argument('--max-gates', type=int, default=None, help="Cap on total gate count (defaults to experiments.config.MAX_CIRCUIT_TIMESTEPS when set).")
+    p.add_argument('--seed', type=int, default=None, help="Optional RNG seed for reproducibility.")
     p.add_argument('--out-dir', type=str, default='results/quantumnas_simple')
     return p.parse_args()
 
 
 def main():
     args = parse_args()
+    if args.seed is not None:
+        random.seed(args.seed)
+        np.random.seed(args.seed)
+        torch.manual_seed(args.seed)
+        torch.cuda.manual_seed_all(args.seed) if torch.cuda.is_available() else None
+    try:
+        from experiments import config as exp_config
+        default_max_gates = exp_config.MAX_CIRCUIT_TIMESTEPS
+    except Exception:
+        default_max_gates = None
+
+    max_gates = args.max_gates if args.max_gates is not None else default_max_gates
+
     out_dir = Path(args.out_dir).expanduser()
     ghz_depth_default = 4
     toffoli_depth_default = 12
+    if args.augment_depth:
+        ghz_depth_default *= 2
+        toffoli_depth_default *= 2
     ghz_epochs_default = 400
     toffoli_epochs_default = 2000
+
+    def fit_depth(task: str, depth: int) -> int:
+        """Adjust depth so total gates <= max_gates (if provided)."""
+        if max_gates is None:
+            return depth
+        if task == 'ghz':
+            gates_per_layer = 2 * 3 - 1  # 3 RY + 2 CNOT = 5 for n=3
+        else:
+            gates_per_layer = 2 * 3 + (3 - 1)  # 6 rotations + 2 CNOT = 8
+        max_depth = max(1, max_gates // gates_per_layer)
+        return min(depth, max_depth)
+
     if args.task == 'ghz':
         depth = args.depth if args.depth is not None else ghz_depth_default
+        depth = fit_depth('ghz', depth)
         epochs = args.epochs if args.epochs is not None else ghz_epochs_default
         model = run_state_prep(n_qubits=3, epochs=epochs, lr=args.lr, depth=depth, out_dir=out_dir)
         circuit = export_to_cirq(model, n_qubits=3, out_path=out_dir / 'circuit_quantumnas.json')
-        print(f"[GHZ] Saved circuit to {out_dir / 'circuit_quantumnas.json'}")
+        print(f"[GHZ] Saved circuit to {out_dir / 'circuit_quantumnas.json'} (depth={depth}, max_gates={max_gates})")
     else:
         depth = args.depth if args.depth is not None else toffoli_depth_default
+        depth = fit_depth('toffoli', depth)
         epochs = args.epochs if args.epochs is not None else toffoli_epochs_default
         model = run_unitary_prep_toffoli(epochs=epochs, lr=args.lr, depth=depth, out_dir=out_dir)
         circuit = export_to_cirq(model, n_qubits=3, out_path=out_dir / 'circuit_quantumnas.json')
-        print(f"[Toffoli] Saved circuit to {out_dir / 'circuit_quantumnas.json'}")
+        print(f"[Toffoli] Saved circuit to {out_dir / 'circuit_quantumnas.json'} (depth={depth}, max_gates={max_gates})")
 
 
 if __name__ == "__main__":

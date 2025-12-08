@@ -44,7 +44,7 @@ _src_root = os.path.join(_repo_root, "src")
 if _src_root not in sys.path:
     sys.path.insert(0, _src_root)
 
-from experiments.export_tq_op_history import load_op_history  # noqa: E402
+from experiments.quantumnas.export_tq_op_history import load_op_history  # noqa: E402
 from utils.torchquantum_adapter import convert_qasm_file_to_cirq  # noqa: E402
 
 
