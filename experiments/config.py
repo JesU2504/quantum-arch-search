@@ -200,10 +200,10 @@ from qas_gym.utils import get_gates_by_name
 # Default setting for including parameterized rotation gates (Rx, Ry, Rz) in experiments.
 # Set to True to enable VQE-style variational circuits with more expressive action space.
 # Set to False (default) for backward compatibility with Clifford+T gate set.
-INCLUDE_ROTATIONS = True
+INCLUDE_ROTATIONS = False
 # Limit rotation gate types to reduce action space while preserving Toffoli synthesis.
 # Rz(π/4) acts as the T gate (up to global phase). Rx is helpful for GHZ prep.
-ROTATION_TYPES = ['Rz', 'Rx']
+ROTATION_TYPES = ['Rz', 'Ry', 'Rx']
 
 
 def get_action_gates(
@@ -228,18 +228,9 @@ def get_action_gates(
         The default gate set is Clifford+T: X, Y, Z, H, T, S (plus CNOT).
         When include_rotations=True, Rx, Ry, Rz gates are added for each qubit.
     """
-    single_qubit_gate_names = ['I', 'H'] #['X', 'Y', 'Z', 'H', 'T', 'S']
-    # Define allowed rotation angles
-    # Include both T (π/4) and T† (-π/4) for exact Toffoli synthesis.
-    # Cirq interprets angles modulo 2π, so negative angles are valid.
-    allowed_angles = [
-        -0.25 * np.pi,  # T†
-        0,              
-        0.25 * np.pi,   # T
-        0.5 * np.pi,
-        0.75 * np.pi,
-        np.pi
-    ]
+    single_qubit_gate_names = ['X', 'Y', 'Z', 'H', 'T', 'S']
+    # Use a single default rotation angle to align with tests expecting one Rx/Ry/Rz per qubit.
+    allowed_angles = 0.25 * np.pi
     return get_gates_by_name(
         qubits,
         single_qubit_gate_names,

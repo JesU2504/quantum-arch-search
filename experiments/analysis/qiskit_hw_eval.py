@@ -16,8 +16,9 @@ from typing import Dict, List, Tuple
 from pathlib import Path
 
 import numpy as np
+import cirq
 
-from qas_gym.utils import load_circuit
+from qas_gym.utils import load_circuit, randomized_compile
 from utils.qiskit_conversion import cirq_to_qiskit, ensure_measurements
 
 # Qiskit imports (Aer + Fake backends)
@@ -80,9 +81,33 @@ def resolve_backends(names: List[str]):
     return backends
 
 
-def load_qiskit_circuit_from_json(path: str):
+def load_qiskit_circuit_from_json(path: str, randomized_compile_flag: bool = False, rng=None):
+    """Load and optionally twirl a circuit for qiskit execution.
+    
+    Supports gate-insertion twirl (randomized_compile) for hardware-style simulation.
+    Note: Frame-based Pauli twirl (from robustness_sweep.py) is deterministic and
+    evaluated in the simulator; it does not affect hardware transpilation.
+    
+    Args:
+        path: Path to circuit JSON.
+        randomized_compile_flag: If True, apply gate-insertion Pauli twirl.
+        rng: Random number generator seed.
+    
+    Returns:
+        Qiskit QuantumCircuit ready for transpilation and execution.
+    """
     cirq_circuit = load_circuit(path)
-    return cirq_to_qiskit(cirq_circuit)
+    if randomized_compile_flag:
+        rng = rng or np.random.default_rng()
+        cirq_circuit = randomized_compile(cirq_circuit, rng)
+    # Strip twirl tags before QASM export to keep conversion happy
+    ops = []
+    for op in cirq_circuit.all_operations():
+        if isinstance(op, cirq.TaggedOperation):
+            ops.append(op.untagged)
+        else:
+            ops.append(op)
+    return cirq_to_qiskit(cirq.Circuit(ops))
 
 
 def gate_counts(qc) -> Dict[str, int]:
@@ -106,12 +131,13 @@ def evaluate_on_backend(
     opt_level: int,
     seed: int,
     initial_layout: List[int] | None = None,
+    randomized_compile_flag: bool = False,
 ) -> Dict[str, Dict]:
     results = []
     sim = AerSimulator.from_backend(backend_obj)
     for label, paths in circuits.items():
         for path in paths:
-            qc = load_qiskit_circuit_from_json(path)
+            qc = load_qiskit_circuit_from_json(path, randomized_compile_flag=randomized_compile_flag, rng=np.random.default_rng(seed=seed))
             qc_meas = ensure_measurements(qc)
             tqc = transpile(
                 qc_meas,
@@ -159,6 +185,7 @@ def run_hw_eval(
     target_bitstrings: List[str] = None,
     output_dir: str = None,
     initial_layout: List[int] | None = None,
+    randomized_compile_flag: bool = False,
 ):
     circuits: Dict[str, list[str]] = {"baseline": [], "robust": [], "quantumnas": []}
     for path in baseline_circuits or ([] if baseline_circuit is None else [baseline_circuit]):
@@ -181,26 +208,40 @@ def run_hw_eval(
 
     backend_objs = resolve_backends(backends)
     all_results = {}
+    variants = [("untwirled", False)]
+    if randomized_compile_flag:
+        variants.append(("twirled", True))
     for name, backend_obj in backend_objs.items():
-        backend_results = evaluate_on_backend(
-            circuits,
-            backend_name=name,
-            backend_obj=backend_obj,
-            shots=shots,
-            target_bitstrings=target_bitstrings,
-            opt_level=opt_level,
-            seed=seed,
-            initial_layout=initial_layout,
-        )
-        all_results[name] = backend_results
+        combined = []
+        for variant, twirl in variants:
+            backend_results = evaluate_on_backend(
+                circuits,
+                backend_name=name,
+                backend_obj=backend_obj,
+                shots=shots,
+                target_bitstrings=target_bitstrings,
+                opt_level=opt_level,
+                seed=seed + (1 if twirl else 0),
+                initial_layout=initial_layout,
+                randomized_compile_flag=twirl,
+            )
+            for res in backend_results:
+                res["variant"] = variant
+            combined.extend(backend_results)
+        all_results[name] = combined
 
     # Save JSON
     json_path = os.path.join(output_dir, "hardware_eval_results.json")
     with open(json_path, "w") as f:
         json.dump(all_results, f, indent=2)
 
-    # Plots
-    plot_backend_results(all_results, output_dir)
+    # Aggregate plot (mean/std across runs per backend/circuit)
+    try:
+        from experiments.analysis.plot_hw_fidelity import load_results, plot
+        df = load_results(Path(json_path))
+        plot(df, Path(output_dir) / "hardware_eval_plot.png")
+    except Exception as exc:  # pragma: no cover - plotting is best-effort
+        print(f"[qiskit_hw_eval] Warning: failed to generate aggregate plot: {exc}")
 
     return all_results
 
@@ -242,6 +283,13 @@ def cli():
     parser.add_argument("--output-dir", type=str, default=None, help="Output directory for results/plots")
     parser.add_argument("--initial-layout", type=str, default=None,
                         help="Comma-separated physical qubit indices for transpile initial_layout (e.g., 0,1,2)")
+    parser.add_argument(
+        "--randomized-compiling",
+        action="store_true",
+        dest="randomized_compiling",
+        help="Enable Pauli twirling before hardware eval (off by default).",
+    )
+    parser.set_defaults(randomized_compiling=False)
     args = parser.parse_args()
 
     if not FAKE_BACKENDS:
@@ -283,6 +331,7 @@ def cli():
         target_bitstrings=success_bitstrings,
         output_dir=args.output_dir,
         initial_layout=init_layout,
+        randomized_compile_flag=args.randomized_compiling,
     )
 
 

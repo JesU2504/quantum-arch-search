@@ -26,6 +26,9 @@ PALETTE = {
     "baseline": "#4C78A8",
     "robust": "#F58518",
     "quantumnas": "#54A24B",
+    "baseline_twirl": "#9ecae1",
+    "robust_twirl": "#fdae6b",
+    "quantumnas_twirl": "#a1d99b",
 }
 
 
@@ -43,6 +46,7 @@ def load_results(path: Path) -> pd.DataFrame:
                         "success_prob": stats.get("success_prob", 0.0),
                         "shots": stats.get("shots", None),
                         "depth": stats.get("depth", None),
+                        "variant": stats.get("variant", "untwirled"),
                     }
                 )
         else:
@@ -55,6 +59,7 @@ def load_results(path: Path) -> pd.DataFrame:
                         "success_prob": stats.get("success_prob", 0.0),
                         "shots": stats.get("shots", None),
                         "depth": stats.get("depth", None),
+                        "variant": stats.get("variant", "untwirled"),
                     }
                 )
     return pd.DataFrame(records)
@@ -64,14 +69,16 @@ def plot(df: pd.DataFrame, out_path: Path):
     sns.set_theme(style="whitegrid")
     hue_order = ["baseline", "robust", "quantumnas"]
     label_map = {
-        "baseline": "Baseline",
+        "baseline": "RL baseline",
         "robust": "Robust",
         "quantumnas": "HEA baseline",
     }
 
     # Aggregate across seeds/runs if multiple entries per backend/circuit
+    if "variant" not in df.columns:
+        df["variant"] = "untwirled"
     summary = (
-        df.groupby(["backend", "circuit"])
+        df.groupby(["backend", "circuit", "variant"])
         .agg(mean=("success_prob", "mean"), std=("success_prob", "std"), n=("success_prob", "count"))
         .reset_index()
     )
@@ -81,33 +88,90 @@ def plot(df: pd.DataFrame, out_path: Path):
     fig, ax = plt.subplots(figsize=(7.5, 4.5))
     x = np.arange(len(order))
     width = 0.25
+    err_kw = {"capsize": 4, "capthick": 1.2, "elinewidth": 1.0}
 
+    used_labels = set()
     for j, circuit in enumerate(hue_order):
-        sub = summary[summary["circuit"] == circuit].set_index("backend").reindex(order)
-        means = sub["mean"].values
-        stds = sub["std"].values
+        sub = summary[summary["circuit"] == circuit]
+        # Pivot to backend x variant
+        pivot_mean = sub.pivot(index="backend", columns="variant", values="mean")
+        pivot_std = sub.pivot(index="backend", columns="variant", values="std")
+        base_series = pivot_mean.reindex(order).get("untwirled", pd.Series(0.0, index=order)).fillna(0.0)
+        base_std_series = pivot_std.reindex(order).get("untwirled", pd.Series(0.0, index=order)).fillna(0.0)
+        twirl_series_raw = pivot_mean.reindex(order).get("twirled")
+        twirl_std_raw = pivot_std.reindex(order).get("twirled")
+
+        twirl_series = twirl_series_raw.fillna(0.0) if twirl_series_raw is not None else None
+        twirl_std_series = twirl_std_raw.fillna(0.0) if twirl_std_raw is not None else None
+
+        base_means = np.clip(base_series.to_numpy(dtype=float, na_value=0.0), 0.0, 1.0)
+        base_stds = base_std_series.fillna(0.0).to_numpy(dtype=float, na_value=0.0)
+
+        twirl_present = twirl_series is not None and twirl_series.notna().any()
+        if twirl_present and twirl_series is not None:
+            twr_means = twirl_series.to_numpy(dtype=float, na_value=0.0)
+            if twirl_std_series is not None:
+                twr_stds = twirl_std_series.to_numpy(dtype=float, na_value=0.0)
+            else:
+                twr_stds = np.zeros_like(base_means)
+        else:
+            twr_means = np.zeros_like(base_means)
+            twr_stds = np.zeros_like(base_means)
+
+        # Stack only the uplift from twirling so bar height equals twirled fidelity
+        base_means = np.clip(base_means, 0.0, 1.0)
+        gain_vals = np.maximum(0.0, twr_means - base_means)
+        combined = base_means + gain_vals
+        over_mask = combined > 1.0
+        gain_vals[over_mask] = np.maximum(0.0, 1.0 - base_means[over_mask])
+
+        # Clip error bars to stay within [0,1] and hide gain error when no uplift
+        cap_base_stds = []
+        cap_gain_stds = []
+        for idx in range(len(base_means)):
+            headroom_base = max(0.0, 1.0 - base_means[idx])
+            cap_base_stds.append(min(base_stds[idx], headroom_base))
+            headroom_gain = max(0.0, 1.0 - (base_means[idx] + gain_vals[idx]))
+            cap_gain_stds.append(min(twr_stds[idx], headroom_gain) if gain_vals[idx] > 0 else 0.0)
+        base_stds = np.array(cap_base_stds)
+        gain_stds = np.array(cap_gain_stds)
+
+        label_base = label_map.get(circuit, circuit)
+        label_twirled = f"{label_base} (twirl gain)"
+        lb = label_base if label_base not in used_labels else None
+        lt = label_twirled if (twirl_present and label_twirled not in used_labels) else None
+        pos = x + (j - 1) * width
         ax.bar(
-            x + (j - 1) * width,
-            means,
+            pos,
+            base_means,
             width,
-            yerr=stds,
-            label=label_map.get(circuit, circuit),
+            yerr=base_stds,
+            label=lb,
             color=PALETTE.get(circuit, None),
             alpha=0.9,
-            capsize=4,
+            error_kw=err_kw,
         )
+        if twirl_present and np.any(gain_vals > 0):
+            ax.bar(
+                pos,
+                gain_vals,
+                width,
+                bottom=base_means,
+                yerr=gain_stds,
+                label=lt,
+                color=PALETTE.get(f"{circuit}_twirl", "#c7e9c0"),
+                alpha=0.8,
+                error_kw=err_kw,
+            )
+            used_labels.update(filter(None, [lb, lt]))
+        else:
+            used_labels.update(filter(None, [lb]))
 
     ax.set_ylabel("Success probability (proxy fidelity)")
     ax.set_xlabel("Backend")
     ax.set_xticks(x)
     ax.set_xticklabels(order, rotation=10)
     ax.set_ylim(0, 1.05)
-
-    # Annotate bars with values
-    from matplotlib.container import BarContainer
-    for c in ax.containers:
-        if isinstance(c, BarContainer):
-            ax.bar_label(c, fmt="%.3f", padding=2, fontsize=8)
 
     shots = df["shots"].dropna().unique()
     shots_txt = f"shots={int(shots[0])}" if len(shots) == 1 else ""

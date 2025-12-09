@@ -45,8 +45,23 @@ def evaluate_circuit_under_noise(
     budget: int,
     max_samples: int,
     noise_kwargs: Optional[Dict] = None,
+    use_twirl: bool = False,
 ) -> Dict:
-    """Compute clean and attacked fidelities for a circuit under a specific noise model."""
+    """Compute clean and attacked fidelities for a circuit under a specific noise model.
+    
+    Args:
+        circuit: The circuit to evaluate.
+        target_state: Target quantum state.
+        noise_family: Noise family string (e.g., 'depolarizing', 'amplitude_damping').
+        rate: Noise rate parameter.
+        budget: Number of gates to attack (max_k).
+        max_samples: Max number of attack subsets to sample.
+        noise_kwargs: Optional dict of noise-specific kwargs.
+        use_twirl: If True, apply frame-based twirl sandwich model for deterministic modes.
+    
+    Returns:
+        Dict with clean_fidelity, attacked_mean, attacked_std, etc.
+    """
     qubits = sorted(circuit.all_qubits())
     clean_fid = float(fidelity_pure_target(circuit, target_state, qubits))
     ops = list(circuit.all_operations())
@@ -59,10 +74,35 @@ def evaluate_circuit_under_noise(
         combos = random.sample(combos, max_samples)
 
     attacked_vals: List[float] = []
+    rng = np.random.default_rng()
     for comb in combos:
-        noisy_circ = _apply_noise_family(
-            circuit, comb, noise_family=noise_family, rate=rate, noise_kwargs=noise_kwargs
-        )
+        if use_twirl and noise_family in ('over_rotation', 'asymmetric_noise', 'amplitude_damping', 'phase_damping'):
+            # Apply frame-based twirl sandwich model for deterministic modes
+            from qas_gym.utils import build_frame_twirled_noisy_circuit
+            attack_mode_map = {
+                'over_rotation': 'over_rotation',
+                'asymmetric_noise': 'asymmetric_noise',
+                'amplitude_damping': 'amplitude_damping',
+                'phase_damping': 'phase_damping',
+            }
+            attack_mode = attack_mode_map.get(noise_family, 'over_rotation')
+            # Map noise_kwargs to build_frame_twirled_noisy_circuit parameters
+            twirl_kwargs = {}
+            if noise_family == 'over_rotation':
+                twirl_kwargs['epsilon_overrot'] = rate
+            elif noise_family == 'asymmetric_noise':
+                twirl_kwargs.update(noise_kwargs or {})
+            elif noise_family == 'amplitude_damping':
+                twirl_kwargs['gamma_amp'] = rate
+            elif noise_family == 'phase_damping':
+                twirl_kwargs['gamma_phase'] = rate
+            noisy_circ, _ = build_frame_twirled_noisy_circuit(
+                circuit, rng, attack_mode, **twirl_kwargs
+            )
+        else:
+            noisy_circ = _apply_noise_family(
+                circuit, comb, noise_family=noise_family, rate=rate, noise_kwargs=noise_kwargs
+            )
         attacked_vals.append(fidelity_pure_target(noisy_circ, target_state, qubits))
 
     if attacked_vals:
@@ -91,6 +131,7 @@ def sweep_circuit_entries(
     max_samples: int,
     target_state_fn,
     noise_kwargs: Optional[Dict[str, Dict]] = None,
+    use_twirl: bool = False,
 ):
     """
     Evaluate a collection of circuits across multiple noise families and budgets.
@@ -103,6 +144,7 @@ def sweep_circuit_entries(
         max_samples: maximum number of attack subsets to sample per circuit/budget
         target_state_fn: callable n_qubits -> target_state vector
         noise_kwargs: optional mapping noise_family -> kwargs dict
+        use_twirl: If True, apply frame-based twirl sandwich model for deterministic modes.
 
     Returns:
         List of result rows (dict) for CSV/JSON consumption.
@@ -120,7 +162,8 @@ def sweep_circuit_entries(
         for family in noise_families:
             family_kwargs = (noise_kwargs or {}).get(family, {})
             for budget in budgets:
-                stats = evaluate_circuit_under_noise(
+                # Generate untwirled variant (always)
+                stats_untwirled = evaluate_circuit_under_noise(
                     circuit=circuit,
                     target_state=target_state,
                     noise_family=family,
@@ -128,6 +171,7 @@ def sweep_circuit_entries(
                     budget=budget,
                     max_samples=max_samples,
                     noise_kwargs=family_kwargs,
+                    use_twirl=False,
                 )
                 rows.append(
                     {
@@ -138,7 +182,34 @@ def sweep_circuit_entries(
                         "attack_budget": budget,
                         "noise_rate": rate,
                         "circuit_path": str(path),
-                        **stats,
+                        "variant": "untwirled",
+                        **stats_untwirled,
                     }
                 )
+                
+                # Generate twirled variant (for deterministic modes only)
+                if family in ('over_rotation', 'asymmetric_noise', 'amplitude_damping', 'phase_damping'):
+                    stats_twirled = evaluate_circuit_under_noise(
+                        circuit=circuit,
+                        target_state=target_state,
+                        noise_family=family,
+                        rate=rate,
+                        budget=budget,
+                        max_samples=max_samples,
+                        noise_kwargs=family_kwargs,
+                        use_twirl=True,
+                    )
+                    rows.append(
+                        {
+                            "group": entry.get("group"),
+                            "run": entry.get("run"),
+                            "seed": entry.get("seed"),
+                            "noise_family": family,
+                            "attack_budget": budget,
+                            "noise_rate": rate,
+                            "circuit_path": str(path),
+                            "variant": "twirled",
+                            **stats_twirled,
+                        }
+                    )
     return rows

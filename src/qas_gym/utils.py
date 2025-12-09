@@ -1,6 +1,5 @@
 import cirq
 import numpy as np
-from utils.metrics import process_fidelity
 from typing import Sequence, List, Dict, Any, Optional, Tuple
 
 
@@ -234,6 +233,254 @@ def apply_noise(circuit, gate_index, error_rate):
         if i == gate_index:
             new_ops.extend(noise_ops)
     return cirq.Circuit(new_ops)
+
+
+TWIRL_TAG = "pauli_twirl"
+
+
+def is_twirl_op(op: cirq.Operation) -> bool:
+    """Return True if this operation is tagged as a twirl helper (skip noise)."""
+    if isinstance(op, cirq.TaggedOperation):
+        return any(tag == TWIRL_TAG for tag in op.tags)
+    return False
+
+
+def randomized_compile(circuit: cirq.Circuit, rng: np.random.Generator | None = None) -> cirq.Circuit:
+    """
+    Apply a simple Pauli twirl with lightweight tags so downstream noise insertion
+    can ignore the extra Pauli gates.
+
+    For each operation, we wrap it with random Paulis on its qubits. Inserted
+    Paulis are tagged with TWIRL_TAG so evaluation code can avoid counting them
+    as additional noise sites (preserving the original number of attacked gates).
+    """
+    rng = rng or np.random.default_rng()
+    paulis = [cirq.I, cirq.X, cirq.Y, cirq.Z]
+    new_ops = []
+    for op in circuit.all_operations():
+        if not op.qubits:
+            new_ops.append(op)
+            continue
+        sampled = [rng.choice(paulis) for _ in op.qubits]
+        for p, q in zip(sampled, op.qubits):
+            if p is not cirq.I:
+                new_ops.append(cirq.TaggedOperation(p.on(q), TWIRL_TAG))
+        new_ops.append(op)
+        for p, q in zip(sampled, op.qubits):
+            if p is not cirq.I:
+                new_ops.append(cirq.TaggedOperation(p.on(q), TWIRL_TAG))
+    return cirq.Circuit(new_ops)
+
+
+# --- Pauli-frame twirling (no extra gates) ---
+PAULI_LABELS = {cirq.I: 'I', cirq.X: 'X', cirq.Y: 'Y', cirq.Z: 'Z'}
+
+def pauli_frame_twirl(circuit: cirq.Circuit, rng: np.random.Generator | None = None) -> tuple[cirq.Circuit, dict[cirq.Qid, str]]:
+    """
+    Generate a per-qubit Pauli frame for twirling without inserting gates.
+
+    This returns the original circuit and a dictionary mapping each qubit to a
+    Pauli frame label ('I','X','Y','Z'). Downstream evaluation should account for
+    the final frame when computing fidelity (either by applying an implicit
+    correction before measurement or by transforming the target state).
+
+    Note:
+        - No operations are added; saboteur indices remain aligned with payload ops.
+        - Frames are randomized; one simple strategy is to re-sample after each
+          payload gate, but for efficiency we start with a single randomized frame
+          per qubit for now. This already helps with coherent error symmetrization
+          in aggregate. If needed we can extend to per-timestep frames.
+    """
+    rng = rng or np.random.default_rng()
+    paulis = [cirq.I, cirq.X, cirq.Y, cirq.Z]
+    qubits = sorted(list(circuit.all_qubits()))
+    frame: dict[cirq.Qid, str] = {}
+    for q in qubits:
+        p = rng.choice(paulis)
+        frame[q] = PAULI_LABELS[p]
+    return circuit, frame
+
+
+def apply_inverse_pauli_frame_to_target(target_state: np.ndarray, qubits: Sequence[cirq.Qid], frame: dict[cirq.Qid, str]) -> np.ndarray:
+    """
+    Transform the target state by the inverse of the Pauli frame using Cirq's unitary
+    with the same qubit_order as simulation to avoid ordering mismatches.
+
+    We build a circuit that applies the inverse frame Paulis on the provided qubits
+    and obtain its unitary in the same ordering, then multiply the target state.
+    """
+    # Build inverse-frame circuit in the provided qubit order
+    inv_ops: list[cirq.Operation] = []
+    for q in qubits:
+        label = frame.get(q, 'I')
+        if label == 'X':
+            inv_ops.append(cirq.X(q))
+        elif label == 'Y':
+            inv_ops.append(cirq.Y(q))
+        elif label == 'Z':
+            inv_ops.append(cirq.Z(q))
+        else:
+            # 'I' or unknown -> no-op
+            pass
+    corr_circuit = cirq.Circuit(inv_ops)
+    try:
+        U = corr_circuit.unitary(qubit_order=list(qubits))
+    except Exception:
+        # Fallback: if unitary not available (e.g., empty), return original state
+        return target_state
+    return U @ target_state
+
+
+# --- Frame-aware deterministic noise conjugation helpers ---
+def _conjugate_axis_by_pauli(axis: str, pauli: str) -> tuple[str, int]:
+    """
+    Conjugate a rotation axis by a Pauli. Returns (new_axis, sign), where sign in {+1, -1}.
+
+    For single-qubit rotations R_axis(theta), Pauli conjugation P R_axis(theta) P yields a rotation
+    possibly about a different axis and potentially with a sign flip.
+
+    Rules (up to global phase), derived from Pauli commutation:
+      - Conjugation by I: (axis, +1)
+      - By X: X -> (X, +1), Y -> (Y, -1), Z -> (Z, -1)
+      - By Y: X -> (X, -1), Y -> (Y, +1), Z -> (Z, -1)
+      - By Z: X -> (X, -1), Y -> (Y, -1), Z -> (Z, +1)
+
+    Note: For axis swaps (e.g., Clifford twirl), we keep axes and only flip signs for Pauli conjugation.
+    """
+    if pauli == 'I':
+        return axis, +1
+    if pauli == 'X':
+        return axis, +1 if axis == 'X' else -1
+    if pauli == 'Y':
+        return axis, +1 if axis == 'Y' else -1
+    if pauli == 'Z':
+        return axis, +1 if axis == 'Z' else -1
+    return axis, +1
+
+
+def conjugate_rotation_by_pauli(axis: str, angle: float, pauli: str) -> cirq.Gate:
+    """
+    Return the rotation gate for axis after conjugation by a Pauli frame.
+    Axis in {'X','Y','Z'}. Angle adjusted by sign.
+    """
+    new_axis, sign = _conjugate_axis_by_pauli(axis, pauli)
+    theta = angle * sign
+    if new_axis == 'X':
+        return cirq.rx(theta)
+    if new_axis == 'Y':
+        return cirq.ry(theta)
+    if new_axis == 'Z':
+        return cirq.rz(theta)
+    return cirq.rx(theta)
+
+
+def apply_deterministic_noise_with_pauli_frame(
+    circuit: cirq.Circuit,
+    qubits: Sequence[cirq.Qid],
+    frame: dict[cirq.Qid, str],
+    attack_mode: str,
+    *,
+    epsilon_overrot: float = 0.0,
+    p_x: float = 0.0,
+    p_y: float = 0.0,
+    p_z: float = 0.0,
+    gamma_amp: float = 0.0,
+    gamma_phase: float = 0.0,
+    p_readout: float = 0.0,
+) -> cirq.Circuit:
+    """
+    Apply deterministic per-gate noise after each payload operation, conjugating by the Pauli frame.
+
+    No twirl-tagged gates are used here; caller provides current frame per qubit.
+    """
+    noisy_ops = []
+    for op in circuit.all_operations():
+        noisy_ops.append(op)
+        # Skip non-qubit ops
+        if not op.qubits:
+            continue
+        for q in op.qubits:
+            f = frame.get(q, 'I')
+            if attack_mode == 'over_rotation':
+                # Conjugate Rx by frame
+                g = conjugate_rotation_by_pauli('X', epsilon_overrot, f)
+                noisy_ops.append(g.on(q))
+            elif attack_mode == 'asymmetric_noise':
+                noisy_ops.append(cirq.asymmetric_depolarize(p_x=p_x, p_y=p_y, p_z=p_z).on(q))
+            elif attack_mode == 'amplitude_damping':
+                noisy_ops.append(cirq.amplitude_damp(gamma_amp).on(q))
+            elif attack_mode == 'phase_damping':
+                noisy_ops.append(cirq.phase_damp(gamma_phase).on(q))
+            elif attack_mode == 'readout':
+                noisy_ops.append(cirq.bit_flip(p_readout).on(q))
+            else:
+                # Fallback: no-op
+                pass
+    return cirq.Circuit(noisy_ops)
+
+
+def build_frame_twirled_noisy_circuit(
+    circuit: cirq.Circuit,
+    rng: np.random.Generator,
+    attack_mode: str,
+    *,
+    epsilon_overrot: float = 0.0,
+    p_x: float = 0.0,
+    p_y: float = 0.0,
+    p_z: float = 0.0,
+    gamma_amp: float = 0.0,
+    gamma_phase: float = 0.0,
+    p_readout: float = 0.0,
+) -> tuple[cirq.Circuit, dict[cirq.Qid, str]]:
+    """
+    Build a noisy circuit using virtual Pauli twirl sandwiches per payload op
+    without inserting any helper gates.
+
+        Twirl sandwich model (virtual, no gate insertion):
+        - For each payload gate U affecting qubits Q, sample a Pauli P(q) in {I,X,Y,Z}
+            independently for each q in Q.
+        - Conceptually apply P before U and P^dagger after U (i.e., P^dagger U P), so the
+            logical action on the payload remains unchanged up to global phase while the
+            intervening noise is conjugated by P.
+    - Implementation: we DO NOT append P/P^\u2020 gates; we only conjugate the
+      deterministic noise added after U by the sampled P for each affected qubit.
+      Therefore, there is no net frame accumulation and no inverse-frame correction
+      is required at the end of the circuit.
+
+    Returns:
+      - The noisy circuit with deterministic noise ops conjugated by per-op Pauli
+        samples.
+      - An identity frame map for all circuit qubits, indicating no end-of-circuit
+        correction is required (left for compatibility with callers).
+    """
+    # Identity frame for compatibility (no end correction is needed)
+    qubits = sorted(list(circuit.all_qubits()))
+    identity_frame: dict[cirq.Qid, str] = {q: 'I' for q in qubits}
+
+    pauli_labels = ['I', 'X', 'Y', 'Z']
+    noisy_ops: list[cirq.Operation] = []
+    for op in circuit.all_operations():
+        noisy_ops.append(op)
+        # For each affected qubit by this payload op, sample a Pauli for the sandwich
+        sampled_P: dict[cirq.Qid, str] = {q: rng.choice(pauli_labels) for q in op.qubits}
+        # Conjugate the deterministic noise by the sampled Pauli per qubit
+        for q in op.qubits:
+            f = sampled_P.get(q, 'I')
+            if attack_mode == 'over_rotation':
+                g = conjugate_rotation_by_pauli('X', epsilon_overrot, f)
+                noisy_ops.append(g.on(q))
+            elif attack_mode == 'asymmetric_noise':
+                noisy_ops.append(cirq.asymmetric_depolarize(p_x=p_x, p_y=p_y, p_z=p_z).on(q))
+            elif attack_mode == 'amplitude_damping':
+                noisy_ops.append(cirq.amplitude_damp(gamma_amp).on(q))
+            elif attack_mode == 'phase_damping':
+                noisy_ops.append(cirq.phase_damp(gamma_phase).on(q))
+            elif attack_mode == 'readout':
+                noisy_ops.append(cirq.bit_flip(p_readout).on(q))
+            else:
+                # Unknown attack_mode: no-op
+                pass
+    return cirq.Circuit(noisy_ops), identity_frame
 
 
 def get_bell_state():
@@ -531,7 +778,16 @@ def verify_toffoli_unitary(circuit: cirq.Circuit, n_qubits: int, *, silent: bool
         if fid > 1 - 1e-9:
             correct += 1
     accuracy = correct / dim
-    proc_fid = process_fidelity(U_ideal, U_learned)
+    # Lazy import to avoid pulling heavy RL/ML dependencies during light analysis runs
+    try:
+        from utils.metrics import process_fidelity  # type: ignore
+    except Exception:
+        # Minimal fallback: normalized Hilbert-Schmidt inner product
+        d = dim
+        hs = np.trace(np.conj(U_ideal.T) @ U_learned)
+        proc_fid = float(np.abs(hs) ** 2 / (d * d))
+    else:
+        proc_fid = process_fidelity(U_ideal, U_learned)
     if not silent:
         print(f"[Verifier] Toffoli truth-table accuracy across {dim} inputs: {accuracy:.3f}")
         print(f"[Verifier] Process fidelity (unitary matrices): {proc_fid:.6f}")
@@ -558,7 +814,7 @@ def get_ideal_unitary(n_qubits: int, target_type: str) -> Optional[np.ndarray]:
         return None
 
 
-def fidelity_pure_target(circuit: cirq.Circuit, target_state: np.ndarray, qubits: Sequence[cirq.Qid]) -> float:
+def fidelity_pure_target(circuit: cirq.Circuit, target_state: np.ndarray, qubits: Sequence[cirq.Qid], frame: Optional[dict[cirq.Qid, str]] = None) -> float:
     """Compute fidelity F = <psi| rho |psi> for a pure target state |psi>.
 
     Args:
@@ -570,6 +826,20 @@ def fidelity_pure_target(circuit: cirq.Circuit, target_state: np.ndarray, qubits
     """
     if circuit is None or not circuit.all_operations():
         return 0.0
+    # If a Pauli frame is provided and it's not identity, append its inverse
+    if frame:
+        needs_correction = any((frame.get(q, 'I') != 'I') for q in qubits)
+        if needs_correction:
+            inv_ops: list[cirq.Operation] = []
+            for q in qubits:
+                label = frame.get(q, 'I')
+                if label == 'X':
+                    inv_ops.append(cirq.X(q))
+                elif label == 'Y':
+                    inv_ops.append(cirq.Y(q))
+                elif label == 'Z':
+                    inv_ops.append(cirq.Z(q))
+            circuit = cirq.Circuit([*circuit.all_operations(), *inv_ops])
     simulator = cirq.DensityMatrixSimulator()
     result = simulator.simulate(circuit, qubit_order=qubits)
     rho = result.final_density_matrix

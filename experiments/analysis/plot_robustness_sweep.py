@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Plot robustness sweep results (attacked fidelity vs noise family/budget) for baseline, robust, and QuantumNAS circuits.
+Plot robustness sweep results (attacked fidelity vs noise family/budget) for baseline, robust, and HEA baseline circuits.
 Consumes results/*/analysis/robustness_sweep.json produced by run_experiments.py.
 """
 import argparse
@@ -28,7 +28,7 @@ def plot(df: pd.DataFrame, out_path: Path):
     order = ["depolarizing", "amplitude_damping", "coherent_overrotation"]
     group_order = ["architect_baseline", "adversarial", "quantumnas"]
     label_map = {
-        "architect_baseline": "Baseline",
+        "architect_baseline": "RL baseline",
         "adversarial": "Robust",
         "quantumnas": "HEA baseline",
     }

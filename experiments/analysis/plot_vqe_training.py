@@ -158,7 +158,7 @@ def plot_traces(molecule: str, out_dir: Path, adv, qnas, rl, fci=None):
     if qnas:
         xs = [p["step"] for p in qnas[0]["trace"]]
         ys = [p["energy"] for p in qnas[0]["trace"]]
-        plt.plot(xs, ys, color="C1", linestyle="--", marker="s", markersize=3, label=f"QuantumNAS seed{qnas[0].get('seed')}")
+        plt.plot(xs, ys, color="C1", linestyle="--", marker="s", markersize=3, label=f"HEA baseline seed{qnas[0].get('seed')}")
     if rl:
         xs = list(range(1, len(rl[0]["trace"]) + 1))
         ys = rl[0]["trace"]
@@ -192,9 +192,13 @@ def plot_noisy_traces(molecule: str, out_dir: Path, adv, qnas, rl, fci=None, noi
     if get_standard_hamiltonian is not None:
         try:
             ham_info = get_standard_hamiltonian(molecule)
-            mixed_energy = _mixed_state_energy(ham_info["pauli_terms"], ham_info["n_qubits"])
-            pauli_terms = ham_info["pauli_terms"]
-            n_qubits = ham_info["n_qubits"]
+            pauli_terms = ham_info.get("pauli_terms")
+            n_qubits_val = ham_info.get("n_qubits")
+            if pauli_terms is not None and isinstance(n_qubits_val, (int, np.integer)):
+                n_qubits = int(n_qubits_val)
+                mixed_energy = _mixed_state_energy(pauli_terms, n_qubits)
+            else:
+                mixed_energy = None
         except Exception:
             mixed_energy = None
 
@@ -207,7 +211,7 @@ def plot_noisy_traces(molecule: str, out_dir: Path, adv, qnas, rl, fci=None, noi
     if qnas:
         xs = np.array([p["step"] for p in qnas[0]["trace"]], dtype=float)
         ys = np.array([p["energy"] for p in qnas[0]["trace"]], dtype=float)
-        clean_traces.append(("QuantumNAS", "C1", "s", xs, ys, qnas[0].get("seed")))
+        clean_traces.append(("HEA baseline", "C1", "s", xs, ys, qnas[0].get("seed")))
     if rl:
         xs = np.arange(1, len(rl[0]["trace"]) + 1, dtype=float)
         ys = np.array(rl[0]["trace"], dtype=float)
@@ -219,13 +223,13 @@ def plot_noisy_traces(molecule: str, out_dir: Path, adv, qnas, rl, fci=None, noi
             plt.plot(xs, ys, color=color, marker=marker, markersize=3, label=f"{name} seed{seed} (clean)")
             if mixed_energy is not None:
                 # Cumulative depolarizing: alpha grows with depth
-                if name == "Adversarial" and adv and pauli_terms is not None:
+                if name == "Adversarial" and adv and pauli_terms is not None and n_qubits is not None:
                     qasms = [pt["qasm"] for pt in adv[0]["trace"] if pt.get("qasm")]
                     noisy = np.array([_energy_from_circuit_or_qasm(qasm, pauli_terms, p, n_qubits) for qasm in qasms])
-                elif name == "QuantumNAS" and qnas and pauli_terms is not None:
+                elif name == "HEA baseline" and qnas and pauli_terms is not None and n_qubits is not None:
                     qasms = [pt["qasm"] for pt in qnas[0]["trace"] if pt.get("qasm")]
                     noisy = np.array([_energy_from_circuit_or_qasm(qasm, pauli_terms, p, n_qubits) for qasm in qasms])
-                elif name == "RL" and rl and pauli_terms is not None and rl[0].get("circuit") is not None:
+                elif name == "RL" and rl and pauli_terms is not None and rl[0].get("circuit") is not None and n_qubits is not None:
                     noisy_val = _energy_from_circuit_or_qasm(rl[0]["circuit"], pauli_terms, p, n_qubits)
                     noisy = np.full_like(xs, noisy_val)
                 else:
@@ -265,9 +269,13 @@ def plot_eval_sweep(molecule: str, out_dir: Path, adv, qnas, rl, fci=None, noise
     if get_standard_hamiltonian is not None:
         try:
             ham_info = get_standard_hamiltonian(molecule)
-            mixed_energy = _mixed_state_energy(ham_info["pauli_terms"], ham_info["n_qubits"])
-            pauli_terms = ham_info["pauli_terms"]
-            n_qubits = ham_info["n_qubits"]
+            pauli_terms = ham_info.get("pauli_terms")
+            n_qubits_val = ham_info.get("n_qubits")
+            if pauli_terms is not None and isinstance(n_qubits_val, (int, np.integer)):
+                n_qubits = int(n_qubits_val)
+                mixed_energy = _mixed_state_energy(pauli_terms, n_qubits)
+            else:
+                mixed_energy = None
         except Exception:
             mixed_energy = None
 
@@ -283,7 +291,7 @@ def plot_eval_sweep(molecule: str, out_dir: Path, adv, qnas, rl, fci=None, noise
             if xs.shape != target_x.shape or np.any(xs != target_x):
                 ys = np.interp(target_x, xs, ys)
             xs = target_x
-        elif mixed_energy is not None and pauli_terms is not None and run.get("trace"):
+        elif mixed_energy is not None and pauli_terms is not None and n_qubits is not None and run.get("trace"):
             last_qasm = next((pt["qasm"] for pt in reversed(run["trace"]) if pt.get("qasm")), None)
             if last_qasm:
                 ys = np.array([_energy_from_circuit_or_qasm(last_qasm, pauli_terms, p, n_qubits) for p in target_x])
@@ -294,11 +302,11 @@ def plot_eval_sweep(molecule: str, out_dir: Path, adv, qnas, rl, fci=None, noise
             continue
         curves.append(("Adv", xs, ys))
 
-    # QuantumNAS approximate sweep
+    # HEA baseline approximate sweep
     for run in qnas:
         if mixed_energy is None:
             continue
-        if pauli_terms is not None and run.get("trace"):
+        if pauli_terms is not None and n_qubits is not None and run.get("trace"):
             last_qasm = next((pt["qasm"] for pt in reversed(run["trace"]) if pt.get("qasm")), None)
             if last_qasm:
                 ys = np.array([_energy_from_circuit_or_qasm(last_qasm, pauli_terms, p, n_qubits) for p in target_x])
@@ -311,13 +319,13 @@ def plot_eval_sweep(molecule: str, out_dir: Path, adv, qnas, rl, fci=None, noise
                 continue
             xs = target_x
             ys = (1 - xs) * run["best"] + xs * mixed_energy
-        curves.append(("QNAS", xs, ys))
+    curves.append(("HEA", xs, ys))
 
     # RL: simulate best circuit if available, else approximate
     for idx, run in enumerate(rl):
         if mixed_energy is None:
             continue
-        if pauli_terms is not None and run.get("circuit") is not None:
+        if pauli_terms is not None and n_qubits is not None and run.get("circuit") is not None:
             ys = np.array([_energy_from_circuit_or_qasm(run["circuit"], pauli_terms, p, n_qubits) for p in target_x])
             xs = target_x
         elif run.get("best") is not None:
@@ -345,7 +353,7 @@ def plot_eval_sweep(molecule: str, out_dir: Path, adv, qnas, rl, fci=None, noise
         all_y.extend((mean + std).tolist())
 
     _aggregate_noise(curves, "Adv", "C0", "-", "o")
-    _aggregate_noise(curves, "QNAS", "C1", "--", "s")
+    _aggregate_noise(curves, "HEA", "C1", "--", "s")
     _aggregate_noise(curves, "RL", "C2", ":", "^")
 
     if fci is not None:
@@ -366,7 +374,7 @@ def plot_eval_sweep(molecule: str, out_dir: Path, adv, qnas, rl, fci=None, noise
 
 def write_summary(out_dir: Path, adv, qnas, rl):
     rows = []
-    for name, runs in [("Adversarial", adv), ("QuantumNAS", qnas), ("RL", rl)]:
+    for name, runs in [("Adversarial", adv), ("HEA baseline", qnas), ("RL", rl)]:
         bests = [r["best"] for r in runs if r["best"] is not None]
         if not bests:
             continue

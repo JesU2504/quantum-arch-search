@@ -34,7 +34,14 @@ import json
 from datetime import datetime
 
 from experiments import config
-from qas_gym.utils import apply_noise, fidelity_pure_target
+from qas_gym.utils import (
+    apply_noise,
+    fidelity_pure_target,
+    randomized_compile,
+    is_twirl_op,
+    build_frame_twirled_noisy_circuit,
+    apply_inverse_pauli_frame_to_target,
+)
 
 # Import statistical utilities
 from utils.stats import (
@@ -65,6 +72,7 @@ def evaluate_multi_gate_attacks(
     gamma_amp: float = 0.05,
     gamma_phase: float = 0.05,
     p_readout: float = 0.03,
+    randomized_compile_flag: bool = False,
 ):
     """
     Evaluate circuit robustness under multi-gate attacks sampled from saboteur_agent.
@@ -95,27 +103,58 @@ def evaluate_multi_gate_attacks(
     valid_gate_count = min(len(ops), config.MAX_CIRCUIT_TIMESTEPS)
 
     for _ in range(samples):
+        # Enable twirling for deterministic gate noise modes; skip readout and random_high
+        twirl_for_mode = randomized_compile_flag and attack_mode in (
+            "over_rotation",
+            "asymmetric_noise",
+            "amplitude_damping",
+            "phase_damping",
+        )
+        work_circuit = circuit
         # Deterministic noise modes bypass saboteur
         if attack_mode in ("over_rotation", "asymmetric_noise", "amplitude_damping", "phase_damping", "readout"):
-            noisy_ops = []
-            for op in ops:
-                noisy_ops.append(op)
-                for q in op.qubits:
-                    if attack_mode == "over_rotation":
-                        noisy_ops.append(cirq.rx(epsilon_overrot).on(q))
-                    elif attack_mode == "asymmetric_noise":
-                        noisy_ops.append(cirq.asymmetric_depolarize(p_x=p_x, p_y=p_y, p_z=p_z).on(q))
-                    elif attack_mode == "amplitude_damping":
-                        noisy_ops.append(cirq.amplitude_damp(gamma_amp).on(q))
-                    elif attack_mode == "phase_damping":
-                        noisy_ops.append(cirq.phase_damp(gamma_phase).on(q))
-                    elif attack_mode == "readout":
-                        noisy_ops.append(cirq.bit_flip(p_readout).on(q))
-            noisy_circuit = cirq.Circuit(noisy_ops)
-            attacked_vals.append(fidelity_pure_target(noisy_circuit, target_state, qubits))
+            if twirl_for_mode:
+                # Frame-based twirl: build noisy circuit with per-op virtual sandwich conjugation of noise.
+                # Returns identity frame since virtual sandwich has no net frame accumulation.
+                noisy_circuit, frame = build_frame_twirled_noisy_circuit(
+                    work_circuit,
+                    rng,
+                    attack_mode,
+                    epsilon_overrot=epsilon_overrot,
+                    p_x=p_x,
+                    p_y=p_y,
+                    p_z=p_z,
+                    gamma_amp=gamma_amp,
+                    gamma_phase=gamma_phase,
+                    p_readout=p_readout,
+                )
+                # Frame is identity for virtual sandwich; fidelity_pure_target checks for non-identity before applying correction
+                attacked_vals.append(fidelity_pure_target(noisy_circuit, target_state, qubits, frame=frame))
+            else:
+                noisy_ops = []
+                for op in work_circuit.all_operations():
+                    noisy_ops.append(op)
+                    if is_twirl_op(op):
+                        continue
+                    for q in op.qubits:
+                        if attack_mode == "over_rotation":
+                            noisy_ops.append(cirq.rx(epsilon_overrot).on(q))
+                        elif attack_mode == "asymmetric_noise":
+                            noisy_ops.append(cirq.asymmetric_depolarize(p_x=p_x, p_y=p_y, p_z=p_z).on(q))
+                        elif attack_mode == "amplitude_damping":
+                            noisy_ops.append(cirq.amplitude_damp(gamma_amp).on(q))
+                        elif attack_mode == "phase_damping":
+                            noisy_ops.append(cirq.phase_damp(gamma_phase).on(q))
+                        elif attack_mode == "readout":
+                            noisy_ops.append(cirq.bit_flip(p_readout).on(q))
+                noisy_circuit = cirq.Circuit(noisy_ops)
+                attacked_vals.append(fidelity_pure_target(noisy_circuit, target_state, qubits))
             continue
 
         sab_action = None
+        ops_full = list(work_circuit.all_operations())
+        payload_ops = [op for op in ops_full if not is_twirl_op(op)]
+        valid_gate_count = min(len(payload_ops), config.MAX_CIRCUIT_TIMESTEPS)
         budget = min(saboteur_budget, valid_gate_count)
 
         if attack_mode == "max":
@@ -124,7 +163,7 @@ def evaluate_multi_gate_attacks(
             budget = min(saboteur_budget, valid_gate_count)
         elif attack_mode == "policy":
             sab_obs = SaboteurMultiGateEnv.create_observation_from_circuit(
-                circuit, n_qubits=n_qubits, max_circuit_timesteps=config.MAX_CIRCUIT_TIMESTEPS
+                work_circuit, n_qubits=n_qubits, max_circuit_timesteps=config.MAX_CIRCUIT_TIMESTEPS
             )
             if saboteur_agent is not None:
                 try:
@@ -157,13 +196,17 @@ def evaluate_multi_gate_attacks(
                 effective_action[top_k_indices] = raw_action[top_k_indices]
 
         noisy_ops = []
-        for i, op in enumerate(ops):
+        payload_pos = 0
+        for op in ops_full:
             noisy_ops.append(op)
-            idx = int(effective_action[i]) if i < len(effective_action) else fallback_error_idx
+            if is_twirl_op(op):
+                continue
+            idx = int(effective_action[payload_pos]) if payload_pos < len(effective_action) else fallback_error_idx
             idx = max(0, min(idx, max_idx))
             error_rate = all_rates[idx]
             for q in op.qubits:
                 noisy_ops.append(cirq.DepolarizingChannel(error_rate).on(q))
+            payload_pos += 1
         noisy_circuit = cirq.Circuit(noisy_ops)
         attacked_vals.append(fidelity_pure_target(noisy_circuit, target_state, qubits))
     attacked_arr = np.array(attacked_vals)
@@ -209,6 +252,7 @@ def compare_noise_resilience(
     p_readout: float = 0.03,
     quantumnas_circuit_path: str | None = None,
     ignore_saboteur: bool = False,
+    randomized_compile_flag: bool = False,
 ):
     """
     Aggregate and compare circuit robustness under multi-gate attacks.
@@ -217,6 +261,7 @@ def compare_noise_resilience(
         - Multiple attack samples per circuit
         - Results include mean ± std for attacked fidelities  
         - Error bars and sample size annotations on plots
+        - Automatic A/B variant generation when randomized_compile_flag=True
     
     Args:
         base_results_dir: Base directory containing run subdirectories.
@@ -230,6 +275,8 @@ def compare_noise_resilience(
         gamma_amp: Amplitude damping probability for 'amplitude_damping' attack mode.
         gamma_phase: Phase damping (dephasing) probability for 'phase_damping' attack mode.
         p_readout: Readout error probability for 'readout' attack mode (applied as bit-flip channel).
+        randomized_compile_flag: If True, auto-generates both 'untwirled' and 'twirled' variants for each run/mode/circuit.
+            Twirled variants use frame-based Pauli conjugation for deterministic modes. Default is False for backward compatibility.
     """
     attack_modes = attack_modes or [attack_mode]
     primary_mode = attack_modes[0]
@@ -314,51 +361,64 @@ def compare_noise_resilience(
 
         for mode in attack_modes:
             rng = np.random.default_rng(None if seed is None else seed + i)
-            metrics_v = evaluate_multi_gate_attacks(
-                circuit_vanilla, saboteur_agent, target_state, n_qubits,
-                samples=samples, fallback_error_idx=fallback_error_idx,
-                saboteur_budget=saboteur_budget, rng=rng, attack_mode=mode,
-                epsilon_overrot=epsilon_overrot, p_x=p_x, p_y=p_y, p_z=p_z,
-                gamma_amp=gamma_amp, gamma_phase=gamma_phase, p_readout=p_readout
-            )
-            metrics_v["circuit_path"] = vanilla_circuit_file
-            gates_v, cnots_v = _count_gates_and_cnots(circuit_vanilla)
-            metrics_v["gate_count"] = gates_v
-            metrics_v["cnot_count"] = cnots_v
-            per_mode_metrics[mode]["vanilla"].append(metrics_v)
-            for val in metrics_v["samples"]:
-                per_mode_metrics[mode]["samples"].append([i, "vanilla", mode, val])
-
-            metrics_r = evaluate_multi_gate_attacks(
-                circuit_robust, saboteur_agent, target_state, n_qubits,
-                samples=samples, fallback_error_idx=fallback_error_idx,
-                saboteur_budget=saboteur_budget, rng=rng, attack_mode=mode,
-                epsilon_overrot=epsilon_overrot, p_x=p_x, p_y=p_y, p_z=p_z,
-                gamma_amp=gamma_amp, gamma_phase=gamma_phase, p_readout=p_readout
-            )
-            metrics_r["circuit_path"] = robust_circuit_file
-            gates_r, cnots_r = _count_gates_and_cnots(circuit_robust)
-            metrics_r["gate_count"] = gates_r
-            metrics_r["cnot_count"] = cnots_r
-            per_mode_metrics[mode]["robust"].append(metrics_r)
-            for val in metrics_r["samples"]:
-                per_mode_metrics[mode]["samples"].append([i, "robust", mode, val])
-
-            if circuit_qnas is not None:
-                metrics_q = evaluate_multi_gate_attacks(
-                    circuit_qnas, saboteur_agent, target_state, n_qubits,
+            # Generate both variants if randomized_compile_flag is enabled; otherwise untwirled only
+            variants_to_test = ("untwirled", "twirled") if randomized_compile_flag else ("untwirled",)
+            for variant in variants_to_test:
+                do_twirl = (variant == "twirled")
+                metrics_v = evaluate_multi_gate_attacks(
+                    circuit_vanilla, saboteur_agent, target_state, n_qubits,
                     samples=samples, fallback_error_idx=fallback_error_idx,
                     saboteur_budget=saboteur_budget, rng=rng, attack_mode=mode,
                     epsilon_overrot=epsilon_overrot, p_x=p_x, p_y=p_y, p_z=p_z,
-                    gamma_amp=gamma_amp, gamma_phase=gamma_phase, p_readout=p_readout
+                    gamma_amp=gamma_amp, gamma_phase=gamma_phase, p_readout=p_readout,
+                    randomized_compile_flag=do_twirl
                 )
-                metrics_q["circuit_path"] = qnas_path_used or quantumnas_circuit_file
-                gates_q, cnots_q = _count_gates_and_cnots(circuit_qnas)
-                metrics_q["gate_count"] = gates_q
-                metrics_q["cnot_count"] = cnots_q
-                per_mode_metrics[mode]["quantumnas"].append(metrics_q)
-                for val in metrics_q["samples"]:
-                    per_mode_metrics[mode]["samples"].append([i, "quantumnas", mode, val])
+                metrics_v["variant"] = variant
+                metrics_v["seed"] = i
+                metrics_v["circuit_path"] = vanilla_circuit_file
+                gates_v, cnots_v = _count_gates_and_cnots(circuit_vanilla)
+                metrics_v["gate_count"] = gates_v
+                metrics_v["cnot_count"] = cnots_v
+                per_mode_metrics[mode]["vanilla"].append(metrics_v)
+                for val in metrics_v["samples"]:
+                    per_mode_metrics[mode]["samples"].append([i, "vanilla", f"{mode}_{variant}", val])
+
+                metrics_r = evaluate_multi_gate_attacks(
+                    circuit_robust, saboteur_agent, target_state, n_qubits,
+                    samples=samples, fallback_error_idx=fallback_error_idx,
+                    saboteur_budget=saboteur_budget, rng=rng, attack_mode=mode,
+                    epsilon_overrot=epsilon_overrot, p_x=p_x, p_y=p_y, p_z=p_z,
+                    gamma_amp=gamma_amp, gamma_phase=gamma_phase, p_readout=p_readout,
+                    randomized_compile_flag=do_twirl
+                )
+                metrics_r["variant"] = variant
+                metrics_r["seed"] = i
+                metrics_r["circuit_path"] = robust_circuit_file
+                gates_r, cnots_r = _count_gates_and_cnots(circuit_robust)
+                metrics_r["gate_count"] = gates_r
+                metrics_r["cnot_count"] = cnots_r
+                per_mode_metrics[mode]["robust"].append(metrics_r)
+                for val in metrics_r["samples"]:
+                    per_mode_metrics[mode]["samples"].append([i, "robust", f"{mode}_{variant}", val])
+
+                if circuit_qnas is not None:
+                    metrics_q = evaluate_multi_gate_attacks(
+                        circuit_qnas, saboteur_agent, target_state, n_qubits,
+                        samples=samples, fallback_error_idx=fallback_error_idx,
+                        saboteur_budget=saboteur_budget, rng=rng, attack_mode=mode,
+                        epsilon_overrot=epsilon_overrot, p_x=p_x, p_y=p_y, p_z=p_z,
+                        gamma_amp=gamma_amp, gamma_phase=gamma_phase, p_readout=p_readout,
+                        randomized_compile_flag=do_twirl
+                    )
+                    metrics_q["variant"] = variant
+                    metrics_q["seed"] = i
+                    metrics_q["circuit_path"] = qnas_path_used or quantumnas_circuit_file
+                    gates_q, cnots_q = _count_gates_and_cnots(circuit_qnas)
+                    metrics_q["gate_count"] = gates_q
+                    metrics_q["cnot_count"] = cnots_q
+                    per_mode_metrics[mode]["quantumnas"].append(metrics_q)
+                    for val in metrics_q["samples"]:
+                        per_mode_metrics[mode]["samples"].append([i, "quantumnas", f"{mode}_{variant}", val])
 
     aggregated_by_mode = {}
     for mode, buckets in per_mode_metrics.items():
@@ -367,25 +427,44 @@ def compare_noise_resilience(
         qm = buckets["quantumnas"]
         if not vm or not rm:
             continue
-        vanilla_means = [m["mean_attacked"] for m in vm]
-        robust_means = [m["mean_attacked"] for m in rm]
-        qnas_means = [m["mean_attacked"] for m in qm] if qm else []
+        # Separate variants
+        def _split_variant(metrics_list, variant):
+            return [m["mean_attacked"] for m in metrics_list if m.get("variant") == variant]
+
+        vanilla_means = _split_variant(vm, "untwirled")
+        vanilla_twirl = _split_variant(vm, "twirled")
+        robust_means = _split_variant(rm, "untwirled")
+        robust_twirl = _split_variant(rm, "twirled")
+        qnas_means = _split_variant(qm, "untwirled") if qm else []
+        qnas_twirl = _split_variant(qm, "twirled") if qm else []
 
         vanilla_overall = aggregate_metrics(vanilla_means)
         robust_overall = aggregate_metrics(robust_means)
         qnas_overall = aggregate_metrics(qnas_means) if qnas_means else None
+        vanilla_twirl_overall = aggregate_metrics(vanilla_twirl) if vanilla_twirl else None
+        robust_twirl_overall = aggregate_metrics(robust_twirl) if robust_twirl else None
+        qnas_twirl_overall = aggregate_metrics(qnas_twirl) if qnas_twirl else None
 
         aggregated_by_mode[mode] = {
             "vanilla": vanilla_overall,
             "robust": robust_overall,
             "quantumnas": qnas_overall,
+            "vanilla_twirl": vanilla_twirl_overall,
+            "robust_twirl": robust_twirl_overall,
+            "quantumnas_twirl": qnas_twirl_overall,
         }
 
         log(f"\nOverall Statistics [{mode}] (n={len(vanilla_means)} runs, {samples} samples each):")
-        log(f"  Vanilla: {format_metric_with_error(vanilla_overall['mean'], vanilla_overall['std'], vanilla_overall['n'])}")
-        log(f"  Robust:  {format_metric_with_error(robust_overall['mean'], robust_overall['std'], robust_overall['n'])}")
+        log(
+            f"  Vanilla: {format_metric_with_error(vanilla_overall['mean'], vanilla_overall['std'], int(vanilla_overall['n']))}"
+        )
+        log(
+            f"  Robust:  {format_metric_with_error(robust_overall['mean'], robust_overall['std'], int(robust_overall['n']))}"
+        )
         if qnas_overall:
-            log(f"  QuantumNAS: {format_metric_with_error(qnas_overall['mean'], qnas_overall['std'], qnas_overall['n'])}")
+            log(
+                f"  HEA baseline: {format_metric_with_error(qnas_overall['mean'], qnas_overall['std'], int(qnas_overall['n']))}"
+            )
 
     # Backward-compatible primary mode aliases
     primary_metrics = per_mode_metrics.get(primary_mode, {})
@@ -443,38 +522,91 @@ def compare_noise_resilience(
     # --- Plot comparison of vanilla vs robust with error bars ---
     try:
         if all_metrics_vanilla and all_metrics_robust:
-            means_v = [m["mean_attacked"] for m in all_metrics_vanilla]
-            stds_v = [m["std_attacked"] for m in all_metrics_vanilla]
-            means_r = [m["mean_attacked"] for m in all_metrics_robust]
-            stds_r = [m["std_attacked"] for m in all_metrics_robust]
-            means_q = [m["mean_attacked"] for m in all_metrics_qnas] if all_metrics_qnas else []
-            stds_q = [m["std_attacked"] for m in all_metrics_qnas] if all_metrics_qnas else []
+            def _series(metrics_list, overall_base, overall_twirl):
+                untwirled = {m["seed"]: m for m in metrics_list if m.get("variant") == "untwirled" and "seed" in m}
+                twirled = {m["seed"]: m for m in metrics_list if m.get("variant") == "twirled" and "seed" in m}
+                seeds_sorted = sorted(untwirled.keys())
+                labels_local = [f"seed_{s}" for s in seeds_sorted]
+                base_means = [untwirled[s]["mean_attacked"] for s in seeds_sorted]
+                base_stds = [untwirled[s]["std_attacked"] for s in seeds_sorted]
+                twirl_raw = [twirled.get(s, {}).get("mean_attacked", 0.0) for s in seeds_sorted]
+                twirl_stds = [twirled.get(s, {}).get("std_attacked", 0.0) for s in seeds_sorted]
+                twirl_gain = [max(0.0, t - b) for t, b in zip(twirl_raw, base_means)]
+                labels_local.append("Mean")
+                base_means.append(overall_base["mean"] if overall_base else 0.0)
+                base_stds.append(overall_base["std"] if overall_base else 0.0)
+                agg_twirl = overall_twirl["mean"] if overall_twirl else 0.0
+                twirl_gain.append(max(0.0, agg_twirl - base_means[-1]))
+                twirl_stds.append(overall_twirl["std"] if overall_twirl else 0.0)
+                twirl_stds = [ts if g > 0 else 0.0 for ts, g in zip(twirl_stds, twirl_gain)]
+                has_twirl = randomized_compile_flag and (bool(twirled) or overall_twirl is not None)
+                return labels_local, base_means, base_stds, twirl_gain, twirl_stds, has_twirl
 
-            labels = [f"Run {i+1}" for i in range(len(means_v))]
-            # Append aggregated mean/std if available so the plot shows both per-run values and the average.
-            if vanilla_overall and robust_overall:
-                labels.append("Mean")
-                means_v.append(vanilla_overall["mean"])
-                stds_v.append(vanilla_overall["std"])
-                means_r.append(robust_overall["mean"])
-                stds_r.append(robust_overall["std"])
-                if qnas_overall:
-                    means_q.append(qnas_overall["mean"])
-                    stds_q.append(qnas_overall["std"])
+            agg_primary = aggregated_by_mode.get(primary_mode, {})
 
+            labels_v, means_v, stds_v, twirl_v_gain, twirl_v_std, twirl_v_present = _series(
+                all_metrics_vanilla,
+                vanilla_overall,
+                agg_primary.get("vanilla_twirl"),
+            )
+            labels_r, means_r, stds_r, twirl_r_gain, twirl_r_std, twirl_r_present = _series(
+                all_metrics_robust,
+                robust_overall,
+                agg_primary.get("robust_twirl"),
+            )
+            labels_q, means_q, stds_q, twirl_q_gain, twirl_q_std, twirl_q_present = ([], [], [], [], [], False)
+            qt_overall = agg_primary.get("quantumnas_twirl")
+            if all_metrics_qnas:
+                labels_q, means_q, stds_q, twirl_q_gain, twirl_q_std, twirl_q_present = _series(
+                    all_metrics_qnas,
+                    qnas_overall,
+                    qt_overall,
+                )
+
+            labels = labels_v  # assume same seeds across methods
             x = np.arange(len(labels))
-            width = 0.25
+            width = 0.22  # gap between method groups
 
             fig, ax = plt.subplots(figsize=(12, 6))
+            used_labels = set()
+            err_kw = {"capsize": 4, "capthick": 1.2, "elinewidth": 1.0}
 
-            bars = []
-            bars.append(ax.bar(x - width, means_v, width, yerr=stds_v,
-                               label="Vanilla", color="tab:blue", capsize=5, alpha=0.8))
-            bars.append(ax.bar(x, means_r, width, yerr=stds_r,
-                               label="Robust", color="tab:orange", capsize=5, alpha=0.8))
+            def _plot_method(offset, base_means, base_stds, twirl_gain, twirl_stds, base_color, twirl_color, name, has_twirl):
+                lb = name if name not in used_labels else None
+                ax.bar(
+                    x + offset,
+                    base_means,
+                    width=width,
+                    yerr=base_stds,
+                    error_kw=err_kw,
+                    color=base_color,
+                    alpha=0.9,
+                    label=lb,
+                )
+                if lb:
+                    used_labels.add(lb)
+                if has_twirl and any(g > 0 for g in twirl_gain):
+                    lt = f"{name} (twirl gain)"
+                    lt = lt if lt not in used_labels else None
+                    ax.bar(
+                        x + offset,
+                        twirl_gain,
+                        width=width,
+                        bottom=base_means,
+                        yerr=twirl_stds,
+                        error_kw=err_kw,
+                        color=twirl_color,
+                        alpha=0.75,
+                        label=lt,
+                    )
+                    if lt:
+                        used_labels.add(lt)
+
+            offsets = [-width, 0, width]
+            _plot_method(offsets[0], means_v, stds_v, twirl_v_gain, twirl_v_std, "#2ecc71", "#a6d96a", "RL baseline", twirl_v_present)
+            _plot_method(offsets[1], means_r, stds_r, twirl_r_gain, twirl_r_std, "#e67e22", "#fdae6b", "Robust", twirl_r_present)
             if means_q:
-                bars.append(ax.bar(x + width, means_q, width, yerr=stds_q,
-                                   label="HEA baseline", color="tab:green", capsize=5, alpha=0.8))
+                _plot_method(offsets[2], means_q, stds_q, twirl_q_gain, twirl_q_std, "#2c7fb8", "#9ecae1", "HEA baseline", twirl_q_present)
 
             ax.set_ylabel("Mean Attacked Fidelity")
             ax.set_title(
@@ -486,7 +618,18 @@ def compare_noise_resilience(
             ax.legend()
             ax.grid(True, alpha=0.3, axis='y')
 
-            max_height = max(means_v + means_r + (means_q if means_q else [0]))
+            def _max_height(base_vals, gain_vals, has_twirl):
+                if not base_vals:
+                    return 0.0
+                if has_twirl:
+                    return max(b + g for b, g in zip(base_vals, gain_vals))
+                return max(base_vals)
+
+            max_height = max(
+                _max_height(means_v, twirl_v_gain, twirl_v_present),
+                _max_height(means_r, twirl_r_gain, twirl_r_present),
+                _max_height(means_q, twirl_q_gain, twirl_q_present) if means_q else 0.0,
+            )
             ax.set_ylim(0, max(1.05, max_height + 0.1))
 
             # Annotate gate counts (mean across circuits if available)
@@ -497,7 +640,7 @@ def compare_noise_resilience(
             gate_q = _mean_count(all_metrics_qnas, "gate_count") if all_metrics_qnas else None
             info = []
             if gate_v is not None:
-                info.append(f"Vanilla gates≈{gate_v:.1f}")
+                info.append(f"RL baseline gates≈{gate_v:.1f}")
             if gate_r is not None:
                 info.append(f"Robust gates≈{gate_r:.1f}")
             if gate_q is not None:

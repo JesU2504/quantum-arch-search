@@ -39,6 +39,16 @@ from qas_gym.envs.saboteur_env import SUPPORTED_NOISE_FAMILIES
 from experiments.analysis.robustness_sweep import sweep_circuit_entries
 
 
+DEFAULT_COMPARE_ATTACK_MODES = [
+    "random_high",
+    "asymmetric_noise",
+    "over_rotation",
+    "amplitude_damping",
+    "phase_damping",
+    "readout",
+]
+
+
 def setup_logger(log_path):
     import logging
     logger = logging.getLogger('run_experiments')
@@ -419,22 +429,32 @@ def run_pipeline(args):
     save_metadata(os.path.join(base, 'metadata.json'), metadata)
     logger.info('Starting pipeline with metadata: %s', metadata)
 
-    # 1) Baseline
+    quantumnas_paths: list[str] = []
+    # 1) Baseline (RL) per seed
     baseline_dir = os.path.join(base, 'baseline')
     os.makedirs(baseline_dir, exist_ok=True)
+    baseline_paths: list[str] = []
     if not args.skip_baseline:
-        logger.info('Running baseline architect (noiseless)')
-        # Seed once for baseline
-        if args.seed is not None:
-            set_global_seed(base_seed, logger=logger)
-        train_baseline_architect(
-            results_dir=baseline_dir,
-            n_qubits=args.n_qubits,
-            architect_steps=baseline_steps,
-            n_steps=baseline_n_steps,
-            include_rotations=exp_config.INCLUDE_ROTATIONS,
-            task_mode=args.task_mode
-        )
+        logger.info('Running baseline architect (noiseless) for %d seed(s)', effective_n_seeds)
+        for k in range(effective_n_seeds):
+            seed_val = base_seed + k if args.seed is not None else None
+            if seed_val is not None:
+                set_global_seed(seed_val, logger=logger)
+            seed_dir = os.path.join(baseline_dir, f'seed_{k}')
+            os.makedirs(seed_dir, exist_ok=True)
+            train_baseline_architect(
+                results_dir=seed_dir,
+                n_qubits=args.n_qubits,
+                architect_steps=baseline_steps,
+                n_steps=baseline_n_steps,
+                include_rotations=exp_config.INCLUDE_ROTATIONS,
+                task_mode=args.task_mode
+            )
+            candidate = os.path.join(seed_dir, 'circuit_vanilla.json')
+            if os.path.exists(candidate):
+                baseline_paths.append(candidate)
+        if not baseline_paths:
+            logger.warning('No baseline circuits produced.')
     else:
         logger.info('Skipping baseline as requested')
 
@@ -488,86 +508,48 @@ def run_pipeline(args):
         else:
             logger.warning('QuantumNAS paper benchmark did not produce a circuit. See logs for details.')
     elif getattr(args, "run_quantumnas", False):
-        logger.info('Running QuantumNAS baseline')
-        circuit_path = None
+        logger.info('Running HEA baseline per seed')
+        quantumnas_paths = []
         try:
             import subprocess
-            # Priority: import external circuit if provided
-            if args.quantumnas_qasm or args.quantumnas_op_history:
-                logger.info('Importing external QuantumNAS circuit')
-                import_path = None
-                if args.quantumnas_qasm:
-                    import_path = Path(args.quantumnas_qasm).expanduser().resolve()
-                elif args.quantumnas_op_history:
-                    op_path = Path(args.quantumnas_op_history).expanduser().resolve()
-                    try:
-                        from experiments.quantumnas.export_tq_op_history import main as export_op_history_main
-                        # Reuse export script logic via subprocess-like call
-                        import sys as _sys
-                        _argv_backup = list(_sys.argv)
-                        _sys.argv = [
-                            "export_tq_op_history",
-                            "--op-history",
-                            str(op_path),
-                            "--qasm-out",
-                            str(op_path.with_suffix(".qasm")),
-                            "--cirq-out",
-                            str(op_path.with_suffix(".json")),
-                        ]
-                        export_op_history_main()
-                        import_path = op_path.with_suffix(".qasm")
-                        _sys.argv = _argv_backup
-                    except Exception as exc:
-                        logger.error("Failed to convert op_history %s: %s", op_path, exc)
-                        import_path = None
-
-                if import_path and import_path.exists():
-                    from utils.torchquantum_adapter import convert_qasm_file_to_cirq
-                    cirq_out = Path(quantumnas_dir) / "circuit_quantumnas.json"
-                    convert_qasm_file_to_cirq(import_path, cirq_out)
-                    circuit_path = cirq_out
-                    logger.info("Imported QuantumNAS circuit from %s -> %s", import_path, cirq_out)
-                else:
-                    logger.error("No valid QASM/op_history provided for QuantumNAS import.")
-            else:
-                # Run simple TorchQuantum trainer to produce a circuit from scratch
-                task = 'ghz' if exp_config.TARGET_TYPE.lower() == 'ghz' else 'toffoli'
-                epochs_default = 400 if task == 'ghz' else 2000
-                depth_default = 4 if task == 'ghz' else 12
-                # Optionally double depth to better match adversarial circuit sizes
-                augment_depth = True
-                epochs = args.quantumnas_simple_epochs or epochs_default
-                depth = args.quantumnas_simple_depth or depth_default
-                lr = args.quantumnas_simple_lr
-                logger.info('Running simple TorchQuantum baseline (task=%s, epochs=%d, depth=%d, lr=%.4f, augment_depth=%s)', task, epochs, depth, lr, augment_depth)
+            task = 'ghz' if exp_config.TARGET_TYPE.lower() == 'ghz' else 'toffoli'
+            epochs_default = 400 if task == 'ghz' else 2000
+            depth_default = max(2, 4 if task == 'ghz' else 12)
+            augment_depth = True
+            epochs = args.quantumnas_simple_epochs or epochs_default
+            depth = args.quantumnas_simple_depth or depth_default
+            lr = args.quantumnas_simple_lr
+            for k in range(effective_n_seeds):
+                seed_val = base_seed + 3000 + k if base_seed is not None else None
+                seed_dir = Path(quantumnas_dir) / f"seed_{k}"
+                seed_dir.mkdir(parents=True, exist_ok=True)
                 cmd = [
                     'python', 'experiments/architect/tq_train_simple_baseline.py',
                     '--task', task,
                     '--epochs', str(epochs),
                     '--lr', str(lr),
                     '--depth', str(depth),
-                    '--out-dir', quantumnas_dir,
+                    '--max-gates', str(args.max_circuit_gates),
+                    '--out-dir', str(seed_dir),
                 ]
                 if augment_depth:
                     cmd.append('--augment-depth')
-                if args.max_circuit_gates:
-                    cmd.extend(['--max-gates', str(args.max_circuit_gates)])
-                if base_seed is not None:
-                    cmd.extend(['--seed', str(base_seed)])
+                if seed_val is not None:
+                    cmd.extend(['--seed', str(seed_val)])
                 result = subprocess.run(cmd, capture_output=True, text=True)
                 if result.stdout:
                     logger.info(result.stdout.strip())
                 if result.stderr and result.stderr.strip():
                     logger.warning(result.stderr.strip())
-                expected = Path(quantumnas_dir) / "circuit_quantumnas.json"
+                expected = seed_dir / "circuit_quantumnas.json"
                 if expected.exists():
-                    circuit_path = expected
+                    quantumnas_paths.append(str(expected))
+            if quantumnas_paths:
+                Path(quantumnas_dir, "circuit_quantumnas.json").write_text(Path(quantumnas_paths[0]).read_text())
+            else:
+                logger.warning('HEA baseline did not produce any circuits.')
         except Exception as e:
-            logger.error('QuantumNAS baseline failed: %s', e)
-        if circuit_path:
-            logger.info('QuantumNAS circuit saved to %s', circuit_path)
-        else:
-            logger.warning('QuantumNAS baseline did not produce a circuit. See logs for details.')
+            logger.error('HEA baseline failed: %s', e)
     else:
         logger.info('Skipping QuantumNAS baseline (disabled by default)')
 
@@ -637,7 +619,7 @@ def run_pipeline(args):
     os.makedirs(saboteur_dir, exist_ok=True)
     if not args.skip_saboteur:
         logger.info('Running saboteur-only (attacks baseline circuit)')
-        vanilla_src = os.path.join(baseline_dir, 'circuit_vanilla.json')
+        vanilla_src = baseline_paths[0] if baseline_paths else os.path.join(baseline_dir, 'circuit_vanilla.json')
         if not os.path.exists(vanilla_src):
             logger.error(f'Vanilla circuit not found at {vanilla_src}. Cannot run saboteur-only.')
         else:
@@ -758,7 +740,7 @@ def run_pipeline(args):
 
     # 4) Comparison & File Management
     compare_base = os.path.join(base, 'compare')
-    vanilla_src = os.path.join(baseline_dir, 'circuit_vanilla.json')
+    vanilla_fallback = baseline_paths[0] if baseline_paths else os.path.join(baseline_dir, 'circuit_vanilla.json')
     os.makedirs(compare_base, exist_ok=True)
 
     # Gather robust circuits from every adversarial seed so downstream steps can use all of them.
@@ -767,6 +749,8 @@ def run_pipeline(args):
     for idx, adv_dir in enumerate(adv_training_dirs):
         run_dir = os.path.join(compare_base, f'run_{idx}')
         os.makedirs(run_dir, exist_ok=True)
+        # baseline per seed (fallback to first)
+        vanilla_src = baseline_paths[idx % len(baseline_paths)] if baseline_paths else vanilla_fallback
         if os.path.exists(vanilla_src):
             shutil.copy(vanilla_src, os.path.join(run_dir, 'circuit_vanilla.json'))
 
@@ -788,6 +772,7 @@ def run_pipeline(args):
     if not compare_runs:
         run0 = os.path.join(compare_base, 'run_0')
         os.makedirs(run0, exist_ok=True)
+        vanilla_src = baseline_paths[0] if baseline_paths else vanilla_fallback
         if os.path.exists(vanilla_src):
             shutil.copy(vanilla_src, os.path.join(run0, 'circuit_vanilla.json'))
         # Try canonical robust fallback
@@ -806,22 +791,30 @@ def run_pipeline(args):
     if not args.skip_compare:
         # Copy QuantumNAS circuit into compare runs before analysis
         qnas_circuit = Path(quantumnas_dir) / "circuit_quantumnas.json"
-        if qnas_circuit.exists():
+        if quantumnas_paths:
+            qnas_fallback = Path(quantumnas_paths[0])
+        else:
+            qnas_fallback = qnas_circuit if qnas_circuit.exists() else None
+        if qnas_fallback:
             try:
-                for run_dir in compare_runs:
+                for idx, run_dir in enumerate(compare_runs):
+                    src = Path(quantumnas_paths[idx % len(quantumnas_paths)]) if quantumnas_paths else qnas_fallback
                     target_path = Path(run_dir) / "circuit_quantumnas.json"
                     target_path.parent.mkdir(parents=True, exist_ok=True)
-                    target_path.write_text(qnas_circuit.read_text())
+                    target_path.write_text(src.read_text())
                     truncate_circuit_json(str(target_path), max_ops=args.max_circuit_gates, logger=logger)
-                logger.info("QuantumNAS circuit copied into compare runs for analysis.")
+                logger.info("HEA baseline circuits copied into compare runs for analysis.")
             except Exception as exc:
-                logger.error("Failed to copy QuantumNAS circuit into compare runs: %s", exc)
+                logger.error("Failed to copy HEA circuits into compare runs: %s", exc)
 
         logger.info('Running comparison across runs')
         compare_noise_resilience(
             base_results_dir=compare_base,
             num_runs=len(compare_runs),
-            n_qubits=args.n_qubits
+            n_qubits=args.n_qubits,
+            samples=args.compare_samples if args.compare_samples is not None else 32,
+            attack_modes=args.compare_attack_modes if args.compare_attack_modes else DEFAULT_COMPARE_ATTACK_MODES,
+            randomized_compile_flag=args.randomized_compiling,
         )
 
     # 6) Parameter Recovery
@@ -832,56 +825,63 @@ def run_pipeline(args):
             logger.info('Running parameter recovery experiment')
             robust_to_use = robust_for_downstream if (robust_for_downstream and os.path.exists(robust_for_downstream)) else vanilla_src
             quantumnas_circuit = os.path.join(compare_runs[0], 'circuit_quantumnas.json') if compare_runs else None
-            run_parameter_recovery(
-                results_dir=param_recovery_dir,
-                n_qubits=args.n_qubits,
-                baseline_circuit_path=vanilla_src,
-                robust_circuit_path=robust_to_use,
-                quantumnas_circuit_path=quantumnas_circuit if (quantumnas_circuit and os.path.exists(quantumnas_circuit)) else None,
-                n_repetitions=effective_n_seeds,
-                base_seed=base_seed,
-                logger=logger
-            )
+            param_recovery_kwargs = {
+                "results_dir": param_recovery_dir,
+                "n_qubits": args.n_qubits,
+                "baseline_circuit_path": vanilla_src,
+                "robust_circuit_path": robust_to_use,
+                "n_repetitions": effective_n_seeds,
+                "base_seed": base_seed,
+                "logger": logger,
+            }
+            if quantumnas_circuit and os.path.exists(quantumnas_circuit):
+                param_recovery_kwargs["quantumnas_circuit_path"] = quantumnas_circuit
+            run_parameter_recovery(**param_recovery_kwargs)
 
     # 7) Cross-Noise
     cross_noise_dir = os.path.join(base, 'cross_noise')
     os.makedirs(cross_noise_dir, exist_ok=True)
     if not args.skip_cross_noise:
-        # Use the first available comparison run for cross-noise
-        first_run = compare_runs[0] if compare_runs else os.path.join(compare_base, 'run_0')
-        vanilla_circuit_path = os.path.join(first_run, 'circuit_vanilla.json')
-        robust_circuit_path = os.path.join(first_run, 'circuit_robust.json')
-        quantumnas_circuit_path = os.path.join(first_run, 'circuit_quantumnas.json')
-        if os.path.exists(vanilla_circuit_path) and os.path.exists(robust_circuit_path):
-            logger.info('Running cross-noise robustness experiment')
+        # Use all available comparison runs for cross-noise (aggregate across seeds)
+        baseline_list = [os.path.join(rd, 'circuit_vanilla.json') for rd in compare_runs if os.path.exists(os.path.join(rd, 'circuit_vanilla.json'))]
+        robust_list = [os.path.join(rd, 'circuit_robust.json') for rd in compare_runs if os.path.exists(os.path.join(rd, 'circuit_robust.json'))]
+        qnas_list = [os.path.join(rd, 'circuit_quantumnas.json') for rd in compare_runs if os.path.exists(os.path.join(rd, 'circuit_quantumnas.json'))]
+        if baseline_list and robust_list:
+            logger.info('Running cross-noise robustness experiment (aggregated across %d seeds)', len(compare_runs))
             run_cross_noise_robustness(
-                baseline_circuit_path=vanilla_circuit_path,
-                robust_circuit_path=robust_circuit_path,
+                baseline_circuit_path=baseline_list,
+                robust_circuit_path=robust_list,
                 output_dir=cross_noise_dir,
                 n_qubits=args.n_qubits,
-                quantum_nas_circuit_path=quantumnas_circuit_path if os.path.exists(quantumnas_circuit_path) else None,
-                logger=logger
+                quantum_nas_circuit_path=qnas_list if qnas_list else None,
+                n_seeds=len(compare_runs),
+                base_seed=base_seed,
+                logger=logger,
+                randomized_compile_flag=args.randomized_compiling,
             )
 
     # 8) Hardware-style evaluation on Fake IBM backends (optional)
     if args.run_hw_eval and not getattr(args, "skip_hw_eval", False):
         try:
-            from experiments.qiskit_hw_eval import run_hw_eval, parse_success_bitstrings
+            from experiments.analysis.qiskit_hw_eval import run_hw_eval, parse_success_bitstrings
             logger.info("Running hardware-style eval on backends: %s", args.hw_backends)
             hw_output_dir = os.path.join(base, "hardware_eval")
-            hw_quantumnas_path = os.path.join(compare_runs[0], 'circuit_quantumnas.json') if compare_runs else None
-            hw_robust = robust_for_downstream if robust_for_downstream and os.path.exists(robust_for_downstream) else None
-            success_bits = parse_success_bitstrings(None, args.n_qubits)
+            success_bits = parse_success_bitstrings("", args.n_qubits)
+            # Build per-run lists
+            baseline_list = [os.path.join(rd, 'circuit_vanilla.json') for rd in compare_runs if os.path.exists(os.path.join(rd, 'circuit_vanilla.json'))]
+            robust_list = [os.path.join(rd, 'circuit_robust.json') for rd in compare_runs if os.path.exists(os.path.join(rd, 'circuit_robust.json'))]
+            qnas_list = [os.path.join(rd, 'circuit_quantumnas.json') for rd in compare_runs if os.path.exists(os.path.join(rd, 'circuit_quantumnas.json'))]
             run_hw_eval(
-                baseline_circuit=vanilla_src if os.path.exists(vanilla_src) else None,
-                robust_circuit=hw_robust,
-                quantumnas_circuit=hw_quantumnas_path if (hw_quantumnas_path and os.path.exists(hw_quantumnas_path)) else None,
+                baseline_circuits=baseline_list,
+                robust_circuits=robust_list,
+                quantumnas_circuits=qnas_list,
                 backends=args.hw_backends,
                 shots=args.hw_shots,
                 opt_level=args.hw_opt_level,
                 seed=base_seed,
                 target_bitstrings=success_bits,
                 output_dir=hw_output_dir,
+                randomized_compile_flag=args.randomized_compiling,
             )
         except Exception as exc:
             logger.error("Hardware eval failed: %s", exc)
@@ -919,6 +919,26 @@ def run_pipeline(args):
         )
     except Exception as e:
         logger.error('Error summarizing robustness: %s', e)
+
+    # 9) Plots for realistic robustness and hardware (best-effort)
+    try:
+        import subprocess
+        robust_eval = os.path.join(base, 'compare', 'robust_eval.json')
+        if os.path.exists(robust_eval):
+            subprocess.run([
+                sys.executable, 'experiments/analysis/plot_robustness_realistic.py',
+                '--robust-eval', robust_eval,
+                '--out', os.path.join(analysis_dir, 'robustness_realistic.png'),
+            ], check=True)
+        hw_json = os.path.join(base, 'hardware_eval', 'hardware_eval_results.json')
+        if os.path.exists(hw_json):
+            subprocess.run([
+                sys.executable, 'experiments/analysis/plot_hw_fidelity.py',
+                '--results-json', hw_json,
+                '--out', os.path.join(base, 'hardware_eval', 'hardware_eval_plot.png'),
+            ], check=True)
+    except Exception as e:
+        logger.error('Error generating plots: %s', e)
 
     logger.info('Pipeline finished. Results in %s', base)
 
@@ -1054,6 +1074,19 @@ def parse_args():
                    help='Backends for hardware eval (e.g., fake_quito fake_belem fake_athens fake_yorktown).')
     p.add_argument('--hw-shots', type=int, default=4096, help='Shots for hardware eval.')
     p.add_argument('--hw-opt-level', type=int, default=3, help='Transpiler optimization level for hardware eval.')
+    p.add_argument('--randomized-compiling', action='store_true', default=False,
+                   help='Enable Pauli twirling for hardware eval (twirled variant). Off by default.')
+    p.add_argument(
+        '--compare-attack-modes',
+        nargs='+',
+        default=None,
+        help=(
+            'Attack modes for compare_circuits (defaults to random_high asymmetric_noise '
+            'over_rotation amplitude_damping phase_damping readout).'
+        ),
+    )
+    p.add_argument('--compare-samples', type=int, default=None,
+                   help='Number of saboteur attack samples per circuit for compare_circuits (default 32).')
     return p.parse_args()
 
 

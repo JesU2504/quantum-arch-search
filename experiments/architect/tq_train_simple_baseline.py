@@ -255,13 +255,13 @@ def main():
     def fit_depth(task: str, depth: int) -> int:
         """Adjust depth so total gates <= max_gates (if provided)."""
         if max_gates is None:
-            return depth
+            return max(depth, 2)
         if task == 'ghz':
             gates_per_layer = 2 * 3 - 1  # 3 RY + 2 CNOT = 5 for n=3
         else:
             gates_per_layer = 2 * 3 + (3 - 1)  # 6 rotations + 2 CNOT = 8
-        max_depth = max(1, max_gates // gates_per_layer)
-        return min(depth, max_depth)
+        max_depth = max(2, max_gates // gates_per_layer)
+        return max(2, min(depth, max_depth))
 
     if args.task == 'ghz':
         depth = args.depth if args.depth is not None else ghz_depth_default

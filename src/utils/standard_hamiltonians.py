@@ -93,8 +93,8 @@ def get_standard_hamiltonian(molecule: str) -> Dict[str, object]:
         problem = transformer.transform(problem)
 
     mapper = ParityMapper()
-    tapered_mapper = problem.get_tapered_mapper(mapper)
-    qubit_op = tapered_mapper.map(problem.hamiltonian.second_q_op())
+    # Use untapered mapping to keep multi-qubit problems (e.g., H2 -> 2 qubits)
+    qubit_op = mapper.map(problem.hamiltonian.second_q_op())
 
     # Add nuclear repulsion so returned energies are total energies
     nuc = getattr(problem.hamiltonian, "nuclear_repulsion_energy", 0.0)

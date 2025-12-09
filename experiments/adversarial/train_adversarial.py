@@ -447,6 +447,17 @@ def train_adversarial(
         json.dump(hall_of_fame, f, indent=2)
 
     # --- Post-training evaluation of champions under final saboteur ---
+    def _ensure_target_for_qubits(qubits_list):
+        """Return a target state matching the number of qubits in the given circuit."""
+        dim = 2 ** len(qubits_list)
+        if target_state is not None and len(target_state) == dim:
+            return target_state
+        # Fallback: recompute to avoid dimension mismatches
+        try:
+            return config.get_target_state(len(qubits_list))
+        except Exception:
+            return target_state
+
     def evaluate_attacked_fidelity(circuit: cirq.Circuit) -> float:
         """Evaluate attacked fidelity with current saboteur_agent using budgeted top-k noise."""
         if circuit is None or saboteur_agent is None:
@@ -478,7 +489,8 @@ def train_adversarial(
                     for q in op.qubits:
                         noisy_ops.append(cirq.DepolarizingChannel(rate).on(q))
         noisy_circuit = cirq.Circuit(noisy_ops)
-        return float(fidelity_pure_target(noisy_circuit, target_state, qubits))
+        tgt = _ensure_target_for_qubits(qubits)
+        return float(fidelity_pure_target(noisy_circuit, tgt, qubits))
 
     candidates = []
     # Hall-of-fame candidates (already serialized circuits)
@@ -516,7 +528,9 @@ def train_adversarial(
         circuit = cirq.read_json(json_text=json.dumps(data))
         attacked_fid = evaluate_attacked_fidelity(circuit)
         try:
-            best_clean = float(fidelity_pure_target(circuit, target_state, sorted(list(circuit.all_qubits()))))
+            qubits_sorted = sorted(list(circuit.all_qubits()))
+            tgt = _ensure_target_for_qubits(qubits_sorted)
+            best_clean = float(fidelity_pure_target(circuit, tgt, qubits_sorted))
         except Exception:
             best_clean = float("nan")
         evaluated_candidates.append({

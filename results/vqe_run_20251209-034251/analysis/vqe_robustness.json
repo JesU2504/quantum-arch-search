@@ -1,0 +1,282 @@
+[
+  {
+    "method":"HEA adversarial",
+    "variant":"untwirled",
+    "noise_family":"clean",
+    "energy":-1.1372646785,
+    "seed":0
+  },
+  {
+    "method":"HEA adversarial",
+    "variant":"untwirled",
+    "noise_family":"depolarizing",
+    "energy":-1.1372646785,
+    "seed":0
+  },
+  {
+    "method":"HEA adversarial",
+    "variant":"untwirled",
+    "noise_family":"amplitude_damping",
+    "energy":-1.1361306704,
+    "seed":0
+  },
+  {
+    "method":"HEA adversarial",
+    "variant":"untwirled",
+    "noise_family":"coherent_overrotation",
+    "energy":-1.0909324029,
+    "seed":0
+  },
+  {
+    "method":"HEA adversarial",
+    "variant":"untwirled",
+    "noise_family":"readout",
+    "energy":-0.1457249997,
+    "seed":0
+  },
+  {
+    "method":"HEA adversarial",
+    "variant":"twirled",
+    "noise_family":"clean",
+    "energy":0.170760169,
+    "seed":0
+  },
+  {
+    "method":"HEA adversarial",
+    "variant":"twirled",
+    "noise_family":"depolarizing",
+    "energy":-0.1387660056,
+    "seed":0
+  },
+  {
+    "method":"HEA adversarial",
+    "variant":"twirled",
+    "noise_family":"amplitude_damping",
+    "energy":0.0146883472,
+    "seed":0
+  },
+  {
+    "method":"HEA adversarial",
+    "variant":"twirled",
+    "noise_family":"coherent_overrotation",
+    "energy":-0.4314567505,
+    "seed":0
+  },
+  {
+    "method":"HEA adversarial",
+    "variant":"twirled",
+    "noise_family":"readout",
+    "energy":0.1594529972,
+    "seed":0
+  },
+  {
+    "method":"HEA adversarial",
+    "variant":"untwirled",
+    "noise_family":"clean",
+    "energy":-1.1373058525,
+    "seed":1
+  },
+  {
+    "method":"HEA adversarial",
+    "variant":"untwirled",
+    "noise_family":"depolarizing",
+    "energy":-1.1373058525,
+    "seed":1
+  },
+  {
+    "method":"HEA adversarial",
+    "variant":"untwirled",
+    "noise_family":"amplitude_damping",
+    "energy":-1.136862111,
+    "seed":1
+  },
+  {
+    "method":"HEA adversarial",
+    "variant":"untwirled",
+    "noise_family":"coherent_overrotation",
+    "energy":-1.1215416016,
+    "seed":1
+  },
+  {
+    "method":"HEA adversarial",
+    "variant":"untwirled",
+    "noise_family":"readout",
+    "energy":-1.1373058557,
+    "seed":1
+  },
+  {
+    "method":"HEA adversarial",
+    "variant":"twirled",
+    "noise_family":"clean",
+    "energy":0.3554019912,
+    "seed":1
+  },
+  {
+    "method":"HEA adversarial",
+    "variant":"twirled",
+    "noise_family":"depolarizing",
+    "energy":-0.3949663173,
+    "seed":1
+  },
+  {
+    "method":"HEA adversarial",
+    "variant":"twirled",
+    "noise_family":"amplitude_damping",
+    "energy":-0.524581751,
+    "seed":1
+  },
+  {
+    "method":"HEA adversarial",
+    "variant":"twirled",
+    "noise_family":"coherent_overrotation",
+    "energy":0.2296121108,
+    "seed":1
+  },
+  {
+    "method":"HEA adversarial",
+    "variant":"twirled",
+    "noise_family":"readout",
+    "energy":-0.52461552,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"clean",
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"depolarizing",
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"amplitude_damping",
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"coherent_overrotation",
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"readout",
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"clean",
+    "energy":-0.3436843556,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"depolarizing",
+    "energy":-0.5246155554,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"amplitude_damping",
+    "energy":-0.3436843556,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"coherent_overrotation",
+    "energy":0.9342472329,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"readout",
+    "energy":0.7199689944,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"clean",
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"depolarizing",
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"amplitude_damping",
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"coherent_overrotation",
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"readout",
+    "energy":-0.4406627433,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"clean",
+    "energy":-0.5246155554,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"depolarizing",
+    "energy":-0.5246155554,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"amplitude_damping",
+    "energy":-0.5363700786,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"coherent_overrotation",
+    "energy":0.3666438903,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"readout",
+    "energy":-0.5246155554,
+    "seed":1
+  }
+]

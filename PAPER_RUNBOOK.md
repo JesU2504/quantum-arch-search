@@ -10,14 +10,22 @@ Use this as a checklist to generate all artifacts for the paper. Run from the re
 
 ## 1) Core adversarial vs. baselines (state/unitary prep)
 - **State prep (GHZ target by default; set TARGET_TYPE=\"ghz\" in experiments/config.py)**  
-  1. `python run_experiments.py --n-qubits 3 --n-seeds 5 --saboteur-noise-family depolarizing --robustness-noise-families depolarizing amplitude_damping coherent_overrotation --robustness-budgets 1,3 --attack-samples 2000`  
-    Multi-seed adversarial PPO on 3 qubits (state prep), logging robustness sweeps across multiple noise families and budgets. Produces circuits, plots, and `analysis/robustness_sweep.{csv,json}`.
-  2. `python run_experiments.py --n-qubits 3 --n-seeds 5 --robustness-noise-families depolarizing amplitude_damping coherent_overrotation --robustness-budgets 1,3`  
-    Non-adversarial PPO baseline with matching steps/seeds to compare clean and attacked fidelities.
-  3. `python run_experiments.py --n-qubits 3 --skip-saboteur --skip-compare --skip-cross-noise --skip-parameter-recovery --skip-hw-eval`  
-    Static-penalty λ sweep only (ExpPlan Part 1) to benchmark against tuned penalties.
-  4. `python run_experiments.py --n-qubits 3 --run-quantumnas --robustness-noise-families depolarizing amplitude_damping coherent_overrotation --robustness-budgets 1,3`  
-    QuantumNAS scaffold baseline (or imports if provided) for head-to-head robustness comparisons.
+  1. "python run_experiments.py \
+  --n-qubits 3 \
+  --n-seeds 5 \
+  --run-quantumnas \
+  --robustness-noise-families amplitude_damping coherent_overrotation depolarizing readout \
+  --robustness-budgets 1,3,5 \
+  --attack-samples 100 \
+  --compare-samples 100 \
+  --run-hw-eval \
+  --hw-backends fake_quito fake_belem fake_lagos fake_oslo fake_athens\
+  --hw-shots 4096 \
+  --hw-opt-level 3 \
+  --skip-lambda-sweep
+
+  --randomized-compiling" #include for using twirling
+
 
 - **Unitary prep (Toffoli family by default; set TARGET_TYPE=\"toffoli\" in experiments/config.py and pass `--task-mode unitary_preparation`)**  
   - `python run_experiments.py --n-qubits 3 --task-mode unitary_preparation --n-seeds 5 --saboteur-noise-family depolarizing --robustness-noise-families depolarizing amplitude_damping coherent_overrotation --robustness-budgets 1,3 --attack-samples 2000`  
