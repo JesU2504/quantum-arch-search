@@ -3,7 +3,7 @@
     {
       "backend": "fake_quito",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_0/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.70849609375,
       "depth": 24,
@@ -25,12 +25,23 @@
         "011": 310,
         "111": 1398
       },
+      "counts_raw": {
+        "100": 295,
+        "001": 123,
+        "101": 160,
+        "110": 132,
+        "010": 174,
+        "000": 1504,
+        "011": 310,
+        "111": 1398
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_quito",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_1/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.699462890625,
       "depth": 36,
@@ -52,12 +63,23 @@
         "011": 238,
         "111": 1377
       },
+      "counts_raw": {
+        "100": 212,
+        "101": 108,
+        "110": 286,
+        "001": 279,
+        "010": 108,
+        "000": 1488,
+        "011": 238,
+        "111": 1377
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_quito",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_2/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.691162109375,
       "depth": 20,
@@ -79,12 +101,23 @@
         "011": 131,
         "111": 1293
       },
+      "counts_raw": {
+        "100": 148,
+        "001": 403,
+        "101": 90,
+        "110": 395,
+        "010": 98,
+        "000": 1538,
+        "011": 131,
+        "111": 1293
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_quito",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_3/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.625732421875,
       "depth": 26,
@@ -107,12 +140,23 @@
         "011": 229,
         "111": 1246
       },
+      "counts_raw": {
+        "100": 243,
+        "101": 207,
+        "001": 316,
+        "110": 332,
+        "010": 206,
+        "000": 1317,
+        "011": 229,
+        "111": 1246
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_quito",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_4/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.694091796875,
       "depth": 19,
@@ -134,12 +178,23 @@
         "011": 310,
         "111": 1426
       },
+      "counts_raw": {
+        "001": 174,
+        "101": 153,
+        "110": 163,
+        "100": 311,
+        "010": 142,
+        "000": 1417,
+        "011": 310,
+        "111": 1426
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_quito",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_0/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.797607421875,
       "depth": 6,
@@ -161,12 +216,23 @@
         "011": 227,
         "111": 1628
       },
+      "counts_raw": {
+        "100": 219,
+        "001": 113,
+        "110": 117,
+        "101": 83,
+        "010": 70,
+        "000": 1639,
+        "011": 227,
+        "111": 1628
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_quito",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_1/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.790771484375,
       "depth": 11,
@@ -189,12 +255,23 @@
         "011": 230,
         "111": 1622
       },
+      "counts_raw": {
+        "100": 220,
+        "001": 72,
+        "101": 123,
+        "110": 84,
+        "010": 128,
+        "000": 1617,
+        "011": 230,
+        "111": 1622
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_quito",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_2/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.80224609375,
       "depth": 6,
@@ -216,12 +293,23 @@
         "011": 116,
         "111": 1611
       },
+      "counts_raw": {
+        "001": 72,
+        "101": 243,
+        "100": 96,
+        "110": 83,
+        "010": 200,
+        "000": 1675,
+        "011": 116,
+        "111": 1611
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_quito",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_3/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.754638671875,
       "depth": 14,
@@ -243,12 +331,23 @@
         "011": 99,
         "111": 1534
       },
+      "counts_raw": {
+        "100": 80,
+        "101": 63,
+        "110": 353,
+        "001": 344,
+        "010": 66,
+        "000": 1557,
+        "011": 99,
+        "111": 1534
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_quito",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_4/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.73828125,
       "depth": 9,
@@ -270,12 +369,23 @@
         "011": 293,
         "111": 1484
       },
+      "counts_raw": {
+        "001": 156,
+        "101": 119,
+        "100": 269,
+        "110": 130,
+        "010": 105,
+        "000": 1540,
+        "011": 293,
+        "111": 1484
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_quito",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_0/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.756103515625,
       "depth": 19,
@@ -297,12 +407,23 @@
         "011": 163,
         "111": 1548
       },
+      "counts_raw": {
+        "100": 149,
+        "101": 141,
+        "110": 181,
+        "001": 205,
+        "010": 160,
+        "000": 1549,
+        "011": 163,
+        "111": 1548
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_quito",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_1/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.774658203125,
       "depth": 19,
@@ -324,12 +445,23 @@
         "011": 127,
         "111": 1611
       },
+      "counts_raw": {
+        "100": 99,
+        "101": 73,
+        "110": 273,
+        "001": 284,
+        "010": 67,
+        "000": 1562,
+        "011": 127,
+        "111": 1611
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_quito",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_2/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.766357421875,
       "depth": 19,
@@ -351,12 +483,23 @@
         "011": 111,
         "111": 1575
       },
+      "counts_raw": {
+        "100": 98,
+        "101": 84,
+        "110": 289,
+        "001": 304,
+        "010": 71,
+        "000": 1564,
+        "011": 111,
+        "111": 1575
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_quito",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_3/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.7470703125,
       "depth": 19,
@@ -378,12 +521,23 @@
         "011": 198,
         "111": 1526
       },
+      "counts_raw": {
+        "100": 183,
+        "101": 120,
+        "110": 193,
+        "001": 212,
+        "010": 130,
+        "000": 1534,
+        "011": 198,
+        "111": 1526
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_quito",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_4/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.778076171875,
       "depth": 19,
@@ -405,6 +559,17 @@
         "011": 109,
         "111": 1589
       },
+      "counts_raw": {
+        "100": 93,
+        "101": 87,
+        "110": 282,
+        "001": 272,
+        "010": 66,
+        "000": 1598,
+        "011": 109,
+        "111": 1589
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     }
   ],
@@ -412,7 +577,7 @@
     {
       "backend": "fake_belem",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_0/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.864501953125,
       "depth": 24,
@@ -434,12 +599,23 @@
         "011": 99,
         "111": 1724
       },
+      "counts_raw": {
+        "001": 78,
+        "101": 94,
+        "110": 102,
+        "100": 95,
+        "010": 87,
+        "000": 1817,
+        "011": 99,
+        "111": 1724
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_belem",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_1/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.85205078125,
       "depth": 36,
@@ -461,12 +637,23 @@
         "011": 137,
         "111": 1710
       },
+      "counts_raw": {
+        "100": 115,
+        "101": 76,
+        "110": 100,
+        "001": 100,
+        "010": 78,
+        "000": 1780,
+        "011": 137,
+        "111": 1710
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_belem",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_2/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.854248046875,
       "depth": 20,
@@ -488,12 +675,23 @@
         "011": 65,
         "111": 1675
       },
+      "counts_raw": {
+        "100": 67,
+        "101": 77,
+        "001": 148,
+        "110": 166,
+        "010": 74,
+        "000": 1824,
+        "011": 65,
+        "111": 1675
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_belem",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_3/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.8369140625,
       "depth": 28,
@@ -515,12 +713,23 @@
         "011": 95,
         "111": 1687
       },
+      "counts_raw": {
+        "100": 90,
+        "101": 107,
+        "110": 127,
+        "001": 143,
+        "010": 106,
+        "000": 1741,
+        "011": 95,
+        "111": 1687
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_belem",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_4/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.866455078125,
       "depth": 24,
@@ -542,12 +751,23 @@
         "011": 106,
         "111": 1766
       },
+      "counts_raw": {
+        "100": 89,
+        "001": 103,
+        "110": 121,
+        "101": 76,
+        "010": 52,
+        "000": 1783,
+        "011": 106,
+        "111": 1766
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_belem",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_0/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.900146484375,
       "depth": 6,
@@ -569,12 +789,23 @@
         "011": 81,
         "111": 1836
       },
+      "counts_raw": {
+        "100": 48,
+        "001": 64,
+        "101": 78,
+        "110": 68,
+        "010": 70,
+        "000": 1851,
+        "011": 81,
+        "111": 1836
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_belem",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_1/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.897705078125,
       "depth": 11,
@@ -597,12 +828,23 @@
         "011": 81,
         "111": 1849
       },
+      "counts_raw": {
+        "100": 48,
+        "001": 72,
+        "101": 53,
+        "110": 82,
+        "010": 83,
+        "000": 1828,
+        "011": 81,
+        "111": 1849
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_belem",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_2/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.902099609375,
       "depth": 6,
@@ -624,12 +866,23 @@
         "011": 88,
         "111": 1839
       },
+      "counts_raw": {
+        "100": 57,
+        "001": 71,
+        "101": 59,
+        "110": 80,
+        "010": 46,
+        "000": 1856,
+        "011": 88,
+        "111": 1839
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_belem",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_3/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.885498046875,
       "depth": 18,
@@ -651,12 +904,23 @@
         "011": 66,
         "111": 1819
       },
+      "counts_raw": {
+        "100": 36,
+        "001": 117,
+        "110": 115,
+        "101": 72,
+        "010": 63,
+        "000": 1808,
+        "011": 66,
+        "111": 1819
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_belem",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_4/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.871826171875,
       "depth": 9,
@@ -678,12 +942,23 @@
         "011": 105,
         "111": 1752
       },
+      "counts_raw": {
+        "001": 87,
+        "101": 94,
+        "110": 86,
+        "100": 80,
+        "010": 73,
+        "000": 1819,
+        "011": 105,
+        "111": 1752
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_belem",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_0/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.86181640625,
       "depth": 19,
@@ -705,12 +980,23 @@
         "011": 94,
         "111": 1758
       },
+      "counts_raw": {
+        "100": 57,
+        "001": 97,
+        "101": 109,
+        "110": 110,
+        "010": 99,
+        "000": 1772,
+        "011": 94,
+        "111": 1758
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_belem",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_1/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.872802734375,
       "depth": 19,
@@ -732,12 +1018,23 @@
         "011": 76,
         "111": 1794
       },
+      "counts_raw": {
+        "100": 49,
+        "001": 112,
+        "101": 92,
+        "110": 117,
+        "010": 75,
+        "000": 1781,
+        "011": 76,
+        "111": 1794
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_belem",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_2/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.85791015625,
       "depth": 19,
@@ -759,12 +1056,23 @@
         "011": 75,
         "111": 1747
       },
+      "counts_raw": {
+        "100": 51,
+        "101": 84,
+        "110": 139,
+        "001": 156,
+        "010": 77,
+        "000": 1767,
+        "011": 75,
+        "111": 1747
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_belem",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_3/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.860595703125,
       "depth": 19,
@@ -786,12 +1094,23 @@
         "011": 94,
         "111": 1753
       },
+      "counts_raw": {
+        "100": 58,
+        "001": 119,
+        "101": 92,
+        "110": 125,
+        "010": 83,
+        "000": 1772,
+        "011": 94,
+        "111": 1753
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_belem",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_4/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.867431640625,
       "depth": 19,
@@ -813,6 +1132,17 @@
         "011": 80,
         "111": 1768
       },
+      "counts_raw": {
+        "100": 43,
+        "101": 83,
+        "110": 132,
+        "001": 127,
+        "010": 78,
+        "000": 1785,
+        "011": 80,
+        "111": 1768
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     }
   ],
@@ -820,7 +1150,7 @@
     {
       "backend": "fake_lagos",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_0/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.6904296875,
       "depth": 24,
@@ -842,12 +1172,23 @@
         "011": 78,
         "111": 1384
       },
+      "counts_raw": {
+        "001": 251,
+        "101": 317,
+        "100": 88,
+        "110": 257,
+        "010": 277,
+        "000": 1444,
+        "011": 78,
+        "111": 1384
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_lagos",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_1/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.67333984375,
       "depth": 36,
@@ -869,12 +1210,23 @@
         "011": 115,
         "111": 1338
       },
+      "counts_raw": {
+        "001": 312,
+        "101": 245,
+        "100": 141,
+        "110": 305,
+        "010": 220,
+        "000": 1420,
+        "011": 115,
+        "111": 1338
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_lagos",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_2/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.684814453125,
       "depth": 20,
@@ -896,12 +1248,23 @@
         "011": 279,
         "111": 1333
       },
+      "counts_raw": {
+        "001": 102,
+        "101": 240,
+        "100": 327,
+        "110": 112,
+        "010": 231,
+        "000": 1472,
+        "011": 279,
+        "111": 1333
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_lagos",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_3/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.67822265625,
       "depth": 28,
@@ -923,12 +1286,23 @@
         "011": 86,
         "111": 1358
       },
+      "counts_raw": {
+        "001": 326,
+        "110": 319,
+        "101": 265,
+        "100": 104,
+        "010": 218,
+        "000": 1420,
+        "011": 86,
+        "111": 1358
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_lagos",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_4/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.69091796875,
       "depth": 24,
@@ -950,12 +1324,23 @@
         "011": 82,
         "111": 1409
       },
+      "counts_raw": {
+        "001": 256,
+        "101": 317,
+        "110": 256,
+        "100": 89,
+        "010": 266,
+        "000": 1421,
+        "011": 82,
+        "111": 1409
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_lagos",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_0/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.699951171875,
       "depth": 6,
@@ -977,12 +1362,23 @@
         "011": 303,
         "111": 1426
       },
+      "counts_raw": {
+        "110": 73,
+        "001": 82,
+        "101": 245,
+        "100": 309,
+        "010": 217,
+        "000": 1441,
+        "011": 303,
+        "111": 1426
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_lagos",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_1/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.691650390625,
       "depth": 11,
@@ -1005,12 +1401,23 @@
         "011": 305,
         "111": 1431
       },
+      "counts_raw": {
+        "001": 240,
+        "101": 87,
+        "100": 287,
+        "110": 249,
+        "010": 95,
+        "000": 1402,
+        "011": 305,
+        "111": 1431
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_lagos",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_2/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.693359375,
       "depth": 6,
@@ -1032,12 +1439,23 @@
         "011": 296,
         "111": 1426
       },
+      "counts_raw": {
+        "001": 246,
+        "101": 87,
+        "100": 304,
+        "110": 243,
+        "010": 80,
+        "000": 1414,
+        "011": 296,
+        "111": 1426
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_lagos",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_3/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.69482421875,
       "depth": 18,
@@ -1059,12 +1477,23 @@
         "011": 303,
         "111": 1420
       },
+      "counts_raw": {
+        "110": 79,
+        "001": 96,
+        "101": 249,
+        "100": 307,
+        "010": 216,
+        "000": 1426,
+        "011": 303,
+        "111": 1420
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_lagos",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_4/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.685302734375,
       "depth": 9,
@@ -1086,12 +1515,23 @@
         "011": 290,
         "111": 1377
       },
+      "counts_raw": {
+        "001": 255,
+        "101": 104,
+        "100": 303,
+        "110": 242,
+        "010": 95,
+        "000": 1430,
+        "011": 290,
+        "111": 1377
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_lagos",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_0/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.68212890625,
       "depth": 19,
@@ -1113,12 +1553,23 @@
         "011": 89,
         "111": 1376
       },
+      "counts_raw": {
+        "001": 315,
+        "101": 258,
+        "110": 320,
+        "100": 96,
+        "010": 224,
+        "000": 1418,
+        "011": 89,
+        "111": 1376
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_lagos",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_1/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.686767578125,
       "depth": 19,
@@ -1140,12 +1591,23 @@
         "011": 88,
         "111": 1409
       },
+      "counts_raw": {
+        "001": 317,
+        "101": 244,
+        "110": 328,
+        "100": 91,
+        "010": 215,
+        "000": 1404,
+        "011": 88,
+        "111": 1409
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_lagos",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_2/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.67529296875,
       "depth": 19,
@@ -1167,12 +1629,23 @@
         "011": 87,
         "111": 1368
       },
+      "counts_raw": {
+        "001": 348,
+        "101": 251,
+        "100": 94,
+        "110": 335,
+        "010": 215,
+        "000": 1398,
+        "011": 87,
+        "111": 1368
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_lagos",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_3/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.67529296875,
       "depth": 19,
@@ -1194,12 +1667,23 @@
         "011": 93,
         "111": 1363
       },
+      "counts_raw": {
+        "001": 325,
+        "101": 260,
+        "110": 323,
+        "100": 102,
+        "010": 227,
+        "000": 1403,
+        "011": 93,
+        "111": 1363
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_lagos",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_4/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.6826171875,
       "depth": 19,
@@ -1221,6 +1705,17 @@
         "011": 85,
         "111": 1379
       },
+      "counts_raw": {
+        "001": 328,
+        "101": 252,
+        "100": 94,
+        "110": 325,
+        "010": 216,
+        "000": 1417,
+        "011": 85,
+        "111": 1379
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     }
   ],
@@ -1228,7 +1723,7 @@
     {
       "backend": "fake_oslo",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_0/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.939208984375,
       "depth": 24,
@@ -1250,12 +1745,23 @@
         "011": 50,
         "111": 1930
       },
+      "counts_raw": {
+        "100": 39,
+        "001": 45,
+        "101": 44,
+        "110": 41,
+        "010": 30,
+        "000": 1917,
+        "011": 50,
+        "111": 1930
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_oslo",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_1/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.9306640625,
       "depth": 36,
@@ -1277,12 +1783,23 @@
         "011": 73,
         "111": 1901
       },
+      "counts_raw": {
+        "100": 68,
+        "001": 28,
+        "110": 46,
+        "101": 41,
+        "010": 28,
+        "000": 1911,
+        "011": 73,
+        "111": 1901
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_oslo",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_2/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.9140625,
       "depth": 20,
@@ -1304,12 +1821,23 @@
         "011": 49,
         "111": 1853
       },
+      "counts_raw": {
+        "100": 39,
+        "001": 100,
+        "101": 32,
+        "110": 111,
+        "010": 21,
+        "000": 1891,
+        "011": 49,
+        "111": 1853
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_oslo",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_3/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.92333984375,
       "depth": 28,
@@ -1331,12 +1859,23 @@
         "011": 38,
         "111": 1893
       },
+      "counts_raw": {
+        "100": 39,
+        "001": 52,
+        "101": 73,
+        "110": 64,
+        "010": 48,
+        "000": 1889,
+        "011": 38,
+        "111": 1893
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_oslo",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_4/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.945068359375,
       "depth": 24,
@@ -1358,12 +1897,23 @@
         "011": 39,
         "111": 1957
       },
+      "counts_raw": {
+        "100": 41,
+        "001": 48,
+        "101": 29,
+        "110": 41,
+        "010": 27,
+        "000": 1914,
+        "011": 39,
+        "111": 1957
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_oslo",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_0/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.962646484375,
       "depth": 6,
@@ -1385,12 +1935,23 @@
         "011": 19,
         "111": 1986
       },
+      "counts_raw": {
+        "100": 16,
+        "001": 23,
+        "101": 43,
+        "110": 25,
+        "010": 27,
+        "000": 1957,
+        "011": 19,
+        "111": 1986
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_oslo",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_1/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.961181640625,
       "depth": 11,
@@ -1413,12 +1974,23 @@
         "011": 12,
         "111": 1991
       },
+      "counts_raw": {
+        "100": 9,
+        "001": 28,
+        "101": 34,
+        "110": 36,
+        "010": 40,
+        "000": 1946,
+        "011": 12,
+        "111": 1991
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_oslo",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_2/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.9658203125,
       "depth": 6,
@@ -1440,12 +2012,23 @@
         "011": 16,
         "111": 1991
       },
+      "counts_raw": {
+        "100": 14,
+        "001": 29,
+        "101": 29,
+        "110": 37,
+        "010": 15,
+        "000": 1965,
+        "011": 16,
+        "111": 1991
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_oslo",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_3/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.9521484375,
       "depth": 18,
@@ -1467,12 +2050,23 @@
         "011": 12,
         "111": 1974
       },
+      "counts_raw": {
+        "100": 17,
+        "001": 57,
+        "101": 39,
+        "110": 39,
+        "010": 32,
+        "000": 1926,
+        "011": 12,
+        "111": 1974
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_oslo",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_4/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.958740234375,
       "depth": 9,
@@ -1494,12 +2088,23 @@
         "011": 23,
         "111": 1973
       },
+      "counts_raw": {
+        "100": 26,
+        "001": 30,
+        "101": 38,
+        "110": 33,
+        "010": 19,
+        "000": 1954,
+        "011": 23,
+        "111": 1973
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_oslo",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_0/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.94140625,
       "depth": 19,
@@ -1521,12 +2126,23 @@
         "011": 30,
         "111": 1943
       },
+      "counts_raw": {
+        "100": 25,
+        "001": 41,
+        "101": 50,
+        "110": 49,
+        "010": 45,
+        "000": 1913,
+        "011": 30,
+        "111": 1943
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_oslo",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_1/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.945068359375,
       "depth": 19,
@@ -1548,12 +2164,23 @@
         "011": 27,
         "111": 1960
       },
+      "counts_raw": {
+        "100": 21,
+        "001": 53,
+        "101": 42,
+        "110": 48,
+        "010": 34,
+        "000": 1911,
+        "011": 27,
+        "111": 1960
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_oslo",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_2/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.935546875,
       "depth": 19,
@@ -1575,12 +2202,23 @@
         "011": 26,
         "111": 1931
       },
+      "counts_raw": {
+        "100": 20,
+        "001": 72,
+        "101": 38,
+        "110": 71,
+        "010": 37,
+        "000": 1901,
+        "011": 26,
+        "111": 1931
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_oslo",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_3/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.93408203125,
       "depth": 19,
@@ -1602,12 +2240,23 @@
         "011": 41,
         "111": 1927
       },
+      "counts_raw": {
+        "100": 33,
+        "001": 49,
+        "101": 44,
+        "110": 62,
+        "010": 41,
+        "000": 1899,
+        "011": 41,
+        "111": 1927
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_oslo",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_4/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.937255859375,
       "depth": 19,
@@ -1629,6 +2278,17 @@
         "011": 22,
         "111": 1932
       },
+      "counts_raw": {
+        "100": 23,
+        "001": 63,
+        "101": 38,
+        "110": 74,
+        "010": 37,
+        "000": 1907,
+        "011": 22,
+        "111": 1932
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     }
   ],
@@ -1636,7 +2296,7 @@
     {
       "backend": "fake_athens",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_0/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.891845703125,
       "depth": 19,
@@ -1658,12 +2318,23 @@
         "011": 57,
         "111": 1794
       },
+      "counts_raw": {
+        "100": 61,
+        "001": 61,
+        "101": 91,
+        "110": 74,
+        "010": 99,
+        "000": 1859,
+        "011": 57,
+        "111": 1794
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_athens",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_1/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.89306640625,
       "depth": 30,
@@ -1685,12 +2356,23 @@
         "011": 120,
         "111": 1806
       },
+      "counts_raw": {
+        "001": 49,
+        "101": 49,
+        "110": 55,
+        "100": 125,
+        "010": 40,
+        "000": 1852,
+        "011": 120,
+        "111": 1806
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_athens",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_2/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.890869140625,
       "depth": 20,
@@ -1712,12 +2394,23 @@
         "011": 90,
         "111": 1751
       },
+      "counts_raw": {
+        "001": 105,
+        "101": 38,
+        "100": 74,
+        "110": 105,
+        "010": 35,
+        "000": 1898,
+        "011": 90,
+        "111": 1751
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_athens",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_3/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.873291015625,
       "depth": 26,
@@ -1740,12 +2433,23 @@
         "011": 70,
         "111": 1754
       },
+      "counts_raw": {
+        "100": 86,
+        "101": 76,
+        "110": 114,
+        "001": 120,
+        "010": 53,
+        "000": 1823,
+        "011": 70,
+        "111": 1754
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_athens",
       "circuit": "baseline",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_4/circuit_vanilla.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_vanilla.json",
       "shots": 4096,
       "success_prob": 0.8955078125,
       "depth": 19,
@@ -1767,12 +2471,23 @@
         "011": 73,
         "111": 1839
       },
+      "counts_raw": {
+        "100": 68,
+        "001": 56,
+        "101": 90,
+        "110": 82,
+        "010": 59,
+        "000": 1829,
+        "011": 73,
+        "111": 1839
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_athens",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_0/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.940673828125,
       "depth": 6,
@@ -1794,12 +2509,23 @@
         "011": 52,
         "111": 1926
       },
+      "counts_raw": {
+        "100": 35,
+        "001": 47,
+        "101": 32,
+        "110": 49,
+        "010": 28,
+        "000": 1927,
+        "011": 52,
+        "111": 1926
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_athens",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_1/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.938720703125,
       "depth": 11,
@@ -1821,12 +2547,23 @@
         "011": 33,
         "111": 1940
       },
+      "counts_raw": {
+        "100": 18,
+        "001": 29,
+        "101": 73,
+        "110": 33,
+        "010": 65,
+        "000": 1905,
+        "011": 33,
+        "111": 1940
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_athens",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_2/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.940185546875,
       "depth": 6,
@@ -1848,12 +2585,23 @@
         "011": 67,
         "111": 1921
       },
+      "counts_raw": {
+        "100": 41,
+        "001": 33,
+        "101": 45,
+        "110": 40,
+        "010": 19,
+        "000": 1930,
+        "011": 67,
+        "111": 1921
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_athens",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_3/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.92529296875,
       "depth": 14,
@@ -1875,12 +2623,23 @@
         "011": 63,
         "111": 1896
       },
+      "counts_raw": {
+        "100": 36,
+        "001": 63,
+        "101": 34,
+        "110": 81,
+        "010": 29,
+        "000": 1894,
+        "011": 63,
+        "111": 1896
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_athens",
       "circuit": "robust",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_4/circuit_robust.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_robust.json",
       "shots": 4096,
       "success_prob": 0.912841796875,
       "depth": 9,
@@ -1902,12 +2661,23 @@
         "011": 86,
         "111": 1840
       },
+      "counts_raw": {
+        "001": 53,
+        "101": 64,
+        "110": 42,
+        "100": 74,
+        "010": 38,
+        "000": 1899,
+        "011": 86,
+        "111": 1840
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_athens",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_0/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.8984375,
       "depth": 19,
@@ -1929,12 +2699,23 @@
         "011": 52,
         "111": 1831
       },
+      "counts_raw": {
+        "100": 55,
+        "001": 68,
+        "110": 95,
+        "101": 96,
+        "010": 50,
+        "000": 1849,
+        "011": 52,
+        "111": 1831
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_athens",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_1/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.914794921875,
       "depth": 19,
@@ -1956,12 +2737,23 @@
         "011": 54,
         "111": 1878
       },
+      "counts_raw": {
+        "100": 35,
+        "001": 81,
+        "101": 59,
+        "110": 92,
+        "010": 28,
+        "000": 1869,
+        "011": 54,
+        "111": 1878
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_athens",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_2/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.902099609375,
       "depth": 19,
@@ -1983,12 +2775,23 @@
         "011": 44,
         "111": 1835
       },
+      "counts_raw": {
+        "100": 35,
+        "101": 63,
+        "110": 115,
+        "001": 109,
+        "010": 35,
+        "000": 1860,
+        "011": 44,
+        "111": 1835
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_athens",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_3/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.90380859375,
       "depth": 19,
@@ -2010,12 +2813,23 @@
         "011": 55,
         "111": 1839
       },
+      "counts_raw": {
+        "100": 45,
+        "001": 81,
+        "110": 97,
+        "101": 71,
+        "010": 45,
+        "000": 1863,
+        "011": 55,
+        "111": 1839
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     },
     {
       "backend": "fake_athens",
       "circuit": "quantumnas",
-      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/compare/run_4/circuit_quantumnas.json",
+      "circuit_path": "/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_quantumnas.json",
       "shots": 4096,
       "success_prob": 0.912353515625,
       "depth": 19,
@@ -2037,6 +2851,17 @@
         "011": 52,
         "111": 1856
       },
+      "counts_raw": {
+        "100": 30,
+        "001": 84,
+        "110": 104,
+        "101": 56,
+        "010": 33,
+        "000": 1881,
+        "011": 52,
+        "111": 1856
+      },
+      "readout_mitigated": false,
       "variant": "untwirled"
     }
   ]

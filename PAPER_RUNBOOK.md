@@ -11,21 +11,19 @@ Use this as a checklist to generate all artifacts for the paper. Run from the re
 ## 1) Core adversarial vs. baselines (state/unitary prep)
 - **State prep (GHZ target by default; set TARGET_TYPE=\"ghz\" in experiments/config.py)**  
   1. "python run_experiments.py \
-  --n-qubits 3 \
+  --n-qubits 5 \
   --n-seeds 5 \
   --run-quantumnas \
   --robustness-noise-families amplitude_damping coherent_overrotation depolarizing readout \
-  --robustness-budgets 1,3,5 \
+  --robustness-budgets 1,3 \
   --attack-samples 100 \
-  --compare-samples 100 \
+  --compare-samples 64 \
   --run-hw-eval \
-  --hw-backends fake_quito fake_belem fake_lagos fake_oslo fake_athens\
+  --hw-backends fake_yorktown fake_oslo fake_lagos fake_vigo \
   --hw-shots 4096 \
-  --hw-opt-level 3 \
-  --skip-lambda-sweep
-
-  --randomized-compiling" #include for using twirling
-
+  --hw-opt-level 1 \
+  --skip-lambda-sweep \
+  --mitigation-mode rc_zne --rc-zne-scales 0.75 1.0 1.5 2.0 3.0 --rc-zne-fit linear --rc-zne-reps 3"
 
 - **Unitary prep (Toffoli family by default; set TARGET_TYPE=\"toffoli\" in experiments/config.py and pass `--task-mode unitary_preparation`)**  
   - `python run_experiments.py --n-qubits 3 --task-mode unitary_preparation --n-seeds 5 --saboteur-noise-family depolarizing --robustness-noise-families depolarizing amplitude_damping coherent_overrotation --robustness-budgets 1,3 --attack-samples 2000`  
@@ -38,12 +36,15 @@ Use this as a checklist to generate all artifacts for the paper. Run from the re
     QuantumNAS scaffold baseline for unitary prep (if applicable).
 d
 ## 2) VQE evidence
-- `python experiments/vqe/train_architect_vqe_rl.py --molecule H2 --total-timesteps 10000 --max-gates 12 --out-dir results/vqe_architect_vqe_h2_seed0`  
-  RL architecture search for VQE on H2; logs energies, gate counts, and best circuits (repeat with different out-dirs for multi-seed).
-- `python experiments/adversarial/train_adversarial_vqe.py --molecule H2 --steps 200 --noise-levels 0.0 0.02 0.05 --out-dir results/adversarial_vqe_h2_seed0`  
-  Adversarial VQE baseline (worst-case over depolarizing rates) using TorchQuantum HEA ansatz. Repeat with different `--seed`/`--out-dir` for multi-seed.
-- `python experiments/vqe/vqe_h4_benchmark.py --max-iterations 200 --n-seeds 3`  
-  H4 benchmark comparing ansätze (UCCSD/HEA/adversarial); produces energies and CNOT counts.
+2. "python run_vqe.py \
+  --molecule H2 \
+  --n-seeds 2 \
+  --run-adv-architect
+"
+
+  > Re-run plots/analysis without retraining by pointing at the prior results directory:  
+  > `python run_vqe.py --base-dir results/vqe_run_<timestamp> --analysis-only --reuse-existing`
+
 
 ## 3) Robustness gatecheck (per run directory)
 - `python experiments/analysis/robustness_gatecheck.py --sweep results/run_<ts>/analysis/robustness_sweep.csv --min-fidelity 0.95 --min-gap 0.02`  

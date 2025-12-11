@@ -1,0 +1,11 @@
+method,variant,noise_family,energy,seed
+Architect adversarial,untwirled,clean,-1.116998996754004,0
+Architect adversarial,untwirled,depolarizing,-1.116998996754004,0
+Architect adversarial,untwirled,amplitude_damping,-1.116998996754004,0
+Architect adversarial,untwirled,coherent_overrotation,-1.1169989967540037,0
+Architect adversarial,untwirled,readout,-1.116998996754004,0
+Architect adversarial,untwirled,clean,-1.1169989967540044,1
+Architect adversarial,untwirled,depolarizing,-1.1169989967540044,1
+Architect adversarial,untwirled,amplitude_damping,-0.34368435558011534,1
+Architect adversarial,untwirled,coherent_overrotation,-1.1169989967540037,1
+Architect adversarial,untwirled,readout,-1.1169989967540044,1

@@ -1,0 +1,13 @@
+{
+  "adversarial_arch_steps": 12000,
+  "adversarial_gens": 10,
+  "baseline_steps": 120000,
+  "champion_save_last_steps": null,
+  "hall_of_fame_size": 5,
+  "n_qubits": 4,
+  "n_seeds": 5,
+  "saboteur_steps": 40960,
+  "seed": null,
+  "source": "experiments.config",
+  "timestamp": "20251211-015129"
+}

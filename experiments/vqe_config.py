@@ -14,8 +14,8 @@ MOLECULES = ["H2", "HeH+", "LiH", "BeH2"]
 
 # --- RL Architect (PPO on ArchitectEnv, task_mode="vqe") ---
 RL = {
-    "max_gates": 12,
-    "total_timesteps": 10_000,
+    "max_gates": 15,
+    "total_timesteps": 1200,
     "complexity_penalty": 0.01,
     "lr": 3e-4,
 }
@@ -31,8 +31,8 @@ HEA = {
 
 # --- Architect adversarial VQE (ArchitectEnv + saboteur) ---
 ADV_ARCH = {
-    "n_generations": 5,
-    "architect_steps_per_gen": 12000,
+    "n_generations": 1,
+    "architect_steps_per_gen": 1200,
     "saboteur_steps_per_gen": 4096,
     "max_gates": 15,
     "complexity_penalty": 0.01,

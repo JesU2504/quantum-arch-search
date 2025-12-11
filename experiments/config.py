@@ -99,7 +99,7 @@ EXPERIMENT_PARAMS = {
         # More rollout per update to help PPO escape the 0.69 plateau
         "ARCHITECT_N_STEPS": 2048,
         # Baseline Total = Steps/Gen * Generations (short run with cushion to hit ~1.0)
-        "ARCHITECT_STEPS": 12000 * 5,      # = 144,000 steps (Matched to Adversarial)
+        "ARCHITECT_STEPS": 12000 * 5,      
         
         "N_GENERATIONS": 5,
         "ARCHITECT_STEPS_PER_GENERATION": 12000,
@@ -112,36 +112,42 @@ EXPERIMENT_PARAMS = {
     },
     
     # "Full" Implementation (4 Qubits) - Standard Experiment (ExpPlan.md)
+    # MODIFIED: Increased architect steps by 17% and saboteur steps by 50%
+    # to address analysis findings: better architect exploration and well-trained saboteur
     4: {
-        # Match 3-qubit tuning: longer per-gen rollout with 2048-step PPO updates
+        # More rollout per update to help PPO escape the 0.69 plateau
         "ARCHITECT_N_STEPS": 2048,
-        # Baseline Total = Steps/Gen * Generations
-        "ARCHITECT_STEPS": 8192 * 100,     # = 819,200 steps (Matched to Adversarial)
+        # Baseline Total = Steps/Gen * Generations (increased for better exploration)
+        "ARCHITECT_STEPS": 14000 * 10,      # = 140,000 steps (was 120,000, +17%)
         
-        "N_GENERATIONS": 100,
-        "ARCHITECT_STEPS_PER_GENERATION": 8192, 
+        "N_GENERATIONS": 10,
+        "ARCHITECT_STEPS_PER_GENERATION": 14000,  # was 12000
         
-        "SABOTEUR_STEPS_PER_GENERATION": 2048,
-        "SABOTEUR_N_STEPS": 2048,
-        # Saboteur Baseline Total
-        "SABOTEUR_STEPS": 2048 * 100,      # = 204,800 steps
+        # Give the saboteur enough budget to learn well (increased by 50% for sophistication)
+        "SABOTEUR_STEPS_PER_GENERATION": 6144,     # was 4096 (+50%)
+        "SABOTEUR_N_STEPS": 6144,
+        # Saboteur Total
+        "SABOTEUR_STEPS": 6144 * 10,      # = 61,440 steps (was 40,960, +50%)
     },
     
     # "Long" Implementation (5 Qubits) - Scalability / Wall Test
+    # MODIFIED: Increased saboteur steps by 50% to produce well-trained, sophisticated attacks
+    # Architect steps kept at current level (180K is already substantial for 5Q)
     5: {
-        # Match 3-qubit tuning: longer per-gen rollout with 2048-step PPO updates
+        # More rollout per update to help PPO escape the 0.69 plateau
         "ARCHITECT_N_STEPS": 2048,
-        # Baseline Total = Steps/Gen * Generations
-        "ARCHITECT_STEPS": 8192 * 200,     # = 1,638,400 steps (Matched to Adversarial)
+        # Baseline Total = Steps/Gen * Generations (kept as-is, already substantial)
+        "ARCHITECT_STEPS": 12000 * 15,      # = 180,000 steps (unchanged)
         
-        "N_GENERATIONS": 200,
-        "ARCHITECT_STEPS_PER_GENERATION": 8192,
+        "N_GENERATIONS": 15,
+        "ARCHITECT_STEPS_PER_GENERATION": 12000,
         
-        "SABOTEUR_STEPS_PER_GENERATION": 2048,
-        "SABOTEUR_N_STEPS": 2048,
-        # Saboteur Baseline Total
-        "SABOTEUR_STEPS": 2048 * 200,      # = 409,600 steps
-    },
+        # Give the saboteur enough budget to learn well (increased by 50% for sophistication)
+        "SABOTEUR_STEPS_PER_GENERATION": 6144,     # was 4096 (+50%)
+        "SABOTEUR_N_STEPS": 6144,
+        # Saboteur Total
+        "SABOTEUR_STEPS": 6144 * 15,      # = 92,160 steps (was 61,440, +50%)
+    }
 }
 
 # Default helpers for scripts that need a quick, module-level fallback.

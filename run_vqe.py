@@ -20,7 +20,7 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Any
 
 import pandas as pd
 import seaborn as sns
@@ -35,6 +35,15 @@ from qas_gym.envs.saboteur_env import SaboteurMultiGateEnv
 from qas_gym.utils import randomized_compile
 import cirq
 import random
+
+from experiments.analysis.compare_circuits import (
+    MITIGATION_NONE,
+    MITIGATION_TWIRL,
+    MITIGATION_RC_ZNE,
+    MITIGATION_VARIANTS,
+    RC_ZNE_DEFAULT_SCALES,
+    _zero_noise_extrapolate,
+)
 
 try:
     import experiments.vqe_config as vqe_config
@@ -57,6 +66,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--skip-robustness", action="store_true", help="Skip robustness evaluation/plot.")
     p.add_argument("--skip-cross-noise", action="store_true", help="Skip cross-noise sweep/plot.")
     p.add_argument("--run-hw-eval", action="store_true", help="Run hardware-like eval plot (noise-as-backend).")
+    p.add_argument("--reuse-existing", action="store_true", help="Reuse cached seed outputs under --base-dir and skip retraining when present.")
+    p.add_argument("--analysis-only", action="store_true", help="Skip all training and recompute analysis/plots from an existing --base-dir.")
     p.add_argument(
         "--randomized-compiling",
         action="store_true",
@@ -103,7 +114,39 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--hw-backends", nargs="+", default=default_hw.get("backends", ["fake_quito", "fake_belem"]))
     p.add_argument("--hw-rate", type=float, nargs="+", default=None, help="Override backend->rate pairs: backend rate ...")
     p.set_defaults(randomized_compiling=False)
-    return p.parse_args()
+    p.add_argument(
+        "--mitigation-mode",
+        choices=[MITIGATION_NONE, MITIGATION_TWIRL, MITIGATION_RC_ZNE],
+        default=None,
+        help="Mitigation strategy for robustness plots (default mirrors --randomized-compiling).",
+    )
+    p.add_argument(
+        "--rc-zne-scales",
+        type=float,
+        nargs="+",
+        default=None,
+        help="Noise scale factors for RC-ZNE mitigation (default: 1.0 1.5 2.0).",
+    )
+    p.add_argument(
+        "--rc-zne-fit",
+        type=str,
+        default="linear",
+        choices=["linear", "quadratic"],
+        help="Zero-noise extrapolation fit for RC-ZNE (default: linear).",
+    )
+    p.add_argument(
+        "--rc-zne-reps",
+        type=int,
+        default=1,
+        help="Number of randomized compiling draws per scale for RC-ZNE (default: 1).",
+    )
+    args = p.parse_args()
+    if args.mitigation_mode is None:
+        args.mitigation_mode = MITIGATION_TWIRL if args.randomized_compiling else MITIGATION_NONE
+    else:
+        # Align legacy --randomized-compiling flag with explicit mitigation selection.
+        args.randomized_compiling = args.mitigation_mode in (MITIGATION_TWIRL, MITIGATION_RC_ZNE)
+    return args
 
 
 def run_rl_seed(seed: int, args: argparse.Namespace, out_dir: Path) -> Path:
@@ -144,6 +187,7 @@ def run_hea_seed(seed: int, args: argparse.Namespace, out_dir: Path) -> Path:
     env["PYTHONPATH"] = os.pathsep.join([str(repo_root), str(repo_root / "src"), env.get("PYTHONPATH", "")])
     subprocess.run(cmd, check=True, env=env)
     return out_dir / "results.json"
+
 
 def run_adv_arch_seed(seed: int, args: argparse.Namespace, out_dir: Path) -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -207,26 +251,27 @@ def _build_circuit_with_angles(base_ops, rot_indices, angles):
     return cirq.Circuit(new_ops)
 
 
-def _energy_of_circuit(circuit: cirq.Circuit, ham_matrix: np.ndarray) -> float:
+def _energy_of_circuit(circuit: cirq.Circuit, ham_matrix: np.ndarray, qubit_order: list[cirq.Qid] | None = None) -> float:
     sim = cirq.Simulator()
-    res = sim.simulate(circuit, qubit_order=sorted(circuit.all_qubits()))
+    order = qubit_order if qubit_order is not None else sorted(circuit.all_qubits())
+    res = sim.simulate(circuit, qubit_order=order)
     return state_energy(res.final_state_vector, ham_matrix)
 
 
-def optimize_angles(circuit: cirq.Circuit, ham_matrix: np.ndarray, maxiter: int = 80):
+def optimize_angles(circuit: cirq.Circuit, ham_matrix: np.ndarray, maxiter: int = 80, qubit_order: list[cirq.Qid] | None = None):
     """Optimize rotation angles; falls back to random search if scipy unavailable."""
     ops, rot_idx, init_angles = _extract_rotations(circuit)
     if len(rot_idx) == 0:
-        return circuit, _energy_of_circuit(circuit, ham_matrix)
+        return circuit, _energy_of_circuit(circuit, ham_matrix, qubit_order)
     try:
         import scipy.optimize as opt
     except Exception:
         best_angles = init_angles.copy()
-        best_e = _energy_of_circuit(circuit, ham_matrix)
+        best_e = _energy_of_circuit(circuit, ham_matrix, qubit_order)
         for _ in range(maxiter):
             cand = best_angles + np.random.normal(scale=0.1, size=best_angles.shape)
             cand_circ = _build_circuit_with_angles(ops, rot_idx, cand)
-            e = _energy_of_circuit(cand_circ, ham_matrix)
+            e = _energy_of_circuit(cand_circ, ham_matrix, qubit_order)
             if e < best_e:
                 best_e = e
                 best_angles = cand
@@ -234,7 +279,7 @@ def optimize_angles(circuit: cirq.Circuit, ham_matrix: np.ndarray, maxiter: int 
 
     def obj(angles):
         circ = _build_circuit_with_angles(ops, rot_idx, angles)
-        return _energy_of_circuit(circ, ham_matrix)
+        return _energy_of_circuit(circ, ham_matrix, qubit_order)
 
     res = opt.minimize(
         obj,
@@ -244,7 +289,7 @@ def optimize_angles(circuit: cirq.Circuit, ham_matrix: np.ndarray, maxiter: int 
     )
     best_angles = res.x if res.success else init_angles
     best_circ = _build_circuit_with_angles(ops, rot_idx, best_angles)
-    best_e = _energy_of_circuit(best_circ, ham_matrix)
+    best_e = _energy_of_circuit(best_circ, ham_matrix, qubit_order)
     return best_circ, best_e
 
 
@@ -263,6 +308,7 @@ def load_hea_result(path: Path) -> Dict[str, float]:
         "fci": data.get("fci_energy"),
     }
 
+
 def load_adv_arch_result(path: Path) -> Dict[str, float]:
     data = json.loads(path.read_text())
     return {
@@ -275,16 +321,23 @@ def load_adv_arch_result(path: Path) -> Dict[str, float]:
 
 def maybe_optimize_seed(method: str, seed_dir: Path, ham_info: dict):
     """Optimize rotation angles for RL and adversarial-architect circuits; skip HEA."""
+    expected_nq = ham_info["n_qubits"]
     try:
         if method == "RL":
             circ = _load_circuit_for_method(seed_dir, "RL")
-            opt_circ, opt_e = optimize_angles(circ, ham_info["matrix"])
+            circ, qubit_order = _align_circuit_qubits(circ, expected_nq, label=f"optimize/{method}/{seed_dir.name}")
+            if circ is None or qubit_order is None:
+                return None
+            opt_circ, opt_e = optimize_angles(circ, ham_info["matrix"], qubit_order=qubit_order)
             (seed_dir / "circuit_architect_vqe_opt.qasm").write_text(cirq.qasm(opt_circ))
             convert_qasm_file_to_cirq(seed_dir / "circuit_architect_vqe_opt.qasm", seed_dir / "circuit_architect_vqe_opt.json")
             return opt_e
         if method == "Architect adversarial":
             circ = _load_circuit_for_method(seed_dir, "Architect adversarial")
-            opt_circ, opt_e = optimize_angles(circ, ham_info["matrix"])
+            circ, qubit_order = _align_circuit_qubits(circ, expected_nq, label=f"optimize/{method}/{seed_dir.name}")
+            if circ is None or qubit_order is None:
+                return None
+            opt_circ, opt_e = optimize_angles(circ, ham_info["matrix"], qubit_order=qubit_order)
             (seed_dir / "circuit_architect_adv_opt.json").write_text(cirq.to_json(opt_circ))
             return opt_e
     except Exception:
@@ -319,7 +372,7 @@ def plot_summary(df: pd.DataFrame, out_path: Path):
         order=metric_order,
         palette=palette,
         errorbar="sd",
-        errwidth=1.2,
+        err_kws={"linewidth": 1.2},
         capsize=0.08,
         ax=ax,
     )
@@ -367,7 +420,52 @@ def _circuit_n_qubits(circuit: cirq.Circuit) -> int:
     return len(set(circuit.all_qubits()))
 
 
-def _noisy_energy(circuit: cirq.Circuit, ham_matrix: np.ndarray, noise_family: str, rate: float, twirl: bool = False, rng=None) -> float:
+def _align_circuit_qubits(circuit: cirq.Circuit, expected_nq: int, *, label: str = "") -> tuple[cirq.Circuit | None, list[cirq.Qid] | None]:
+    """
+    Ensure a circuit uses the same number of qubits as the Hamiltonian.
+
+    - If the circuit has fewer qubits, return a canonical qubit order that includes
+      the missing idle qubits (treated as |0> with no gates).
+    - If it has more, or uses unsupported qubit types, return None so callers can skip.
+    Returns (aligned_circuit, qubit_order) or (None, None).
+    """
+    tag = f"[align:{label}]" if label else "[align]"
+    target_qubits = list(cirq.LineQubit.range(expected_nq))
+    target_set = set(target_qubits)
+    qubits_sorted = sorted(circuit.all_qubits())
+    current_nq = len(qubits_sorted)
+
+    if current_nq == expected_nq and set(qubits_sorted).issubset(target_set):
+        return circuit, target_qubits
+
+    if current_nq > expected_nq:
+        print(f"{tag} Circuit has {current_nq} qubits but Hamiltonian expects {expected_nq}; skipping.")
+        return None, None
+
+    if not all(isinstance(q, cirq.LineQubit) for q in qubits_sorted):
+        print(f"{tag} Non-LineQubit circuit with {current_nq} qubits cannot be auto-aligned to {expected_nq}. Skipping.")
+        return None, None
+
+    existing_set = set(qubits_sorted)
+
+    # If qubit indices exceed the target range, remap them into the canonical range.
+    if any(q.x >= expected_nq for q in qubits_sorted):
+        mapping = {q: target_qubits[i] for i, q in enumerate(qubits_sorted[:expected_nq])}
+        circuit = cirq.map_qubits(circuit, mapping)
+        qubits_sorted = sorted(circuit.all_qubits())
+        existing_set = set(qubits_sorted)
+
+    if not existing_set.issubset(target_set):
+        print(f"{tag} Circuit qubits are outside the expected range even after remapping; skipping.")
+        return None, None
+
+    missing = expected_nq - current_nq
+    if missing > 0:
+        print(f"{tag} Padding circuit virtually from {current_nq} -> {expected_nq} qubits (treating {missing} idle).")
+    return circuit, target_qubits
+
+
+def _noisy_energy(circuit: cirq.Circuit, ham_matrix: np.ndarray, noise_family: str, rate: float, twirl: bool = False, qubit_order: list[cirq.Qid] | None = None, rng=None) -> float:
     rng = rng or np.random.default_rng()
     circ_use = randomized_compile(circuit, rng) if twirl else circuit
     ops = list(circ_use.all_operations())
@@ -377,8 +475,63 @@ def _noisy_energy(circuit: cirq.Circuit, ham_matrix: np.ndarray, noise_family: s
         noisy_ops.extend(SaboteurMultiGateEnv._noise_ops_for(rate, op, noise_family, {}))
     noisy = cirq.Circuit(noisy_ops)
     sim = cirq.Simulator()
-    res = sim.simulate(noisy, qubit_order=sorted(circ_use.all_qubits()))
+    order = qubit_order if qubit_order is not None else sorted(circ_use.all_qubits())
+    res = sim.simulate(noisy, qubit_order=order)
     return state_energy(res.final_state_vector, ham_matrix)
+
+
+def _scale_noise_rate(rate: float, scale: float, noise_family: str) -> float:
+    family = noise_family.lower()
+    scale = max(0.0, float(scale))
+    rate = float(rate)
+    if family in {"amplitude_damping", "phase_damping"}:
+        survival = max(0.0, 1.0 - max(0.0, min(rate, 1.0)))
+        scaled = 1.0 - survival**scale
+        return float(np.clip(scaled, 0.0, 0.999999))
+    if family in {"readout", "bitflip", "depolarizing"}:
+        return float(np.clip(rate * scale, 0.0, 1.0))
+    if family == "coherent_overrotation":
+        return float(rate * scale)
+    return float(np.clip(rate * scale, 0.0, 1.0))
+
+
+def _rc_zne_energy(
+    circuit: cirq.Circuit,
+    ham_matrix: np.ndarray,
+    noise_family: str,
+    rate: float,
+    rc_zne_scales: tuple[float, ...],
+    rc_zne_fit: str,
+    rc_zne_reps: int,
+    qubit_order: list[cirq.Qid] | None = None,
+    rng_seed: int | None = None,
+) -> float:
+    if not rc_zne_scales:
+        rc_zne_scales = RC_ZNE_DEFAULT_SCALES
+    rc_zne_scales = tuple(float(s) for s in rc_zne_scales if s is not None)
+    if len(rc_zne_scales) == 0:
+        rc_zne_scales = RC_ZNE_DEFAULT_SCALES
+    rc_zne_reps = max(1, int(rc_zne_reps))
+    master_rng = np.random.default_rng(rng_seed)
+    scale_values: list[float] = []
+    for scale in rc_zne_scales:
+        rep_vals = []
+        scaled_rate = _scale_noise_rate(rate, scale, noise_family)
+        for _ in range(rc_zne_reps):
+            rep_rng = np.random.default_rng(master_rng.integers(0, 2**32 - 1))
+            compiled = randomized_compile(circuit, rep_rng)
+            val = _noisy_energy(
+                compiled,
+                ham_matrix,
+                noise_family,
+                scaled_rate,
+                twirl=False,
+                qubit_order=qubit_order,
+                rng=rep_rng,
+            )
+            rep_vals.append(val)
+        scale_values.append(float(np.mean(rep_vals)))
+    return _zero_noise_extrapolate(rc_zne_scales, scale_values, fit=rc_zne_fit)
 
 
 def evaluate_robustness(
@@ -390,7 +543,10 @@ def evaluate_robustness(
     seeds: int,
     families: list[str],
     family_rates: dict[str, float],
-    twirl_default: bool = True,
+    mitigation_mode: str = MITIGATION_NONE,
+    rc_zne_scales: tuple[float, ...] | None = None,
+    rc_zne_fit: str = "linear",
+    rc_zne_reps: int = 1,
 ):
     rows = []
     methods = [("RL", rl_dir), ("HEA adversarial", hea_dir)]
@@ -405,11 +561,52 @@ def evaluate_robustness(
                 circ = _load_circuit_for_method(seed_path, method)
             except FileNotFoundError:
                 continue
-            if _circuit_n_qubits(circ) != expected_nq:
-                print(f"[robustness] Skipping {method} seed {k}: qubit mismatch ({_circuit_n_qubits(circ)} != {expected_nq})")
+            circ, qubit_order = _align_circuit_qubits(circ, expected_nq, label=f"robustness/{method}/seed_{k}")
+            if circ is None or qubit_order is None:
                 continue
-            for variant, twirl in (("untwirled", False), ("twirled", True if twirl_default else False)):
-                clean_energy = _noisy_energy(circ, ham_info["matrix"], "depolarizing", 0.0, twirl=twirl, rng=np.random.default_rng(seed=k + (1 if twirl else 0)))
+            variants = MITIGATION_VARIANTS.get(mitigation_mode, ("untwirled",))
+            family_seed = {fam: 37 * (idx + 1) for idx, fam in enumerate(families)}
+
+            def _compute_variant_energy(variant: str, fam: str, rate: float, seed_offset: int) -> float:
+                if variant == "untwirled":
+                    return _noisy_energy(
+                        circ,
+                        ham_info["matrix"],
+                        fam,
+                        rate,
+                        twirl=False,
+                        qubit_order=qubit_order,
+                        rng=np.random.default_rng(seed=k + seed_offset),
+                    )
+                if variant == "twirled":
+                    return _noisy_energy(
+                        circ,
+                        ham_info["matrix"],
+                        fam,
+                        rate,
+                        twirl=True,
+                        qubit_order=qubit_order,
+                        rng=np.random.default_rng(seed=k + seed_offset + 17),
+                    )
+                if variant == "mitigated":
+                    return _rc_zne_energy(
+                        circ,
+                        ham_info["matrix"],
+                        fam,
+                        rate,
+                        rc_zne_scales=rc_zne_scales or RC_ZNE_DEFAULT_SCALES,
+                        rc_zne_fit=rc_zne_fit,
+                        rc_zne_reps=rc_zne_reps,
+                        qubit_order=qubit_order,
+                        rng_seed=k + seed_offset + 101,
+                    )
+                raise ValueError(f"Unknown mitigation variant '{variant}'")
+
+            for variant in variants:
+                try:
+                    clean_energy = _compute_variant_energy(variant, "depolarizing", 0.0, 0)
+                except ValueError:
+                    continue
                 rows.append(
                     {
                         "method": method,
@@ -420,8 +617,9 @@ def evaluate_robustness(
                     }
                 )
                 for fam in families:
+                    seed_offset = family_seed.get(fam, 0)
                     rate = family_rates.get(fam, 0.0)
-                    e = _noisy_energy(circ, ham_info["matrix"], fam, rate, twirl=twirl, rng=np.random.default_rng(seed=k + hash(fam) % 9973 + (1 if twirl else 0)))
+                    e = _compute_variant_energy(variant, fam, rate, seed_offset)
                     rows.append(
                         {
                             "method": method,
@@ -432,6 +630,10 @@ def evaluate_robustness(
                         }
                     )
     df = pd.DataFrame(rows)
+    if df.empty:
+        print("[robustness] No circuits found — skipping robustness evaluation.")
+        return None
+    
     out_dir = base / "analysis"
     out_dir.mkdir(parents=True, exist_ok=True)
     df.to_csv(out_dir / "vqe_robustness.csv", index=False)
@@ -442,47 +644,97 @@ def evaluate_robustness(
         energy_mean=("energy", "mean"),
         energy_std=("energy", "std"),
     ).reset_index()
-    # Plot
     sns.set_theme(style="whitegrid")
-    fig, ax = plt.subplots(figsize=(7.5, 4.2))
-    methods = agg["method"].unique()
-    families = agg["noise_family"].unique()
-    colors = {
-        "untwirled": {"clean": "#4C78A8", "noisy": "#4C78A8"},
-        "twirled": {"clean": "#9ecae1", "noisy": "#9ecae1"},
+    method_order = [m for m in ["RL", "Architect adversarial", "HEA adversarial"] if m in agg["method"].unique()]
+    if not method_order:
+        method_order = list(agg["method"].unique())
+    noise_order = ["clean"] + [fam for fam in families if fam != "clean"]
+    noise_order = [fam for fam in noise_order if fam in agg["noise_family"].unique()]
+
+    palette = {
+        "RL": "#54A24B",
+        "Architect adversarial": "#F58518",
+        "HEA adversarial": "#4C78A8",
     }
-    x_positions = np.arange(len(families))
-    width = 0.2
-    for m_idx, method in enumerate(methods):
-        for f_idx, fam in enumerate(families):
-            sub = agg[(agg["method"] == method) & (agg["noise_family"] == fam)]
-            unt = sub[sub["variant"] == "untwirled"]
-            twr = sub[sub["variant"] == "twirled"]
-            base = unt["energy_mean"].values[0] if not unt.empty else 0
-            top = twr["energy_mean"].values[0] if not twr.empty else 0
+    gain_palette = {
+        "RL": "#a1d99b",
+        "Architect adversarial": "#fdd0a2",
+        "HEA adversarial": "#9ecae1",
+    }
+    label_map = {
+        "RL": "RL baseline",
+        "Architect adversarial": "Robust",
+        "HEA adversarial": "HEA baseline",
+    }
+    mitigation_label = "RC-ZNE" if mitigation_mode == MITIGATION_RC_ZNE else ("Twirl" if mitigation_mode == MITIGATION_TWIRL else "Mitigation")
+
+    fig, ax = plt.subplots(figsize=(8.4, 4.4))
+    x = np.arange(len(noise_order))
+    width = 0.24
+    err_kw = {"capsize": 3, "elinewidth": 1.0}
+    used_labels: set[str] = set()
+    for idx, method in enumerate(method_order):
+        sub = agg[agg["method"] == method].set_index(["noise_family", "variant"])
+        try:
+            untwirled_slice = sub.xs("untwirled", level="variant")
+        except KeyError:
+            continue
+        base_means = untwirled_slice["energy_mean"].reindex(noise_order).fillna(0.0)
+        base_stds = untwirled_slice["energy_std"].reindex(noise_order).fillna(0.0)
+        mitigation_variant = None
+        for candidate in ("mitigated", "twirled"):
+            if (noise_order[0], candidate) in sub.index:
+                mitigation_variant = candidate
+                break
+            if candidate in sub.index.get_level_values("variant"):
+                mitigation_variant = candidate
+                break
+        if mitigation_variant:
+            variant_means = sub.xs(mitigation_variant, level="variant")["energy_mean"].reindex(noise_order).fillna(base_means)
+            variant_stds = sub.xs(mitigation_variant, level="variant")["energy_std"].reindex(noise_order).fillna(0.0)
+        else:
+            variant_means = None
+            variant_stds = None
+
+        xpos = x + (idx - (len(method_order) - 1) / 2) * width
+        base_label = label_map.get(method, method)
+        label_to_use = base_label if base_label not in used_labels else None
+        ax.bar(
+            xpos,
+            base_means.to_numpy(dtype=float),
+            width=width,
+            yerr=base_stds.to_numpy(dtype=float),
+            label=label_to_use,
+            color=palette.get(method, "#888"),
+            alpha=0.9,
+            error_kw=err_kw,
+        )
+        used_labels.add(base_label)
+        if mitigation_variant and variant_means is not None:
+            gain_vals = variant_means.to_numpy(dtype=float) - base_means.to_numpy(dtype=float)
+            gain_err = variant_stds.to_numpy(dtype=float)
+            gain_label_name = f"{label_map.get(method, method)} ({mitigation_label})"
+            gain_label = gain_label_name if gain_label_name not in used_labels else None
             ax.bar(
-                x_positions[f_idx] + m_idx * width,
-                base,
+                xpos,
+                gain_vals,
                 width=width,
-                label=f"{method} (untwirled)" if f_idx == 0 else None,
-                color="#4C78A8" if m_idx == 0 else None,
-                alpha=0.8,
+                bottom=base_means.to_numpy(dtype=float),
+                yerr=gain_err,
+                label=gain_label,
+                color=gain_palette.get(method, "#bbb"),
+                alpha=0.85,
+                error_kw=err_kw,
             )
-            ax.bar(
-                x_positions[f_idx] + m_idx * width,
-                top,
-                bottom=base,
-                width=width,
-                label=f"{method} (twirled)" if f_idx == 0 else None,
-                color="#9ecae1",
-                alpha=0.8,
-            )
-    ax.set_xticks(x_positions + (len(methods) - 1) * width / 2)
-    ax.set_xticklabels(families)
+            used_labels.add(gain_label_name)
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(noise_order, rotation=15, ha="right")
     ax.set_ylabel("Energy (Ha)")
     ax.set_xlabel("Noise family (fixed rate)")
-    ax.set_title("VQE robustness (twirled vs untwirled)")
-    ax.legend(frameon=True, title="")
+    title_suffix = "RC-ZNE" if mitigation_mode == MITIGATION_RC_ZNE else ("Pauli twirling" if mitigation_mode == MITIGATION_TWIRL else "no mitigation")
+    ax.set_title(f"VQE robustness ({title_suffix})")
+    ax.legend(frameon=True, loc="best")
     plt.tight_layout()
     plt.savefig(out_dir / "vqe_robustness.png", dpi=300)
     plt.close(fig)
@@ -513,13 +765,13 @@ def evaluate_cross_noise(
                 circ = _load_circuit_for_method(seed_path, method)
             except FileNotFoundError:
                 continue
-            if _circuit_n_qubits(circ) != expected_nq:
-                print(f"[cross-noise] Skipping {method} seed {k}: qubit mismatch ({_circuit_n_qubits(circ)} != {expected_nq})")
+            circ, qubit_order = _align_circuit_qubits(circ, expected_nq, label=f"cross-noise/{method}/seed_{k}")
+            if circ is None or qubit_order is None:
                 continue
             for variant, twirl in (("untwirled", False), ("twirled", True if twirl_default else False)):
                 for fam in families:
                     for rate in rates:
-                        e = _noisy_energy(circ, ham_info["matrix"], fam, rate, twirl=twirl, rng=np.random.default_rng(seed=k + int(rate * 1e4) + (1 if twirl else 0)))
+                        e = _noisy_energy(circ, ham_info["matrix"], fam, rate, twirl=twirl, qubit_order=qubit_order, rng=np.random.default_rng(seed=k + int(rate * 1e4) + (1 if twirl else 0)))
                         rows.append(
                             {
                                 "method": method,
@@ -543,38 +795,59 @@ def evaluate_cross_noise(
 
     sns.set_theme(style="whitegrid")
     fig, axes = plt.subplots(1, len(families), figsize=(4 * len(families), 4), sharey=True)
-    if len(families) == 1:
-        axes = [axes]
-    for ax, fam in zip(axes, families):
-        sub = agg[agg["noise_family"] == fam]
+    axes_arr = np.atleast_1d(axes).ravel().tolist()
+    display_map = {"RL": "RL", "HEA adversarial": "HEA", "Architect adversarial": "Robust"}
+    palette = {"RL": "#54A24B", "HEA": "#4C78A8", "Robust": "#F58518"}
+    base_step = 0.02
+    for ax, fam in zip(axes_arr, families):
+        sub = agg[(agg["noise_family"] == fam) & (agg["variant"] == "untwirled")]
         rates_unique = sorted(sub["rate"].unique())
+        rate_arr = np.asarray(rates_unique, dtype=float)
+        if rate_arr.size == 0:
+            ax.set_visible(False)
+            continue
+        target_max = max(0.10, float(rate_arr.max()))
+        x_positions = np.linspace(0.0, target_max, rate_arr.size) if rate_arr.size > 1 else np.asarray([0.0])
         for method in sub["method"].unique():
+            means = []
+            stds = []
             for rate in rates_unique:
-                base = sub[(sub["method"] == method) & (sub["rate"] == rate) & (sub["variant"] == "untwirled")]
-                twr = sub[(sub["method"] == method) & (sub["rate"] == rate) & (sub["variant"] == "twirled")]
-                base_val = base["energy_mean"].values[0] if not base.empty else 0
-                twr_val = twr["energy_mean"].values[0] if not twr.empty else 0
-                ax.bar(
-                    rate + 0.01 * hash(method) % 3 * 0,  # small jitter not needed
-                    base_val,
-                    width=0.005,
-                    color="#4C78A8",
-                    alpha=0.8,
-                    label=f"{method} untwirled" if rate == rates_unique[0] else None,
-                )
-                ax.bar(
-                    rate + 0.01 * hash(method) % 3 * 0,
-                    twr_val,
-                    bottom=base_val,
-                    width=0.005,
-                    color="#9ecae1",
-                    alpha=0.8,
-                    label=f"{method} twirled" if rate == rates_unique[0] else None,
-                )
+                entry = sub[(sub["method"] == method) & (sub["rate"] == rate)]
+                mean_val = entry["energy_mean"].values[0] if not entry.empty else np.nan
+                std_val = entry["energy_std"].values[0] if not entry.empty else 0.0
+                if pd.isna(std_val):
+                    std_val = 0.0
+                means.append(mean_val)
+                stds.append(std_val)
+            disp = display_map.get(method, method)
+            color = palette.get(disp, "#888888")
+            ax.errorbar(
+                x_positions,
+                means,
+                yerr=stds,
+                fmt="o-",
+                capsize=3,
+                linewidth=1.5,
+                label=disp,
+                color=color,
+            )
         ax.set_title(fam)
         ax.set_xlabel("Noise rate")
+        tick_labels = []
+        for rate in rates_unique:
+            label = f"{rate:.3f}" if rate < 0.1 else f"{rate:.2f}"
+            if "." in label:
+                label = label.rstrip("0").rstrip(".")
+            tick_labels.append(label)
+        ax.set_xticks(x_positions)
+        ax.set_xticklabels(tick_labels, rotation=20)
         ax.set_ylabel("Energy (Ha)")
-    axes[0].legend(frameon=True)
+        ax.set_xlim(0.0, target_max)
+        minor_ticks = np.arange(0.0, target_max + base_step, base_step)
+        ax.set_xticks(minor_ticks, minor=True)
+        ax.grid(True, alpha=0.3, axis="y")
+    if axes_arr:
+        axes_arr[0].legend(frameon=True, title="")
     plt.tight_layout()
     plt.savefig(out_dir / "vqe_cross_noise.png", dpi=300)
     plt.close(fig)
@@ -605,13 +878,13 @@ def evaluate_hw_like(
                 circ = _load_circuit_for_method(seed_path, method)
             except FileNotFoundError:
                 continue
-            if _circuit_n_qubits(circ) != expected_nq:
-                print(f"[hw-eval] Skipping {method} seed {k}: qubit mismatch ({_circuit_n_qubits(circ)} != {expected_nq})")
+            circ, qubit_order = _align_circuit_qubits(circ, expected_nq, label=f"hw-eval/{method}/seed_{k}")
+            if circ is None or qubit_order is None:
                 continue
             for variant, twirl in (("untwirled", False), ("twirled", True if twirl_default else False)):
                 for backend in backends:
                     rate = backend_rates.get(backend, 0.02)
-                    e = _noisy_energy(circ, ham_info["matrix"], "depolarizing", rate, twirl=twirl, rng=np.random.default_rng(seed=k + hash(backend) % 7919 + (1 if twirl else 0)))
+                    e = _noisy_energy(circ, ham_info["matrix"], "depolarizing", rate, twirl=twirl, qubit_order=qubit_order, rng=np.random.default_rng(seed=k + hash(backend) % 7919 + (1 if twirl else 0)))
                     rows.append(
                         {"method": method, "variant": variant, "backend": backend, "energy": e, "seed": k}
                     )
@@ -657,47 +930,137 @@ def evaluate_hw_like(
 
 def main():
     args = parse_args()
+    if args.analysis_only and not args.base_dir:
+        raise ValueError("--analysis-only requires --base-dir pointing to an existing run directory.")
+
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     base = Path(args.base_dir).expanduser() if args.base_dir else Path(f"results/vqe_run_{timestamp}")
-    base.mkdir(parents=True, exist_ok=True)
+
+    if args.analysis_only:
+        if not base.exists():
+            raise FileNotFoundError(f"analysis-only requested but base dir {base} does not exist")
+    else:
+        base.mkdir(parents=True, exist_ok=True)
 
     rl_dir = base / "rl"
     hea_dir = base / "hea"
     adv_dir = base / "architect_adv"
 
-    rl_results = []
-    hea_results = []
-    adv_results = []
+    if not args.analysis_only:
+        rl_dir.mkdir(parents=True, exist_ok=True)
+        hea_dir.mkdir(parents=True, exist_ok=True)
+        if args.run_adv_architect:
+            adv_dir.mkdir(parents=True, exist_ok=True)
+
+    rl_entries: Dict[int, Dict[str, Any]] = {}
+    hea_entries: Dict[int, Dict[str, Any]] = {}
+    adv_entries: Dict[int, Dict[str, Any]] = {}
+
     for k in range(args.n_seeds):
         seed_val = args.seed + k
-        rl_json = run_rl_seed(seed_val, args, rl_dir / f"seed_{k}")
-        hea_json = run_hea_seed(seed_val, args, hea_dir / f"seed_{k}")
-        rl_data = load_rl_result(rl_json)
-        rl_data.update({"method": "RL"})
-        hea_data = load_hea_result(hea_json)
-        hea_data.update({"method": "HEA adversarial"})
-        rl_results.append(rl_data)
-        hea_results.append(hea_data)
+        seed_tag = f"seed_{k}"
+
+        # RL orchestrator
+        rl_seed_dir = rl_dir / seed_tag
+        rl_json_path = rl_seed_dir / "results.json"
+        rl_json_used: Path | None = None
+        if args.analysis_only:
+            if rl_json_path.exists():
+                rl_json_used = rl_json_path
+                print(f"[run_vqe] Reusing RL seed {k} results (analysis-only mode)")
+            else:
+                print(f"[run_vqe] Missing RL seed {k} artifacts under {rl_seed_dir}; skipping seed")
+                continue
+        else:
+            if args.reuse_existing and rl_json_path.exists():
+                rl_json_used = rl_json_path
+                print(f"[run_vqe] Reusing RL seed {k} from existing artifacts")
+            else:
+                rl_json_used = run_rl_seed(seed_val, args, rl_seed_dir)
+
+        if rl_json_used is None or not rl_json_used.exists():
+            print(f"[run_vqe] RL seed {k} produced no results.json; skipping seed")
+            continue
+
+        rl_data = load_rl_result(rl_json_used)
+        rl_data["method"] = "RL"
+        rl_entries[k] = rl_data
+
+        # HEA adversarial baseline
+        hea_seed_dir = hea_dir / seed_tag
+        hea_json_path = hea_seed_dir / "results.json"
+        hea_json_used: Path | None = None
+        if args.analysis_only:
+            if hea_json_path.exists():
+                hea_json_used = hea_json_path
+                print(f"[run_vqe] Reusing HEA seed {k} results (analysis-only mode)")
+            else:
+                print(f"[run_vqe] Missing HEA seed {k} artifacts under {hea_seed_dir}; skipping HEA for this seed")
+        else:
+            if args.reuse_existing and hea_json_path.exists():
+                hea_json_used = hea_json_path
+                print(f"[run_vqe] Reusing HEA seed {k} from existing artifacts")
+            else:
+                hea_json_used = run_hea_seed(seed_val, args, hea_seed_dir)
+
+        if hea_json_used and hea_json_used.exists():
+            hea_data = load_hea_result(hea_json_used)
+            hea_data["method"] = "HEA adversarial"
+            hea_entries[k] = hea_data
+
+        # Architect adversarial variant (optional)
         if args.run_adv_architect:
-            adv_json = run_adv_arch_seed(seed_val, args, adv_dir / f"seed_{k}")
-            adv_data = load_adv_arch_result(adv_json)
-            adv_data.update({"method": "Architect adversarial"})
-            adv_results.append(adv_data)
+            adv_seed_dir = adv_dir / seed_tag
+            adv_json_path = adv_seed_dir / "results.json"
+            adv_json_used: Path | None = None
+            if args.analysis_only:
+                if adv_json_path.exists():
+                    adv_json_used = adv_json_path
+                    print(f"[run_vqe] Reusing Architect seed {k} results (analysis-only mode)")
+                else:
+                    print(f"[run_vqe] Missing Architect seed {k} artifacts under {adv_seed_dir}; skipping Architect for this seed")
+            else:
+                if args.reuse_existing and adv_json_path.exists():
+                    adv_json_used = adv_json_path
+                    print(f"[run_vqe] Reusing Architect seed {k} from existing artifacts")
+                else:
+                    adv_json_used = run_adv_arch_seed(seed_val, args, adv_seed_dir)
+
+            if adv_json_used and adv_json_used.exists():
+                adv_data = load_adv_arch_result(adv_json_used)
+                adv_data["method"] = "Architect adversarial"
+                adv_entries[k] = adv_data
+
+    if not rl_entries:
+        raise RuntimeError("No RL results were collected; ensure training succeeded or provide existing artifacts.")
 
     # Optional post-architecture angle optimization (RL + Architect adv)
-    ham_info = get_standard_hamiltonian(args.molecule)
-    for k in range(args.n_seeds):
-        seed_path = rl_dir / f"seed_{k}"
-        opt_e = maybe_optimize_seed("RL", seed_path, ham_info)
-        if opt_e is not None and k < len(rl_results):
-            rl_results[k]["clean_energy"] = opt_e
+    try:
+        ham_info = get_standard_hamiltonian(args.molecule)
+    except Exception as e:
+        print(f"[run_vqe] WARNING: failed to load Hamiltonian for {args.molecule}: {e}")
+        print("[run_vqe] Skipping Hamiltonian-dependent post-processing "
+              "(angle optimization, robustness, cross-noise, hw-eval).")
+        ham_info = None
+
+    if ham_info is not None:
+        for seed_idx in rl_entries:
+            seed_path = rl_dir / f"seed_{seed_idx}"
+            opt_e = maybe_optimize_seed("RL", seed_path, ham_info)
+            if opt_e is not None:
+                rl_entries[seed_idx]["clean_energy"] = opt_e
         if args.run_adv_architect:
-            adv_seed = adv_dir / f"seed_{k}"
-            opt_e = maybe_optimize_seed("Architect adversarial", adv_seed, ham_info)
-            if opt_e is not None and k < len(adv_results):
-                adv_results[k]["clean_energy"] = opt_e
+            for seed_idx in adv_entries:
+                adv_seed = adv_dir / f"seed_{seed_idx}"
+                opt_e = maybe_optimize_seed("Architect adversarial", adv_seed, ham_info)
+                if opt_e is not None:
+                    adv_entries[seed_idx]["clean_energy"] = opt_e
 
     # Aggregate and save
+    rl_results = [rl_entries[k] for k in sorted(rl_entries)]
+    hea_results = [hea_entries[k] for k in sorted(hea_entries)]
+    adv_results = [adv_entries[k] for k in sorted(adv_entries)]
+
     rows = rl_results + hea_results + adv_results
     df = pd.DataFrame(rows)
     df.to_csv(base / "vqe_summary.csv", index=False)
@@ -721,7 +1084,7 @@ def main():
     plot_summary(plot_df, base / "vqe_energy_bar.png")
 
     # Robustness evaluation (energy under fixed-rate noises)
-    if not args.skip_robustness:
+    if ham_info is not None and not args.skip_robustness:
         if args.robustness_rate:
             # Expect pairs: fam rate fam rate ...
             rates = {}
@@ -735,7 +1098,6 @@ def main():
         if not rates:
             # fallback single rate
             rates = {fam: 0.02 for fam in args.robustness_families}
-        ham_info = get_standard_hamiltonian(args.molecule)
         evaluate_robustness(
             base=base,
             ham_info=ham_info,
@@ -745,10 +1107,13 @@ def main():
             seeds=args.n_seeds,
             families=args.robustness_families,
             family_rates=rates,
-            twirl_default=args.randomized_compiling,
+            mitigation_mode=args.mitigation_mode,
+            rc_zne_scales=tuple(args.rc_zne_scales) if args.rc_zne_scales else None,
+            rc_zne_fit=args.rc_zne_fit,
+            rc_zne_reps=args.rc_zne_reps,
         )
     # Cross-noise sweep (energy vs rate per family)
-    if not args.skip_cross_noise:
+    if ham_info is not None and not args.skip_cross_noise:
         evaluate_cross_noise(
             base=base,
             ham_info=ham_info,
@@ -758,11 +1123,10 @@ def main():
             seeds=args.n_seeds,
             families=args.cross_noise_families,
             rates=args.cross_noise_rates,
-            twirl=args.randomized_compiling,
+            twirl_default=args.randomized_compiling,
         )
     # Hardware-like eval (simulated noise backends)
-    if args.run_hw_eval:
-        ham_info = get_standard_hamiltonian(args.molecule)
+    if ham_info is not None and args.run_hw_eval:
         if args.hw_rate:
             backend_rates = {}
             vals = args.hw_rate
@@ -781,7 +1145,7 @@ def main():
             seeds=args.n_seeds,
             backends=args.hw_backends,
             backend_rates=backend_rates,
-            twirl=args.randomized_compiling,
+            twirl_default=args.randomized_compiling,
         )
     print(f"[run_vqe] Finished. Results under {base}")
 

@@ -1,6 +1,6 @@
 {
   "experiment_name": "circuit_robustness_comparison",
-  "timestamp": "2025-12-09T14:37:15.706915",
+  "timestamp": "2025-12-10T05:12:09.815974",
   "statistical_protocol": {
     "n_seeds": 5,
     "seeds_used": [
@@ -16,51 +16,60 @@
   "hyperparameters": {
     "n_qubits": 3,
     "num_runs": 5,
-    "samples_per_circuit": 100
+    "samples_per_circuit": 64,
+    "rc_zne_scales": [
+      0.75,
+      1.0,
+      1.5,
+      2.0,
+      3.0
+    ],
+    "rc_zne_fit": "linear",
+    "rc_zne_reps": 3
   },
   "aggregated_results": {
     "vanilla_fidelity": {
-      "mean": 0.5476846931576729,
-      "std": 0.03254251405990069,
-      "median": 0.5405190697312355,
-      "min": 0.5181526905298233,
-      "max": 0.6016089181602001,
+      "mean": 0.5484310023486614,
+      "std": 0.03231427695421913,
+      "median": 0.5410176448058337,
+      "min": 0.5180406314320862,
+      "max": 0.6015018012840301,
       "n": 5,
-      "sem": 0.01455345471933612,
-      "ci_lower": 0.5072778250384543,
-      "ci_upper": 0.5880915612768914
+      "sem": 0.014451383982677765,
+      "ci_lower": 0.5083075280266218,
+      "ci_upper": 0.5885544766707009
     },
     "robust_fidelity": {
-      "mean": 0.8372957984209058,
-      "std": 0.03930248989959297,
-      "median": 0.8506722086668015,
-      "min": 0.7945541042089462,
-      "max": 0.8891823703050612,
+      "mean": 0.834934584517032,
+      "std": 0.042008341011767765,
+      "median": 0.851341244764626,
+      "min": 0.79013975802809,
+      "max": 0.8870745259337126,
       "n": 5,
-      "sem": 0.017576607820097755,
-      "ci_lower": 0.7884953116728141,
-      "ci_upper": 0.8860962851689976
+      "sem": 0.018786701224861,
+      "ci_lower": 0.7827743398584531,
+      "ci_upper": 0.8870948291756108
     },
     "quantumnas_fidelity": {
-      "mean": 0.6630506267249584,
-      "std": 0.005841567341027115,
-      "median": 0.6639966726303099,
-      "min": 0.655539968162775,
-      "max": 0.6707819238305092,
+      "mean": 0.6649265509564429,
+      "std": 0.008573512340356134,
+      "median": 0.6608304046094418,
+      "min": 0.6564796722959727,
+      "max": 0.6750777028501034,
       "n": 5,
-      "sem": 0.002612428333935865,
-      "ci_lower": 0.6557973628645222,
-      "ci_upper": 0.6703038905853946
+      "sem": 0.0038341912797939257,
+      "ci_lower": 0.654281129345267,
+      "ci_upper": 0.6755719725676188
     },
     "vanilla_counts": {
       "gate_count_mean": 16.0,
       "gate_count_std": 0.6324555320336759,
       "cnot_count_mean": 13.8,
-      "cnot_count_std": 0.7483314773547882
+      "cnot_count_std": 0.7483314773547883
     },
     "robust_counts": {
       "gate_count_mean": 4.8,
-      "gate_count_std": 1.16619037896906,
+      "gate_count_std": 1.1661903789690602,
       "cnot_count_mean": 3.4,
       "cnot_count_std": 1.3564659966250538
     },
@@ -71,6 +80,6 @@
       "cnot_count_std": 0.0
     }
   },
-  "commit_hash": "5dd7da67",
-  "additional_notes": "Robustness comparison using 100 attack samples per circuit. Primary attack mode: random_high. Other evaluated modes: random_high, asymmetric_noise, over_rotation, amplitude_damping, phase_damping, readout"
+  "commit_hash": "15d9485b",
+  "additional_notes": "Robustness comparison using 64 attack samples per circuit. Primary attack mode: random_high. Other evaluated modes: random_high, asymmetric_noise, over_rotation, amplitude_damping, phase_damping, readout"
 }

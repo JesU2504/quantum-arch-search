@@ -1,0 +1,58 @@
+{
+  "experiment_name": "cross_noise_robustness",
+  "timestamp": "2025-12-10T10:49:57.688478",
+  "statistical_protocol": {
+    "n_seeds": 5,
+    "seeds_used": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "aggregation_method": "mean \u00b1 std (sample standard deviation with ddof=1)",
+    "confidence_level": 0.95
+  },
+  "hyperparameters": {
+    "n_qubits": 4,
+    "epsilon_range": [
+      0.0,
+      0.2
+    ],
+    "n_epsilon_points": 20,
+    "p_x_asymmetric": 0.05
+  },
+  "aggregated_results": {
+    "baseline_over_rotation_retention": {
+      "mean": 0.722667940194484,
+      "std": 0.21962330436041544,
+      "median": 0.7435928877349429,
+      "min": 0.3701522794456648,
+      "max": 1.0,
+      "n": 20,
+      "sem": 0.049109263799301486,
+      "ci_lower": 0.6198810697682651,
+      "ci_upper": 0.8254548106207029
+    },
+    "robust_over_rotation_retention": {
+      "mean": 0.8719537204178403,
+      "std": 0.11296375190270667,
+      "median": 0.897001662671665,
+      "min": 0.6597109681195598,
+      "max": 0.9999998807907035,
+      "n": 20,
+      "sem": 0.025259462824787332,
+      "ci_lower": 0.819085057124129,
+      "ci_upper": 0.9248223837115515
+    }
+  },
+  "noise_parameters": {
+    "epsilon_range": [
+      0.0,
+      0.2
+    ],
+    "p_x_asymmetric": 0.05
+  },
+  "commit_hash": "15d9485b",
+  "additional_notes": "Cross-noise robustness test for coherent over-rotation and asymmetric Pauli noise."
+}

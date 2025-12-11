@@ -24,8 +24,10 @@ from utils.qiskit_conversion import cirq_to_qiskit, ensure_measurements
 # Qiskit imports (Aer + Fake backends)
 try:
     from qiskit_aer import AerSimulator
+    from qiskit_aer.noise import NoiseModel
 except Exception:  # pragma: no cover - fallback for older installs
     from qiskit.providers.aer import AerSimulator  # type: ignore
+    from qiskit.providers.aer.noise import NoiseModel  # type: ignore
 from qiskit import transpile
 import matplotlib.pyplot as plt
 
@@ -122,6 +124,113 @@ def compute_success_prob(counts: Dict[str, int], success_bitstrings: List[str]) 
     return float(sum(counts.get(bs, 0) for bs in success_bitstrings) / total)
 
 
+def _build_readout_filter(
+    sim,
+    backend_obj,
+    width: int,
+    *,
+    shots: int,
+    opt_level: int,
+    seed: int,
+    initial_layout: List[int] | None,
+):
+    """
+    Build a simple confusion-matrix-based readout mitigator for the given backend by calibration.
+
+    Returns a function counts -> mitigated_counts and the calibration counts.
+    """
+    from qiskit import QuantumCircuit, transpile
+
+    basis_states = [format(i, f"0{width}b") for i in range(2**width)]
+    cal_circs = []
+    for state in basis_states:
+        qc = QuantumCircuit(width, width)
+        for idx, bit in enumerate(reversed(state)):  # little-endian prep to match measurement keys
+            if bit == "1":
+                qc.x(idx)
+        qc.measure(range(width), range(width))
+        cal_circs.append(qc)
+
+    cal_circs = transpile(
+        cal_circs,
+        backend=backend_obj,
+        optimization_level=opt_level,
+        seed_transpiler=seed,
+        initial_layout=initial_layout,
+    )
+    job = sim.run(cal_circs, shots=shots, seed_simulator=seed)
+    cal_res = job.result()
+    M = np.zeros((2**width, 2**width), dtype=float)
+    for prep_idx, state in enumerate(basis_states):
+        counts = cal_res.get_counts(prep_idx)
+        total = sum(counts.values()) or 1
+        for meas, c in counts.items():
+            try:
+                meas_idx = basis_states.index(meas)
+            except ValueError:
+                continue
+            M[prep_idx, meas_idx] = c / total
+    try:
+        Minv = np.linalg.pinv(M)
+    except Exception:
+        return None, None
+
+    def mitigate_counts(raw_counts: Dict[str, int]) -> Dict[str, int]:
+        total = sum(raw_counts.values())
+        if total <= 0:
+            return raw_counts
+        p_raw = np.array([raw_counts.get(bs, 0) / total for bs in basis_states], dtype=float)
+        p_est = Minv @ p_raw
+        p_est = np.clip(p_est, 0.0, 1.0)
+        if p_est.sum() > 0:
+            p_est = p_est / p_est.sum()
+        mitigated_counts = {bs: float(p * total) for bs, p in zip(basis_states, p_est)}
+        return mitigated_counts
+
+    return mitigate_counts, cal_res.to_dict()
+
+
+def _readout_matrix_from_noise_model(noise_model: NoiseModel, width: int) -> np.ndarray | None:
+    """Return composite readout confusion matrix from a NoiseModel if available."""
+    try:
+        # NoiseModel keeps local readout errors keyed by qubit tuples
+        mats = []
+        for q in range(width):
+            err = noise_model._local_readout_errors.get((q,))  # type: ignore[attr-defined]
+            if err is None:
+                return None
+            mats.append(np.asarray(err.probabilities(), dtype=float))
+        M = mats[0]
+        for mat in mats[1:]:
+            M = np.kron(M, mat)
+        return M
+    except Exception:
+        return None
+
+
+def _mitigator_from_noise_matrix(M: np.ndarray | None):
+    if M is None:
+        return None
+    try:
+        Minv = np.linalg.pinv(M)
+    except Exception:
+        return None
+
+    def mitigate_counts(raw_counts: Dict[str, int], basis_states: List[str]) -> Dict[str, int]:
+        total = sum(raw_counts.values())
+        if total <= 0:
+            return raw_counts
+        p_raw = np.array([raw_counts.get(bs, 0) / total for bs in basis_states], dtype=float)
+        p_est = Minv @ p_raw
+        p_est = np.clip(p_est, 0.0, 1.0)
+        if p_est.sum() > 0:
+            p_est = p_est / p_est.sum()
+        mitigated_counts = {bs: float(p * total) for bs, p in zip(basis_states, p_est)}
+        return mitigated_counts
+
+    return mitigate_counts
+
+
 def evaluate_on_backend(
     circuits: Dict[str, list[str]],
     backend_name: str,
@@ -132,9 +241,63 @@ def evaluate_on_backend(
     seed: int,
     initial_layout: List[int] | None = None,
     randomized_compile_flag: bool = False,
+    readout_mitigation: bool = False,
+    use_noise_model: bool = False,
 ) -> Dict[str, Dict]:
     results = []
-    sim = AerSimulator.from_backend(backend_obj)
+    noise_model = None
+    if use_noise_model:
+        try:
+            noise_model = NoiseModel.from_backend(backend_obj)
+        except Exception as exc:
+            print(f"[qiskit_hw_eval] Warning: failed to build noise model from {backend_name}: {exc}")
+            noise_model = None
+
+    if noise_model is not None:
+        coupling_map = None
+        try:
+            cfg = backend_obj.configuration() if callable(getattr(backend_obj, "configuration", None)) else None
+            coupling_map = getattr(cfg, "coupling_map", None) if cfg else None
+        except Exception:
+            coupling_map = None
+        sim = AerSimulator(noise_model=noise_model, basis_gates=getattr(noise_model, "basis_gates", None), coupling_map=coupling_map)
+    else:
+        sim = AerSimulator.from_backend(backend_obj)
+    meas_filter = None
+    cal_data = None
+    mitigate_from_matrix = None
+    basis_states = None
+    if readout_mitigation:
+        # Estimate max width to size mitigation tools
+        max_width = 0
+        for paths in circuits.values():
+            for path in paths:
+                qc = load_qiskit_circuit_from_json(path, randomized_compile_flag=False)
+                max_width = max(max_width, qc.num_qubits)
+        basis_states = [format(i, f"0{max_width}b") for i in range(2**max_width)] if max_width > 0 else None
+        # Prefer noise-model-derived matrix; fall back to calibration circuits
+        if noise_model is not None and max_width > 0:
+            M = _readout_matrix_from_noise_model(noise_model, max_width)
+            mitigate_from_matrix = _mitigator_from_noise_matrix(M)
+            if mitigate_from_matrix:
+                print(f"[qiskit_hw_eval] Using noise-model readout matrix for backend {backend_name} (n_qubits={max_width})")
+        if mitigate_from_matrix is None:
+            try:
+                meas_filter, cal_data = _build_readout_filter(
+                    sim,
+                    backend_obj,
+                    max_width,
+                    shots=shots,
+                    opt_level=opt_level,
+                    seed=seed,
+                    initial_layout=initial_layout,
+                )
+                if meas_filter:
+                    print(f"[qiskit_hw_eval] Built readout mitigation filter for backend {backend_name} (n_qubits={max_width})")
+            except Exception as exc:
+                print(f"[qiskit_hw_eval] Warning: readout mitigation unavailable on {backend_name}: {exc}")
+                meas_filter = None
+
     for label, paths in circuits.items():
         for path in paths:
             qc = load_qiskit_circuit_from_json(path, randomized_compile_flag=randomized_compile_flag, rng=np.random.default_rng(seed=seed))
@@ -148,8 +311,25 @@ def evaluate_on_backend(
             )
             job = sim.run(tqc, shots=shots, seed_simulator=seed)
             res = job.result()
-            counts = res.get_counts()
-            success_prob = compute_success_prob(counts, target_bitstrings)
+            counts_raw = res.get_counts()
+            counts = counts_raw
+            success_prob_raw = compute_success_prob(counts_raw, target_bitstrings)
+            success_prob = success_prob_raw
+            mitigated_counts = None
+            if meas_filter is not None:
+                try:
+                    mitigated_counts = meas_filter(counts_raw)
+                    success_prob = compute_success_prob(mitigated_counts, target_bitstrings)
+                except Exception as exc:
+                    print(f"[qiskit_hw_eval] Warning: failed to apply readout mitigation on {backend_name}/{label}: {exc}")
+                    mitigated_counts = None
+            elif mitigate_from_matrix is not None and basis_states is not None:
+                try:
+                    mitigated_counts = mitigate_from_matrix(counts_raw, basis_states)
+                    success_prob = compute_success_prob(mitigated_counts, target_bitstrings)
+                except Exception as exc:
+                    print(f"[qiskit_hw_eval] Warning: failed to apply matrix-based readout mitigation on {backend_name}/{label}: {exc}")
+                    mitigated_counts = None
 
             results.append({
                 "backend": backend_name,
@@ -157,10 +337,16 @@ def evaluate_on_backend(
                 "circuit_path": path,
                 "shots": shots,
                 "success_prob": success_prob,
+                "success_prob_raw": success_prob_raw,
                 "depth": tqc.depth(),
                 "width": tqc.num_qubits,
                 "gate_counts": gate_counts(tqc),
                 "counts": counts,
+                "counts_raw": counts_raw,
+                "counts_mitigated": mitigated_counts,
+                "readout_mitigated": bool(mitigated_counts),
+                "readout_calibration": cal_data if cal_data else None,
+                "noise_model": bool(noise_model),
             })
     return results
 
@@ -186,6 +372,8 @@ def run_hw_eval(
     output_dir: str = None,
     initial_layout: List[int] | None = None,
     randomized_compile_flag: bool = False,
+    readout_mitigation: bool = False,
+    use_noise_model: bool = False,
 ):
     circuits: Dict[str, list[str]] = {"baseline": [], "robust": [], "quantumnas": []}
     for path in baseline_circuits or ([] if baseline_circuit is None else [baseline_circuit]):
@@ -224,6 +412,8 @@ def run_hw_eval(
                 seed=seed + (1 if twirl else 0),
                 initial_layout=initial_layout,
                 randomized_compile_flag=twirl,
+                readout_mitigation=readout_mitigation,
+                use_noise_model=use_noise_model,
             )
             for res in backend_results:
                 res["variant"] = variant
@@ -289,6 +479,16 @@ def cli():
         dest="randomized_compiling",
         help="Enable Pauli twirling before hardware eval (off by default).",
     )
+    parser.add_argument(
+        "--readout-mitigation",
+        action="store_true",
+        help="Enable simple readout error mitigation via calibration and matrix inversion (Ignis).",
+    )
+    parser.add_argument(
+        "--use-noise-model",
+        action="store_true",
+        help="Use an Aer NoiseModel built from the fake backend properties for gate/readout noise.",
+    )
     parser.set_defaults(randomized_compiling=False)
     args = parser.parse_args()
 
@@ -332,6 +532,8 @@ def cli():
         output_dir=args.output_dir,
         initial_layout=init_layout,
         randomized_compile_flag=args.randomized_compiling,
+        readout_mitigation=args.readout_mitigation,
+        use_noise_model=args.use_noise_model,
     )
 
 

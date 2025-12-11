@@ -1,0 +1,35 @@
+Cross-Noise Robustness Experiment Summary
+============================================================
+
+Timestamp: 20251211-020129
+
+Statistical Protocol:
+----------------------------------------
+  Number of epsilon points: 20
+  Base seed: 42
+  Note: Current implementation is deterministic
+
+Hyperparameters:
+----------------------------------------
+  Number of qubits: 4
+  RL baseline circuit: ['/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251210-111731/compare/run_0/circuit_vanilla.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251210-111731/compare/run_1/circuit_vanilla.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251210-111731/compare/run_2/circuit_vanilla.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251210-111731/compare/run_3/circuit_vanilla.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251210-111731/compare/run_4/circuit_vanilla.json']
+  Robust circuit: ['/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251210-111731/compare/run_0/circuit_robust.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251210-111731/compare/run_1/circuit_robust.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251210-111731/compare/run_2/circuit_robust.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251210-111731/compare/run_3/circuit_robust.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251210-111731/compare/run_4/circuit_robust.json']
+  HEA baseline circuit: ['/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251210-111731/compare/run_0/circuit_quantumnas.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251210-111731/compare/run_1/circuit_quantumnas.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251210-111731/compare/run_2/circuit_quantumnas.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251210-111731/compare/run_3/circuit_quantumnas.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251210-111731/compare/run_4/circuit_quantumnas.json']
+  Epsilon range: (0.0, 0.2)
+  Asymmetric p_x: [0.05]
+  Randomized compiling: disabled
+  Clean fidelity (baseline): 1.0000
+  Clean fidelity (robust):   1.0000
+  Clean fidelity (HEA baseline): 1.0000
+  Retention normalized by:   1.0000
+
+Over-rotation Test (ε ∈ [0, 0.1]):
+----------------------------------------
+  RL baseline avg retention: 0.8754
+  Robust avg retention: 0.7937
+  Improvement: -0.0817
+  HEA baseline avg retention: 0.8744
+
+Asymmetric Pauli Noise sweep (p_x in [0.05]):
+----------------------------------------
+  p_x=0.050 | RL baseline: 0.2800 | Robust: 0.3658 | Δ=0.0858

@@ -1,0 +1,76 @@
+{
+  "experiment_name": "circuit_robustness_comparison",
+  "timestamp": "2025-12-10T10:49:42.790994",
+  "statistical_protocol": {
+    "n_seeds": 5,
+    "seeds_used": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "aggregation_method": "mean \u00b1 std (sample standard deviation with ddof=1)",
+    "confidence_level": 0.95
+  },
+  "hyperparameters": {
+    "n_qubits": 5,
+    "num_runs": 5,
+    "samples_per_circuit": 100
+  },
+  "aggregated_results": {
+    "vanilla_fidelity": {
+      "mean": 0.32969489364884796,
+      "std": 0.08422075703816619,
+      "median": 0.3595821226388216,
+      "min": 0.1856081428658217,
+      "max": 0.40302669554948806,
+      "n": 5,
+      "sem": 0.03766466757076669,
+      "ci_lower": 0.22512101173309051,
+      "ci_upper": 0.4342687755646054
+    },
+    "robust_fidelity": {
+      "mean": 0.44488803346455097,
+      "std": 0.04087677036814226,
+      "median": 0.45249374210834503,
+      "min": 0.40178354546427725,
+      "max": 0.49938620954751967,
+      "n": 5,
+      "sem": 0.018280647448763038,
+      "ci_lower": 0.3941328193355862,
+      "ci_upper": 0.49564324759351575
+    },
+    "quantumnas_fidelity": {
+      "mean": 0.18755639143798813,
+      "std": 0.0013475138581474496,
+      "median": 0.18826891224660355,
+      "min": 0.18591050809649456,
+      "max": 0.1887749728457984,
+      "n": 5,
+      "sem": 0.0006026265174881412,
+      "ci_lower": 0.1858832319932458,
+      "ci_upper": 0.18922955088273047
+    },
+    "vanilla_counts": {
+      "gate_count_mean": 21.8,
+      "gate_count_std": 2.4,
+      "cnot_count_mean": 17.8,
+      "cnot_count_std": 1.32664991614216
+    },
+    "robust_counts": {
+      "gate_count_mean": 18.8,
+      "gate_count_std": 1.1661903789690602,
+      "cnot_count_mean": 14.2,
+      "cnot_count_std": 1.6
+    },
+    "quantumnas_counts": {
+      "gate_count_mean": 15.0,
+      "gate_count_std": 0.0,
+      "cnot_count_mean": 5.0,
+      "cnot_count_std": 0.0
+    }
+  },
+  "commit_hash": "15d9485b",
+  "additional_notes": "Robustness comparison using 100 attack samples per circuit. Primary attack mode: random_high. Other evaluated modes: random_high, asymmetric_noise, over_rotation, amplitude_damping, phase_damping, readout"
+}

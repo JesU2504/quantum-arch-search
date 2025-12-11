@@ -532,6 +532,8 @@ def run_pipeline(args):
                     '--max-gates', str(args.max_circuit_gates),
                     '--out-dir', str(seed_dir),
                 ]
+                if task == 'ghz':
+                    cmd.extend(['--n-qubits', str(args.n_qubits)])
                 if augment_depth:
                     cmd.append('--augment-depth')
                 if seed_val is not None:
@@ -808,13 +810,20 @@ def run_pipeline(args):
                 logger.error("Failed to copy HEA circuits into compare runs: %s", exc)
 
         logger.info('Running comparison across runs')
+        mitigation_kwargs = {}
+        if args.rc_zne_scales:
+            mitigation_kwargs["rc_zne_scales"] = tuple(args.rc_zne_scales)
+        if args.mitigation_mode == "rc_zne":
+            mitigation_kwargs["rc_zne_fit"] = args.rc_zne_fit
+            mitigation_kwargs["rc_zne_reps"] = args.rc_zne_reps
         compare_noise_resilience(
             base_results_dir=compare_base,
             num_runs=len(compare_runs),
             n_qubits=args.n_qubits,
             samples=args.compare_samples if args.compare_samples is not None else 32,
             attack_modes=args.compare_attack_modes if args.compare_attack_modes else DEFAULT_COMPARE_ATTACK_MODES,
-            randomized_compile_flag=args.randomized_compiling,
+            mitigation_mode=args.mitigation_mode,
+            **mitigation_kwargs,
         )
 
     # 6) Parameter Recovery
@@ -882,6 +891,7 @@ def run_pipeline(args):
                 target_bitstrings=success_bits,
                 output_dir=hw_output_dir,
                 randomized_compile_flag=args.randomized_compiling,
+                readout_mitigation=args.hw_readout_mitigation,
             )
         except Exception as exc:
             logger.error("Hardware eval failed: %s", exc)
@@ -1074,8 +1084,18 @@ def parse_args():
                    help='Backends for hardware eval (e.g., fake_quito fake_belem fake_athens fake_yorktown).')
     p.add_argument('--hw-shots', type=int, default=4096, help='Shots for hardware eval.')
     p.add_argument('--hw-opt-level', type=int, default=3, help='Transpiler optimization level for hardware eval.')
+    p.add_argument('--mitigation-mode', choices=['none', 'twirl', 'rc_zne'], default='none',
+                   help="Mitigation strategy for compare/plot steps: 'none', 'twirl', or 'rc_zne' (randomized compiling + zero-noise extrapolation).")
+    p.add_argument('--rc-zne-scales', type=float, nargs='+', default=None,
+                   help='Noise scale factors for rc_zne mitigation (default: 1.0 1.5 2.0).')
+    p.add_argument('--rc-zne-fit', type=str, default='linear', choices=['linear', 'quadratic'],
+                   help='Extrapolation model for rc_zne mitigation (default: linear).')
+    p.add_argument('--rc-zne-reps', type=int, default=1,
+                   help='Number of RC draws averaged per scale before rc_zne extrapolation (default: 1).')
+    p.add_argument('--hw-readout-mitigation', action='store_true', default=False,
+                   help='Enable readout error mitigation for hardware eval (matrix inversion via Ignis).')
     p.add_argument('--randomized-compiling', action='store_true', default=False,
-                   help='Enable Pauli twirling for hardware eval (twirled variant). Off by default.')
+                   help='Deprecated alias for --mitigation-mode twirl. Retained for backward compatibility.')
     p.add_argument(
         '--compare-attack-modes',
         nargs='+',
@@ -1087,7 +1107,12 @@ def parse_args():
     )
     p.add_argument('--compare-samples', type=int, default=None,
                    help='Number of saboteur attack samples per circuit for compare_circuits (default 32).')
-    return p.parse_args()
+    args = p.parse_args()
+    if getattr(args, "randomized_compiling", False) and args.mitigation_mode == 'none':
+        args.mitigation_mode = 'twirl'
+    if args.mitigation_mode != 'twirl':
+        args.randomized_compiling = False
+    return args
 
 
 if __name__ == '__main__':

@@ -218,6 +218,8 @@ def export_to_cirq(model: tq.QuantumModule, n_qubits: int, out_path: Path):
 def parse_args():
     p = argparse.ArgumentParser(description="Train simple TorchQuantum baselines and export to Cirq JSON.")
     p.add_argument('--task', choices=['ghz', 'toffoli'], required=True)
+    p.add_argument('--n-qubits', type=int, default=3,
+                   help="Number of qubits for GHZ task (Toffoli remains fixed at 3 qubits).")
     p.add_argument('--epochs', type=int, default=None, help="Training epochs (default: 400 for GHZ, 2000 for Toffoli)")
     p.add_argument('--lr', type=float, default=0.05)
     p.add_argument('--depth', type=int, default=None, help="Ansatz depth (layers of rotations + CNOT chain)")
@@ -252,27 +254,32 @@ def main():
     ghz_epochs_default = 400
     toffoli_epochs_default = 2000
 
-    def fit_depth(task: str, depth: int) -> int:
+    def fit_depth(task: str, depth: int, n_qubits: int) -> int:
         """Adjust depth so total gates <= max_gates (if provided)."""
         if max_gates is None:
             return max(depth, 2)
         if task == 'ghz':
-            gates_per_layer = 2 * 3 - 1  # 3 RY + 2 CNOT = 5 for n=3
+            gates_per_layer = 2 * n_qubits - 1  # n RY + (n-1) CNOT
         else:
             gates_per_layer = 2 * 3 + (3 - 1)  # 6 rotations + 2 CNOT = 8
         max_depth = max(2, max_gates // gates_per_layer)
         return max(2, min(depth, max_depth))
 
     if args.task == 'ghz':
+        if args.n_qubits < 2:
+            raise ValueError("--n-qubits must be >= 2 for GHZ training.")
+        n_qubits = args.n_qubits
         depth = args.depth if args.depth is not None else ghz_depth_default
-        depth = fit_depth('ghz', depth)
+        depth = fit_depth('ghz', depth, n_qubits)
         epochs = args.epochs if args.epochs is not None else ghz_epochs_default
-        model = run_state_prep(n_qubits=3, epochs=epochs, lr=args.lr, depth=depth, out_dir=out_dir)
-        circuit = export_to_cirq(model, n_qubits=3, out_path=out_dir / 'circuit_quantumnas.json')
-        print(f"[GHZ] Saved circuit to {out_dir / 'circuit_quantumnas.json'} (depth={depth}, max_gates={max_gates})")
+        model = run_state_prep(n_qubits=n_qubits, epochs=epochs, lr=args.lr, depth=depth, out_dir=out_dir)
+        circuit = export_to_cirq(model, n_qubits=n_qubits, out_path=out_dir / 'circuit_quantumnas.json')
+        print(f"[GHZ] Saved circuit to {out_dir / 'circuit_quantumnas.json'} (n={n_qubits}, depth={depth}, max_gates={max_gates})")
     else:
+        if args.n_qubits != 3:
+            raise ValueError("Toffoli task only supports 3 qubits in this baseline trainer.")
         depth = args.depth if args.depth is not None else toffoli_depth_default
-        depth = fit_depth('toffoli', depth)
+        depth = fit_depth('toffoli', depth, n_qubits=3)
         epochs = args.epochs if args.epochs is not None else toffoli_epochs_default
         model = run_unitary_prep_toffoli(epochs=epochs, lr=args.lr, depth=depth, out_dir=out_dir)
         circuit = export_to_cirq(model, n_qubits=3, out_path=out_dir / 'circuit_quantumnas.json')

@@ -23,12 +23,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 PALETTE = {
-    "baseline": "#4C78A8",
+    "baseline": "#54A24B",  # RL baseline (green)
     "robust": "#F58518",
-    "quantumnas": "#54A24B",
-    "baseline_twirl": "#9ecae1",
+    "quantumnas": "#4C78A8",  # HEA baseline (blue)
+    "baseline_twirl": "#a1d99b",
     "robust_twirl": "#fdae6b",
-    "quantumnas_twirl": "#a1d99b",
+    "quantumnas_twirl": "#9ecae1",
 }
 
 

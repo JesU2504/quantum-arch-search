@@ -297,3 +297,1235 @@ Results saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-sear
 2025-12-09 14:37:28,694 WARNING: No fidelity data found to summarize.
 2025-12-09 14:37:40,999 INFO: Robustness sweep written to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/analysis/robustness_sweep.json//home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534/analysis/robustness_sweep.csv (legacy compare uses family=amplitude_damping, budget=1)
 2025-12-09 14:37:45,906 INFO: Pipeline finished. Results in /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251209-074534
+2025-12-09 15:52:53,313 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-09 15:52:53,315 INFO: Starting pipeline with metadata: {'timestamp': '20251209-155253', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 20480, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-09 15:52:53,315 INFO: Skipping baseline as requested
+2025-12-09 15:52:53,315 INFO: Running HEA baseline per seed
+2025-12-09 15:53:00,126 INFO: [GHZ] epoch 40/400 fidelity 0.980831
+[GHZ] epoch 80/400 fidelity 0.999451
+[GHZ] epoch 120/400 fidelity 0.999997
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_0/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-09 15:53:06,100 INFO: [GHZ] epoch 40/400 fidelity 0.997973
+[GHZ] epoch 80/400 fidelity 0.999776
+[GHZ] epoch 120/400 fidelity 0.999957
+[GHZ] epoch 160/400 fidelity 0.999989
+[GHZ] epoch 200/400 fidelity 0.999998
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_1/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-09 15:53:12,493 INFO: [GHZ] epoch 40/400 fidelity 0.988280
+[GHZ] epoch 80/400 fidelity 0.999757
+[GHZ] epoch 120/400 fidelity 0.999917
+[GHZ] epoch 160/400 fidelity 0.999936
+[GHZ] epoch 200/400 fidelity 0.999949
+[GHZ] epoch 240/400 fidelity 0.999960
+[GHZ] epoch 280/400 fidelity 0.999968
+[GHZ] epoch 320/400 fidelity 0.999974
+[GHZ] epoch 360/400 fidelity 0.999979
+[GHZ] epoch 400/400 fidelity 0.999982
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_2/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-09 15:53:18,755 INFO: [GHZ] epoch 40/400 fidelity 0.992662
+[GHZ] epoch 80/400 fidelity 0.999796
+[GHZ] epoch 120/400 fidelity 0.999998
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_3/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-09 15:53:27,062 INFO: [GHZ] epoch 40/400 fidelity 0.987302
+[GHZ] epoch 80/400 fidelity 0.999582
+[GHZ] epoch 120/400 fidelity 0.999936
+[GHZ] epoch 160/400 fidelity 0.999972
+[GHZ] epoch 200/400 fidelity 0.999986
+[GHZ] epoch 240/400 fidelity 0.999993
+[GHZ] epoch 280/400 fidelity 0.999997
+[GHZ] epoch 320/400 fidelity 0.999999
+[GHZ] epoch 360/400 fidelity 0.999999
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_4/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-09 15:53:27,068 INFO: Skipping lambda sweep as requested
+2025-12-09 15:53:27,069 INFO: Skipping saboteur-only as requested
+2025-12-09 15:53:27,069 INFO: Skipping adversarial as requested
+2025-12-09 15:53:27,072 INFO: Discovered 5 existing adversarial run(s) with robust circuits
+2025-12-09 15:53:27,076 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_0 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0
+2025-12-09 15:53:27,081 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_1 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1
+2025-12-09 15:53:27,083 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_2 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2
+2025-12-09 15:53:27,085 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_3 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3
+2025-12-09 15:53:27,087 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_4 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4
+2025-12-09 15:53:27,104 INFO: HEA baseline circuits copied into compare runs for analysis.
+2025-12-09 15:53:27,104 INFO: Running comparison across runs
+2025-12-09 15:56:47,230 INFO: Running cross-noise robustness experiment (aggregated across 5 seeds)
+2025-12-09 15:56:47,231 INFO: === Cross-Noise Robustness Experiment (ExpPlan Part 2, Exp 2.1) ===
+2025-12-09 15:56:47,231 INFO: RL baseline circuit: ['/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_vanilla.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_vanilla.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_vanilla.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_vanilla.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_vanilla.json']
+2025-12-09 15:56:47,231 INFO: Robust circuit: ['/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_robust.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_robust.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_robust.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_robust.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_robust.json']
+2025-12-09 15:56:47,231 INFO: Output directory: /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/cross_noise/cross_noise_20251209-155647
+2025-12-09 15:56:47,231 INFO: Number of qubits: 3
+2025-12-09 15:56:47,231 INFO: Number of seeds: 5
+2025-12-09 15:56:47,231 INFO: Base seed: 42
+2025-12-09 15:56:47,232 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_vanilla.json with 16 operations
+2025-12-09 15:56:47,232 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_vanilla.json with 17 operations
+2025-12-09 15:56:47,233 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_vanilla.json with 16 operations
+2025-12-09 15:56:47,234 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_vanilla.json with 16 operations
+2025-12-09 15:56:47,234 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_vanilla.json with 15 operations
+2025-12-09 15:56:47,235 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_robust.json with 3 operations
+2025-12-09 15:56:47,235 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_robust.json with 6 operations
+2025-12-09 15:56:47,236 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_robust.json with 5 operations
+2025-12-09 15:56:47,237 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_robust.json with 6 operations
+2025-12-09 15:56:47,237 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_robust.json with 4 operations
+2025-12-09 15:56:47,238 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_quantumnas.json with 15 operations
+2025-12-09 15:56:47,238 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_quantumnas.json with 15 operations
+2025-12-09 15:56:47,239 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_quantumnas.json with 15 operations
+2025-12-09 15:56:47,239 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_quantumnas.json with 15 operations
+2025-12-09 15:56:47,240 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_quantumnas.json with 15 operations
+2025-12-09 15:56:47,263 INFO: Clean fidelities — baseline: 1.0000, robust: 1.0000, HEA baseline: 1.0000; using shared reference 1.0000
+2025-12-09 15:56:47,263 INFO: 
+--- Over-rotation sweep (ε ∈ [0.0, 0.2]) ---
+2025-12-09 15:56:47,444 INFO: RL baseline avg retention ratio (over-rotation): 0.8058
+2025-12-09 15:56:47,444 INFO: Robust avg retention ratio (over-rotation): 0.9798
+2025-12-09 15:56:47,444 INFO: 
+--- Asymmetric Pauli noise sweep (p_x in [0.05], p_y=0.0, p_z=0.0) ---
+2025-12-09 15:56:47,614 INFO: p_x=0.050 | RL baseline retention: 0.3101 | Robust retention: 0.8170 | HEA baseline retention: 0.4435
+2025-12-09 15:56:47,741 INFO: 
+Results saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/cross_noise/cross_noise_20251209-155647/cross_noise_results.json
+2025-12-09 15:56:48,006 INFO: Plot saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/cross_noise/cross_noise_20251209-155647/cross_noise_robustness.png
+2025-12-09 15:56:48,007 INFO: Summary saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/cross_noise/cross_noise_20251209-155647/cross_noise_summary.txt
+2025-12-09 15:56:48,012 INFO: 
+=== Cross-Noise Robustness Experiment Complete ===
+2025-12-09 15:56:48,584 INFO: Running hardware-style eval on backends: ['fake_quito', 'fake_belem', 'fake_lagos', 'fake_oslo', 'fake_athens']
+2025-12-09 15:56:57,520 WARNING: No fidelity data found to summarize.
+2025-12-09 15:57:08,392 INFO: Robustness sweep written to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/analysis/robustness_sweep.json//home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/analysis/robustness_sweep.csv (legacy compare uses family=amplitude_damping, budget=1)
+2025-12-09 15:57:12,981 INFO: Pipeline finished. Results in /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3
+2025-12-09 16:02:01,526 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-09 16:02:01,528 INFO: Starting pipeline with metadata: {'timestamp': '20251209-160201', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 20480, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-09 16:02:01,528 INFO: Skipping baseline as requested
+2025-12-09 16:02:01,529 INFO: Running HEA baseline per seed
+2025-12-09 16:02:08,960 INFO: [GHZ] epoch 40/400 fidelity 0.980831
+[GHZ] epoch 80/400 fidelity 0.999451
+[GHZ] epoch 120/400 fidelity 0.999997
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_0/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-09 16:02:17,457 INFO: [GHZ] epoch 40/400 fidelity 0.997973
+[GHZ] epoch 80/400 fidelity 0.999776
+[GHZ] epoch 120/400 fidelity 0.999957
+[GHZ] epoch 160/400 fidelity 0.999989
+[GHZ] epoch 200/400 fidelity 0.999998
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_1/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-09 16:02:25,295 INFO: [GHZ] epoch 40/400 fidelity 0.988280
+[GHZ] epoch 80/400 fidelity 0.999757
+[GHZ] epoch 120/400 fidelity 0.999917
+[GHZ] epoch 160/400 fidelity 0.999936
+[GHZ] epoch 200/400 fidelity 0.999949
+[GHZ] epoch 240/400 fidelity 0.999960
+[GHZ] epoch 280/400 fidelity 0.999968
+[GHZ] epoch 320/400 fidelity 0.999974
+[GHZ] epoch 360/400 fidelity 0.999979
+[GHZ] epoch 400/400 fidelity 0.999982
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_2/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-09 16:02:31,946 INFO: [GHZ] epoch 40/400 fidelity 0.992662
+[GHZ] epoch 80/400 fidelity 0.999796
+[GHZ] epoch 120/400 fidelity 0.999998
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_3/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-09 16:02:40,506 INFO: [GHZ] epoch 40/400 fidelity 0.987302
+[GHZ] epoch 80/400 fidelity 0.999582
+[GHZ] epoch 120/400 fidelity 0.999936
+[GHZ] epoch 160/400 fidelity 0.999972
+[GHZ] epoch 200/400 fidelity 0.999986
+[GHZ] epoch 240/400 fidelity 0.999993
+[GHZ] epoch 280/400 fidelity 0.999997
+[GHZ] epoch 320/400 fidelity 0.999999
+[GHZ] epoch 360/400 fidelity 0.999999
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_4/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-09 16:02:40,514 INFO: Skipping lambda sweep as requested
+2025-12-09 16:02:40,515 INFO: Skipping saboteur-only as requested
+2025-12-09 16:02:40,515 INFO: Skipping adversarial as requested
+2025-12-09 16:02:40,517 INFO: Discovered 5 existing adversarial run(s) with robust circuits
+2025-12-09 16:02:40,523 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_0 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0
+2025-12-09 16:02:40,526 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_1 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1
+2025-12-09 16:02:40,529 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_2 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2
+2025-12-09 16:02:40,531 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_3 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3
+2025-12-09 16:02:40,533 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_4 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4
+2025-12-09 16:02:40,548 INFO: HEA baseline circuits copied into compare runs for analysis.
+2025-12-09 16:02:40,549 INFO: Running comparison across runs
+2025-12-09 16:06:01,287 INFO: Running cross-noise robustness experiment (aggregated across 5 seeds)
+2025-12-09 16:06:01,288 INFO: === Cross-Noise Robustness Experiment (ExpPlan Part 2, Exp 2.1) ===
+2025-12-09 16:06:01,288 INFO: RL baseline circuit: ['/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_vanilla.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_vanilla.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_vanilla.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_vanilla.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_vanilla.json']
+2025-12-09 16:06:01,288 INFO: Robust circuit: ['/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_robust.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_robust.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_robust.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_robust.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_robust.json']
+2025-12-09 16:06:01,288 INFO: Output directory: /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/cross_noise/cross_noise_20251209-160601
+2025-12-09 16:06:01,288 INFO: Number of qubits: 3
+2025-12-09 16:06:01,288 INFO: Number of seeds: 5
+2025-12-09 16:06:01,288 INFO: Base seed: 42
+2025-12-09 16:06:01,289 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_vanilla.json with 16 operations
+2025-12-09 16:06:01,290 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_vanilla.json with 17 operations
+2025-12-09 16:06:01,291 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_vanilla.json with 16 operations
+2025-12-09 16:06:01,291 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_vanilla.json with 16 operations
+2025-12-09 16:06:01,292 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_vanilla.json with 15 operations
+2025-12-09 16:06:01,292 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_robust.json with 3 operations
+2025-12-09 16:06:01,293 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_robust.json with 6 operations
+2025-12-09 16:06:01,294 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_robust.json with 5 operations
+2025-12-09 16:06:01,294 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_robust.json with 6 operations
+2025-12-09 16:06:01,295 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_robust.json with 4 operations
+2025-12-09 16:06:01,295 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_quantumnas.json with 15 operations
+2025-12-09 16:06:01,296 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_quantumnas.json with 15 operations
+2025-12-09 16:06:01,296 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_quantumnas.json with 15 operations
+2025-12-09 16:06:01,297 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_quantumnas.json with 15 operations
+2025-12-09 16:06:01,298 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_quantumnas.json with 15 operations
+2025-12-09 16:06:01,321 INFO: Clean fidelities — baseline: 1.0000, robust: 1.0000, HEA baseline: 1.0000; using shared reference 1.0000
+2025-12-09 16:06:01,321 INFO: 
+--- Over-rotation sweep (ε ∈ [0.0, 0.2]) ---
+2025-12-09 16:06:01,501 INFO: RL baseline avg retention ratio (over-rotation): 0.8058
+2025-12-09 16:06:01,502 INFO: Robust avg retention ratio (over-rotation): 0.9798
+2025-12-09 16:06:01,502 INFO: 
+--- Asymmetric Pauli noise sweep (p_x in [0.05], p_y=0.0, p_z=0.0) ---
+2025-12-09 16:06:01,671 INFO: p_x=0.050 | RL baseline retention: 0.3101 | Robust retention: 0.8170 | HEA baseline retention: 0.4435
+2025-12-09 16:06:01,798 INFO: 
+Results saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/cross_noise/cross_noise_20251209-160601/cross_noise_results.json
+2025-12-09 16:06:02,066 INFO: Plot saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/cross_noise/cross_noise_20251209-160601/cross_noise_robustness.png
+2025-12-09 16:06:02,067 INFO: Summary saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/cross_noise/cross_noise_20251209-160601/cross_noise_summary.txt
+2025-12-09 16:06:02,072 INFO: 
+=== Cross-Noise Robustness Experiment Complete ===
+2025-12-09 16:06:02,548 INFO: Running hardware-style eval on backends: ['fake_quito', 'fake_belem', 'fake_lagos', 'fake_oslo', 'fake_athens']
+2025-12-09 16:06:11,516 WARNING: No fidelity data found to summarize.
+2025-12-09 16:06:23,420 INFO: Robustness sweep written to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/analysis/robustness_sweep.json//home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/analysis/robustness_sweep.csv (legacy compare uses family=amplitude_damping, budget=1)
+2025-12-09 16:06:28,028 INFO: Pipeline finished. Results in /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3
+2025-12-09 16:16:58,283 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-09 16:16:58,284 INFO: Starting pipeline with metadata: {'timestamp': '20251209-161658', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 20480, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-09 16:16:58,285 INFO: Skipping baseline as requested
+2025-12-09 16:16:58,285 INFO: Running HEA baseline per seed
+2025-12-09 16:17:08,058 INFO: [GHZ] epoch 40/400 fidelity 0.980831
+[GHZ] epoch 80/400 fidelity 0.999451
+[GHZ] epoch 120/400 fidelity 0.999997
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_0/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-09 16:20:34,753 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-09 16:20:34,755 INFO: Starting pipeline with metadata: {'timestamp': '20251209-162034', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 20480, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-09 16:20:34,755 INFO: Skipping baseline as requested
+2025-12-09 16:20:34,755 INFO: Running HEA baseline per seed
+2025-12-09 16:20:42,631 INFO: [GHZ] epoch 40/400 fidelity 0.980831
+[GHZ] epoch 80/400 fidelity 0.999451
+[GHZ] epoch 120/400 fidelity 0.999997
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_0/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-09 16:20:49,554 INFO: [GHZ] epoch 40/400 fidelity 0.997973
+[GHZ] epoch 80/400 fidelity 0.999776
+[GHZ] epoch 120/400 fidelity 0.999957
+[GHZ] epoch 160/400 fidelity 0.999989
+[GHZ] epoch 200/400 fidelity 0.999998
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_1/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-09 16:20:59,423 INFO: [GHZ] epoch 40/400 fidelity 0.988280
+[GHZ] epoch 80/400 fidelity 0.999757
+[GHZ] epoch 120/400 fidelity 0.999917
+[GHZ] epoch 160/400 fidelity 0.999936
+[GHZ] epoch 200/400 fidelity 0.999949
+[GHZ] epoch 240/400 fidelity 0.999960
+[GHZ] epoch 280/400 fidelity 0.999968
+[GHZ] epoch 320/400 fidelity 0.999974
+[GHZ] epoch 360/400 fidelity 0.999979
+[GHZ] epoch 400/400 fidelity 0.999982
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_2/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-09 16:21:06,005 INFO: [GHZ] epoch 40/400 fidelity 0.992662
+[GHZ] epoch 80/400 fidelity 0.999796
+[GHZ] epoch 120/400 fidelity 0.999998
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_3/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-09 16:21:12,163 INFO: [GHZ] epoch 40/400 fidelity 0.987302
+[GHZ] epoch 80/400 fidelity 0.999582
+[GHZ] epoch 120/400 fidelity 0.999936
+[GHZ] epoch 160/400 fidelity 0.999972
+[GHZ] epoch 200/400 fidelity 0.999986
+[GHZ] epoch 240/400 fidelity 0.999993
+[GHZ] epoch 280/400 fidelity 0.999997
+[GHZ] epoch 320/400 fidelity 0.999999
+[GHZ] epoch 360/400 fidelity 0.999999
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_4/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-09 16:21:12,169 INFO: Skipping lambda sweep as requested
+2025-12-09 16:21:12,170 INFO: Skipping saboteur-only as requested
+2025-12-09 16:21:12,170 INFO: Skipping adversarial as requested
+2025-12-09 16:21:12,173 INFO: Discovered 5 existing adversarial run(s) with robust circuits
+2025-12-09 16:21:12,177 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_0 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0
+2025-12-09 16:21:12,181 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_1 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1
+2025-12-09 16:21:12,184 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_2 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2
+2025-12-09 16:21:12,186 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_3 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3
+2025-12-09 16:21:12,189 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_4 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4
+2025-12-09 16:21:12,205 INFO: HEA baseline circuits copied into compare runs for analysis.
+2025-12-09 16:21:12,205 INFO: Running comparison across runs
+2025-12-09 16:24:32,795 INFO: Running cross-noise robustness experiment (aggregated across 5 seeds)
+2025-12-09 16:24:32,795 INFO: === Cross-Noise Robustness Experiment (ExpPlan Part 2, Exp 2.1) ===
+2025-12-09 16:24:32,796 INFO: RL baseline circuit: ['/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_vanilla.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_vanilla.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_vanilla.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_vanilla.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_vanilla.json']
+2025-12-09 16:24:32,796 INFO: Robust circuit: ['/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_robust.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_robust.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_robust.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_robust.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_robust.json']
+2025-12-09 16:24:32,796 INFO: Output directory: /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/cross_noise/cross_noise_20251209-162432
+2025-12-09 16:24:32,796 INFO: Number of qubits: 3
+2025-12-09 16:24:32,796 INFO: Number of seeds: 5
+2025-12-09 16:24:32,796 INFO: Base seed: 42
+2025-12-09 16:24:32,796 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_vanilla.json with 16 operations
+2025-12-09 16:24:32,797 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_vanilla.json with 17 operations
+2025-12-09 16:24:32,798 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_vanilla.json with 16 operations
+2025-12-09 16:24:32,798 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_vanilla.json with 16 operations
+2025-12-09 16:24:32,799 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_vanilla.json with 15 operations
+2025-12-09 16:24:32,800 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_robust.json with 3 operations
+2025-12-09 16:24:32,800 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_robust.json with 6 operations
+2025-12-09 16:24:32,801 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_robust.json with 5 operations
+2025-12-09 16:24:32,802 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_robust.json with 6 operations
+2025-12-09 16:24:32,802 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_robust.json with 4 operations
+2025-12-09 16:24:32,803 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_quantumnas.json with 15 operations
+2025-12-09 16:24:32,804 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_quantumnas.json with 15 operations
+2025-12-09 16:24:32,804 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_quantumnas.json with 15 operations
+2025-12-09 16:24:32,805 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_quantumnas.json with 15 operations
+2025-12-09 16:24:32,806 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_quantumnas.json with 15 operations
+2025-12-09 16:24:32,828 INFO: Clean fidelities — baseline: 1.0000, robust: 1.0000, HEA baseline: 1.0000; using shared reference 1.0000
+2025-12-09 16:24:32,828 INFO: 
+--- Over-rotation sweep (ε ∈ [0.0, 0.2]) ---
+2025-12-09 16:24:33,008 INFO: RL baseline avg retention ratio (over-rotation): 0.8058
+2025-12-09 16:24:33,009 INFO: Robust avg retention ratio (over-rotation): 0.9798
+2025-12-09 16:24:33,009 INFO: 
+--- Asymmetric Pauli noise sweep (p_x in [0.05], p_y=0.0, p_z=0.0) ---
+2025-12-09 16:24:33,178 INFO: p_x=0.050 | RL baseline retention: 0.3101 | Robust retention: 0.8170 | HEA baseline retention: 0.4435
+2025-12-09 16:24:33,305 INFO: 
+Results saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/cross_noise/cross_noise_20251209-162432/cross_noise_results.json
+2025-12-09 16:24:33,571 INFO: Plot saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/cross_noise/cross_noise_20251209-162432/cross_noise_robustness.png
+2025-12-09 16:24:33,573 INFO: Summary saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/cross_noise/cross_noise_20251209-162432/cross_noise_summary.txt
+2025-12-09 16:24:33,577 INFO: 
+=== Cross-Noise Robustness Experiment Complete ===
+2025-12-09 16:24:34,105 INFO: Running hardware-style eval on backends: ['fake_quito', 'fake_belem', 'fake_lagos', 'fake_oslo', 'fake_athens']
+2025-12-09 16:24:43,990 WARNING: No fidelity data found to summarize.
+2025-12-09 16:24:55,637 INFO: Robustness sweep written to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/analysis/robustness_sweep.json//home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/analysis/robustness_sweep.csv (legacy compare uses family=amplitude_damping, budget=1)
+2025-12-09 16:25:00,719 INFO: Pipeline finished. Results in /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3
+2025-12-10 03:01:01,685 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-10 03:01:01,686 INFO: Starting pipeline with metadata: {'timestamp': '20251210-030101', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 20480, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-10 03:01:01,687 INFO: Skipping baseline as requested
+2025-12-10 03:01:01,687 INFO: Running HEA baseline per seed
+2025-12-10 03:01:10,825 INFO: [GHZ] epoch 40/400 fidelity 0.980831
+[GHZ] epoch 80/400 fidelity 0.999451
+[GHZ] epoch 120/400 fidelity 0.999997
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_0/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 03:01:19,615 INFO: [GHZ] epoch 40/400 fidelity 0.997973
+[GHZ] epoch 80/400 fidelity 0.999776
+[GHZ] epoch 120/400 fidelity 0.999957
+[GHZ] epoch 160/400 fidelity 0.999989
+[GHZ] epoch 200/400 fidelity 0.999998
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_1/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 03:01:26,988 INFO: [GHZ] epoch 40/400 fidelity 0.988280
+[GHZ] epoch 80/400 fidelity 0.999757
+[GHZ] epoch 120/400 fidelity 0.999917
+[GHZ] epoch 160/400 fidelity 0.999936
+[GHZ] epoch 200/400 fidelity 0.999949
+[GHZ] epoch 240/400 fidelity 0.999960
+[GHZ] epoch 280/400 fidelity 0.999968
+[GHZ] epoch 320/400 fidelity 0.999974
+[GHZ] epoch 360/400 fidelity 0.999979
+[GHZ] epoch 400/400 fidelity 0.999982
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_2/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 03:01:34,307 INFO: [GHZ] epoch 40/400 fidelity 0.992662
+[GHZ] epoch 80/400 fidelity 0.999796
+[GHZ] epoch 120/400 fidelity 0.999998
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_3/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 03:01:42,063 INFO: [GHZ] epoch 40/400 fidelity 0.987302
+[GHZ] epoch 80/400 fidelity 0.999582
+[GHZ] epoch 120/400 fidelity 0.999936
+[GHZ] epoch 160/400 fidelity 0.999972
+[GHZ] epoch 200/400 fidelity 0.999986
+[GHZ] epoch 240/400 fidelity 0.999993
+[GHZ] epoch 280/400 fidelity 0.999997
+[GHZ] epoch 320/400 fidelity 0.999999
+[GHZ] epoch 360/400 fidelity 0.999999
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_4/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 03:01:42,069 INFO: Skipping lambda sweep as requested
+2025-12-10 03:01:42,069 INFO: Skipping saboteur-only as requested
+2025-12-10 03:01:42,070 INFO: Skipping adversarial as requested
+2025-12-10 03:01:42,072 INFO: Discovered 5 existing adversarial run(s) with robust circuits
+2025-12-10 03:01:42,076 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_0 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0
+2025-12-10 03:01:42,079 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_1 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1
+2025-12-10 03:01:42,082 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_2 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2
+2025-12-10 03:01:42,084 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_3 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3
+2025-12-10 03:01:42,086 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_4 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4
+2025-12-10 03:01:42,101 INFO: HEA baseline circuits copied into compare runs for analysis.
+2025-12-10 03:01:42,101 INFO: Running comparison across runs
+2025-12-10 03:09:13,796 INFO: Running cross-noise robustness experiment (aggregated across 5 seeds)
+2025-12-10 03:09:13,797 INFO: === Cross-Noise Robustness Experiment (ExpPlan Part 2, Exp 2.1) ===
+2025-12-10 03:09:13,797 INFO: RL baseline circuit: ['/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_vanilla.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_vanilla.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_vanilla.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_vanilla.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_vanilla.json']
+2025-12-10 03:09:13,797 INFO: Robust circuit: ['/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_robust.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_robust.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_robust.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_robust.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_robust.json']
+2025-12-10 03:09:13,797 INFO: Output directory: /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/cross_noise/cross_noise_20251210-030913
+2025-12-10 03:09:13,797 INFO: Number of qubits: 3
+2025-12-10 03:09:13,797 INFO: Number of seeds: 5
+2025-12-10 03:09:13,797 INFO: Base seed: 42
+2025-12-10 03:09:13,798 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_vanilla.json with 16 operations
+2025-12-10 03:09:13,799 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_vanilla.json with 17 operations
+2025-12-10 03:09:13,800 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_vanilla.json with 16 operations
+2025-12-10 03:09:13,800 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_vanilla.json with 16 operations
+2025-12-10 03:09:13,801 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_vanilla.json with 15 operations
+2025-12-10 03:09:13,801 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_robust.json with 3 operations
+2025-12-10 03:09:13,802 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_robust.json with 6 operations
+2025-12-10 03:09:13,803 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_robust.json with 5 operations
+2025-12-10 03:09:13,803 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_robust.json with 6 operations
+2025-12-10 03:09:13,803 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_robust.json with 4 operations
+2025-12-10 03:09:13,804 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_quantumnas.json with 15 operations
+2025-12-10 03:09:13,805 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_quantumnas.json with 15 operations
+2025-12-10 03:09:13,806 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_quantumnas.json with 15 operations
+2025-12-10 03:09:13,807 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_quantumnas.json with 15 operations
+2025-12-10 03:09:13,807 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_quantumnas.json with 15 operations
+2025-12-10 03:09:13,844 INFO: Clean fidelities — baseline: 1.0000, robust: 1.0000, HEA baseline: 1.0000; using shared reference 1.0000
+2025-12-10 03:09:13,844 INFO: 
+--- Over-rotation sweep (ε ∈ [0.0, 0.2]) ---
+2025-12-10 03:09:14,061 INFO: RL baseline avg retention ratio (over-rotation): 0.8058
+2025-12-10 03:09:14,061 INFO: Robust avg retention ratio (over-rotation): 0.9798
+2025-12-10 03:09:14,061 INFO: 
+--- Asymmetric Pauli noise sweep (p_x in [0.05], p_y=0.0, p_z=0.0) ---
+2025-12-10 03:09:14,232 INFO: p_x=0.050 | RL baseline retention: 0.3101 | Robust retention: 0.8170 | HEA baseline retention: 0.4435
+2025-12-10 03:09:14,357 INFO: 
+Results saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/cross_noise/cross_noise_20251210-030913/cross_noise_results.json
+2025-12-10 03:09:14,623 INFO: Plot saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/cross_noise/cross_noise_20251210-030913/cross_noise_robustness.png
+2025-12-10 03:09:14,624 INFO: Summary saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/cross_noise/cross_noise_20251210-030913/cross_noise_summary.txt
+2025-12-10 03:09:14,628 INFO: 
+=== Cross-Noise Robustness Experiment Complete ===
+2025-12-10 03:09:15,205 INFO: Running hardware-style eval on backends: ['fake_quito', 'fake_belem', 'fake_lagos', 'fake_oslo', 'fake_athens']
+2025-12-10 03:09:26,396 WARNING: No fidelity data found to summarize.
+2025-12-10 03:09:38,369 INFO: Robustness sweep written to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/analysis/robustness_sweep.json//home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/analysis/robustness_sweep.csv (legacy compare uses family=amplitude_damping, budget=1)
+2025-12-10 03:09:44,342 INFO: Pipeline finished. Results in /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3
+2025-12-10 03:17:12,883 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-10 03:17:12,885 INFO: Starting pipeline with metadata: {'timestamp': '20251210-031712', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 20480, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-10 03:17:12,886 INFO: Skipping baseline as requested
+2025-12-10 03:17:12,886 INFO: Running HEA baseline per seed
+2025-12-10 03:17:18,479 WARNING: Traceback (most recent call last):
+  File "/import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/experiments/architect/tq_train_simple_baseline.py", line 50, in <module>
+    _shim_torchquantum_imports()
+  File "/import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/experiments/architect/tq_train_simple_baseline.py", line 27, in _shim_torchquantum_imports
+    import qiskit  # type: ignore
+    ^^^^^^^^^^^^^
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit/__init__.py", line 38, in <module>
+    raise ImportError(
+ImportError: Qiskit is installed in an invalid environment that has both Qiskit >=1.0 and an earlier version. You should create a new virtual environment, and ensure that you do not mix dependencies between Qiskit <1.0 and >=1.0. Any packages that depend on 'qiskit-terra' are not compatible with Qiskit 1.0 and will need to be updated. Qiskit unfortunately cannot enforce this requirement during environment resolution. See https://qisk.it/packaging-1-0 for more detail.
+2025-12-10 03:17:21,542 WARNING: Traceback (most recent call last):
+  File "/import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/experiments/architect/tq_train_simple_baseline.py", line 50, in <module>
+    _shim_torchquantum_imports()
+  File "/import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/experiments/architect/tq_train_simple_baseline.py", line 27, in _shim_torchquantum_imports
+    import qiskit  # type: ignore
+    ^^^^^^^^^^^^^
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit/__init__.py", line 38, in <module>
+    raise ImportError(
+ImportError: Qiskit is installed in an invalid environment that has both Qiskit >=1.0 and an earlier version. You should create a new virtual environment, and ensure that you do not mix dependencies between Qiskit <1.0 and >=1.0. Any packages that depend on 'qiskit-terra' are not compatible with Qiskit 1.0 and will need to be updated. Qiskit unfortunately cannot enforce this requirement during environment resolution. See https://qisk.it/packaging-1-0 for more detail.
+2025-12-10 03:17:24,497 WARNING: Traceback (most recent call last):
+  File "/import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/experiments/architect/tq_train_simple_baseline.py", line 50, in <module>
+    _shim_torchquantum_imports()
+  File "/import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/experiments/architect/tq_train_simple_baseline.py", line 27, in _shim_torchquantum_imports
+    import qiskit  # type: ignore
+    ^^^^^^^^^^^^^
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit/__init__.py", line 38, in <module>
+    raise ImportError(
+ImportError: Qiskit is installed in an invalid environment that has both Qiskit >=1.0 and an earlier version. You should create a new virtual environment, and ensure that you do not mix dependencies between Qiskit <1.0 and >=1.0. Any packages that depend on 'qiskit-terra' are not compatible with Qiskit 1.0 and will need to be updated. Qiskit unfortunately cannot enforce this requirement during environment resolution. See https://qisk.it/packaging-1-0 for more detail.
+2025-12-10 03:17:27,548 WARNING: Traceback (most recent call last):
+  File "/import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/experiments/architect/tq_train_simple_baseline.py", line 50, in <module>
+    _shim_torchquantum_imports()
+  File "/import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/experiments/architect/tq_train_simple_baseline.py", line 27, in _shim_torchquantum_imports
+    import qiskit  # type: ignore
+    ^^^^^^^^^^^^^
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit/__init__.py", line 38, in <module>
+    raise ImportError(
+ImportError: Qiskit is installed in an invalid environment that has both Qiskit >=1.0 and an earlier version. You should create a new virtual environment, and ensure that you do not mix dependencies between Qiskit <1.0 and >=1.0. Any packages that depend on 'qiskit-terra' are not compatible with Qiskit 1.0 and will need to be updated. Qiskit unfortunately cannot enforce this requirement during environment resolution. See https://qisk.it/packaging-1-0 for more detail.
+2025-12-10 03:17:30,565 WARNING: Traceback (most recent call last):
+  File "/import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/experiments/architect/tq_train_simple_baseline.py", line 50, in <module>
+    _shim_torchquantum_imports()
+  File "/import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/experiments/architect/tq_train_simple_baseline.py", line 27, in _shim_torchquantum_imports
+    import qiskit  # type: ignore
+    ^^^^^^^^^^^^^
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit/__init__.py", line 38, in <module>
+    raise ImportError(
+ImportError: Qiskit is installed in an invalid environment that has both Qiskit >=1.0 and an earlier version. You should create a new virtual environment, and ensure that you do not mix dependencies between Qiskit <1.0 and >=1.0. Any packages that depend on 'qiskit-terra' are not compatible with Qiskit 1.0 and will need to be updated. Qiskit unfortunately cannot enforce this requirement during environment resolution. See https://qisk.it/packaging-1-0 for more detail.
+2025-12-10 03:17:30,572 INFO: Skipping lambda sweep as requested
+2025-12-10 03:17:30,573 INFO: Skipping saboteur-only as requested
+2025-12-10 03:17:30,574 INFO: Skipping adversarial as requested
+2025-12-10 03:17:30,576 INFO: Discovered 5 existing adversarial run(s) with robust circuits
+2025-12-10 03:17:30,580 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_0 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0
+2025-12-10 03:17:30,584 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_1 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1
+2025-12-10 03:17:30,586 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_2 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2
+2025-12-10 03:17:30,588 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_3 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3
+2025-12-10 03:17:30,590 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_4 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4
+2025-12-10 03:17:30,609 INFO: HEA baseline circuits copied into compare runs for analysis.
+2025-12-10 03:17:30,609 INFO: Running comparison across runs
+2025-12-10 03:25:07,945 INFO: Running cross-noise robustness experiment (aggregated across 5 seeds)
+2025-12-10 03:25:07,945 INFO: === Cross-Noise Robustness Experiment (ExpPlan Part 2, Exp 2.1) ===
+2025-12-10 03:25:07,945 INFO: RL baseline circuit: ['/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_vanilla.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_vanilla.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_vanilla.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_vanilla.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_vanilla.json']
+2025-12-10 03:25:07,945 INFO: Robust circuit: ['/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_robust.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_robust.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_robust.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_robust.json', '/home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_robust.json']
+2025-12-10 03:25:07,945 INFO: Output directory: /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/cross_noise/cross_noise_20251210-032507
+2025-12-10 03:25:07,946 INFO: Number of qubits: 3
+2025-12-10 03:25:07,946 INFO: Number of seeds: 5
+2025-12-10 03:25:07,946 INFO: Base seed: 42
+2025-12-10 03:25:07,947 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_vanilla.json with 16 operations
+2025-12-10 03:25:07,948 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_vanilla.json with 17 operations
+2025-12-10 03:25:07,949 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_vanilla.json with 16 operations
+2025-12-10 03:25:07,949 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_vanilla.json with 16 operations
+2025-12-10 03:25:07,950 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_vanilla.json with 15 operations
+2025-12-10 03:25:07,951 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_robust.json with 3 operations
+2025-12-10 03:25:07,952 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_robust.json with 6 operations
+2025-12-10 03:25:07,953 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_robust.json with 5 operations
+2025-12-10 03:25:07,953 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_robust.json with 6 operations
+2025-12-10 03:25:07,954 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_robust.json with 4 operations
+2025-12-10 03:25:07,955 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0/circuit_quantumnas.json with 15 operations
+2025-12-10 03:25:07,955 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1/circuit_quantumnas.json with 15 operations
+2025-12-10 03:25:07,957 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2/circuit_quantumnas.json with 15 operations
+2025-12-10 03:25:07,958 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3/circuit_quantumnas.json with 15 operations
+2025-12-10 03:25:07,958 INFO: Loaded circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4/circuit_quantumnas.json with 15 operations
+2025-12-10 03:25:07,981 INFO: Clean fidelities — baseline: 1.0000, robust: 1.0000, HEA baseline: 1.0000; using shared reference 1.0000
+2025-12-10 03:25:07,981 INFO: 
+--- Over-rotation sweep (ε ∈ [0.0, 0.2]) ---
+2025-12-10 03:25:08,161 INFO: RL baseline avg retention ratio (over-rotation): 0.8058
+2025-12-10 03:25:08,161 INFO: Robust avg retention ratio (over-rotation): 0.9798
+2025-12-10 03:25:08,161 INFO: 
+--- Asymmetric Pauli noise sweep (p_x in [0.05], p_y=0.0, p_z=0.0) ---
+2025-12-10 03:25:08,332 INFO: p_x=0.050 | RL baseline retention: 0.3101 | Robust retention: 0.8170 | HEA baseline retention: 0.4435
+2025-12-10 03:25:08,461 INFO: 
+Results saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/cross_noise/cross_noise_20251210-032507/cross_noise_results.json
+2025-12-10 03:25:08,727 INFO: Plot saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/cross_noise/cross_noise_20251210-032507/cross_noise_robustness.png
+2025-12-10 03:25:08,729 INFO: Summary saved to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/cross_noise/cross_noise_20251210-032507/cross_noise_summary.txt
+2025-12-10 03:25:08,734 INFO: 
+=== Cross-Noise Robustness Experiment Complete ===
+2025-12-10 03:25:08,739 ERROR: Hardware eval failed: Qiskit is installed in an invalid environment that has both Qiskit >=1.0 and an earlier version. You should create a new virtual environment, and ensure that you do not mix dependencies between Qiskit <1.0 and >=1.0. Any packages that depend on 'qiskit-terra' are not compatible with Qiskit 1.0 and will need to be updated. Qiskit unfortunately cannot enforce this requirement during environment resolution. See https://qisk.it/packaging-1-0 for more detail.
+2025-12-10 03:25:08,773 WARNING: No fidelity data found to summarize.
+2025-12-10 03:25:19,730 INFO: Robustness sweep written to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/analysis/robustness_sweep.json//home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/analysis/robustness_sweep.csv (legacy compare uses family=amplitude_damping, budget=1)
+2025-12-10 03:25:25,158 INFO: Pipeline finished. Results in /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3
+2025-12-10 03:56:07,446 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-10 03:56:07,448 INFO: Starting pipeline with metadata: {'timestamp': '20251210-035607', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 20480, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-10 03:56:07,448 INFO: Skipping baseline as requested
+2025-12-10 03:56:07,449 INFO: Running HEA baseline per seed
+2025-12-10 03:56:13,098 WARNING: Traceback (most recent call last):
+  File "/import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/experiments/architect/tq_train_simple_baseline.py", line 51, in <module>
+    import torchquantum as tq  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/__init__.py", line 29, in <module>
+    from .device import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/device/__init__.py", line 25, in <module>
+    from .devices import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/device/devices.py", line 30, in <module>
+    from torchquantum.functional import func_name_dict, func_name_dict_collect
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/functional/__init__.py", line 25, in <module>
+    from .gate_wrapper import gate_wrapper, apply_unitary_einsum, apply_unitary_bmm
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/functional/gate_wrapper.py", line 7, in <module>
+    from ..util.utils import pauli_eigs, diag
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/util/__init__.py", line 25, in <module>
+    from .utils import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/util/utils.py", line 33, in <module>
+    from qiskit_ibm_runtime import QiskitRuntimeService
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/__init__.py", line 204, in <module>
+    from .qiskit_runtime_service import QiskitRuntimeService
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/qiskit_runtime_service.py", line 24, in <module>
+    from qiskit_ibm_runtime import ibm_backend
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/ibm_backend.py", line 35, in <module>
+    from .api.clients import RuntimeClient
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/clients/__init__.py", line 15, in <module>
+    from .version import VersionClient
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/clients/version.py", line 17, in <module>
+    from ..rest.root import Api
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/rest/__init__.py", line 19, in <module>
+    from .root import Api
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/rest/root.py", line 19, in <module>
+    from .base import RestAdapterBase
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/rest/base.py", line 15, in <module>
+    from ..session import RetrySession
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/session.py", line 29, in <module>
+    from qiskit_ibm_runtime.utils.utils import filter_data
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/utils/__init__.py", line 22, in <module>
+    from .utils import (
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/utils/utils.py", line 43, in <module>
+    from qiskit.primitives.containers.estimator_pub import EstimatorPub
+ModuleNotFoundError: No module named 'qiskit.primitives.containers'
+2025-12-10 03:56:19,757 WARNING: Traceback (most recent call last):
+  File "/import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/experiments/architect/tq_train_simple_baseline.py", line 51, in <module>
+    import torchquantum as tq  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/__init__.py", line 29, in <module>
+    from .device import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/device/__init__.py", line 25, in <module>
+    from .devices import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/device/devices.py", line 30, in <module>
+    from torchquantum.functional import func_name_dict, func_name_dict_collect
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/functional/__init__.py", line 25, in <module>
+    from .gate_wrapper import gate_wrapper, apply_unitary_einsum, apply_unitary_bmm
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/functional/gate_wrapper.py", line 7, in <module>
+    from ..util.utils import pauli_eigs, diag
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/util/__init__.py", line 25, in <module>
+    from .utils import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/util/utils.py", line 33, in <module>
+    from qiskit_ibm_runtime import QiskitRuntimeService
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/__init__.py", line 204, in <module>
+    from .qiskit_runtime_service import QiskitRuntimeService
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/qiskit_runtime_service.py", line 24, in <module>
+    from qiskit_ibm_runtime import ibm_backend
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/ibm_backend.py", line 35, in <module>
+    from .api.clients import RuntimeClient
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/clients/__init__.py", line 15, in <module>
+    from .version import VersionClient
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/clients/version.py", line 17, in <module>
+    from ..rest.root import Api
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/rest/__init__.py", line 19, in <module>
+    from .root import Api
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/rest/root.py", line 19, in <module>
+    from .base import RestAdapterBase
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/rest/base.py", line 15, in <module>
+    from ..session import RetrySession
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/session.py", line 29, in <module>
+    from qiskit_ibm_runtime.utils.utils import filter_data
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/utils/__init__.py", line 22, in <module>
+    from .utils import (
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/utils/utils.py", line 43, in <module>
+    from qiskit.primitives.containers.estimator_pub import EstimatorPub
+ModuleNotFoundError: No module named 'qiskit.primitives.containers'
+2025-12-10 03:56:23,459 WARNING: Traceback (most recent call last):
+  File "/import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/experiments/architect/tq_train_simple_baseline.py", line 51, in <module>
+    import torchquantum as tq  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/__init__.py", line 29, in <module>
+    from .device import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/device/__init__.py", line 25, in <module>
+    from .devices import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/device/devices.py", line 30, in <module>
+    from torchquantum.functional import func_name_dict, func_name_dict_collect
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/functional/__init__.py", line 25, in <module>
+    from .gate_wrapper import gate_wrapper, apply_unitary_einsum, apply_unitary_bmm
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/functional/gate_wrapper.py", line 7, in <module>
+    from ..util.utils import pauli_eigs, diag
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/util/__init__.py", line 25, in <module>
+    from .utils import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/util/utils.py", line 33, in <module>
+    from qiskit_ibm_runtime import QiskitRuntimeService
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/__init__.py", line 204, in <module>
+    from .qiskit_runtime_service import QiskitRuntimeService
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/qiskit_runtime_service.py", line 24, in <module>
+    from qiskit_ibm_runtime import ibm_backend
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/ibm_backend.py", line 35, in <module>
+    from .api.clients import RuntimeClient
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/clients/__init__.py", line 15, in <module>
+    from .version import VersionClient
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/clients/version.py", line 17, in <module>
+    from ..rest.root import Api
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/rest/__init__.py", line 19, in <module>
+    from .root import Api
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/rest/root.py", line 19, in <module>
+    from .base import RestAdapterBase
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/rest/base.py", line 15, in <module>
+    from ..session import RetrySession
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/session.py", line 29, in <module>
+    from qiskit_ibm_runtime.utils.utils import filter_data
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/utils/__init__.py", line 22, in <module>
+    from .utils import (
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/utils/utils.py", line 43, in <module>
+    from qiskit.primitives.containers.estimator_pub import EstimatorPub
+ModuleNotFoundError: No module named 'qiskit.primitives.containers'
+2025-12-10 03:56:27,096 WARNING: Traceback (most recent call last):
+  File "/import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/experiments/architect/tq_train_simple_baseline.py", line 51, in <module>
+    import torchquantum as tq  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/__init__.py", line 29, in <module>
+    from .device import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/device/__init__.py", line 25, in <module>
+    from .devices import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/device/devices.py", line 30, in <module>
+    from torchquantum.functional import func_name_dict, func_name_dict_collect
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/functional/__init__.py", line 25, in <module>
+    from .gate_wrapper import gate_wrapper, apply_unitary_einsum, apply_unitary_bmm
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/functional/gate_wrapper.py", line 7, in <module>
+    from ..util.utils import pauli_eigs, diag
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/util/__init__.py", line 25, in <module>
+    from .utils import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/util/utils.py", line 33, in <module>
+    from qiskit_ibm_runtime import QiskitRuntimeService
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/__init__.py", line 204, in <module>
+    from .qiskit_runtime_service import QiskitRuntimeService
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/qiskit_runtime_service.py", line 24, in <module>
+    from qiskit_ibm_runtime import ibm_backend
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/ibm_backend.py", line 35, in <module>
+    from .api.clients import RuntimeClient
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/clients/__init__.py", line 15, in <module>
+    from .version import VersionClient
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/clients/version.py", line 17, in <module>
+    from ..rest.root import Api
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/rest/__init__.py", line 19, in <module>
+    from .root import Api
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/rest/root.py", line 19, in <module>
+    from .base import RestAdapterBase
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/rest/base.py", line 15, in <module>
+    from ..session import RetrySession
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/session.py", line 29, in <module>
+    from qiskit_ibm_runtime.utils.utils import filter_data
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/utils/__init__.py", line 22, in <module>
+    from .utils import (
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/utils/utils.py", line 43, in <module>
+    from qiskit.primitives.containers.estimator_pub import EstimatorPub
+ModuleNotFoundError: No module named 'qiskit.primitives.containers'
+2025-12-10 03:56:31,210 WARNING: Traceback (most recent call last):
+  File "/import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/experiments/architect/tq_train_simple_baseline.py", line 51, in <module>
+    import torchquantum as tq  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/__init__.py", line 29, in <module>
+    from .device import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/device/__init__.py", line 25, in <module>
+    from .devices import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/device/devices.py", line 30, in <module>
+    from torchquantum.functional import func_name_dict, func_name_dict_collect
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/functional/__init__.py", line 25, in <module>
+    from .gate_wrapper import gate_wrapper, apply_unitary_einsum, apply_unitary_bmm
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/functional/gate_wrapper.py", line 7, in <module>
+    from ..util.utils import pauli_eigs, diag
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/util/__init__.py", line 25, in <module>
+    from .utils import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/util/utils.py", line 33, in <module>
+    from qiskit_ibm_runtime import QiskitRuntimeService
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/__init__.py", line 204, in <module>
+    from .qiskit_runtime_service import QiskitRuntimeService
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/qiskit_runtime_service.py", line 24, in <module>
+    from qiskit_ibm_runtime import ibm_backend
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/ibm_backend.py", line 35, in <module>
+    from .api.clients import RuntimeClient
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/clients/__init__.py", line 15, in <module>
+    from .version import VersionClient
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/clients/version.py", line 17, in <module>
+    from ..rest.root import Api
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/rest/__init__.py", line 19, in <module>
+    from .root import Api
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/rest/root.py", line 19, in <module>
+    from .base import RestAdapterBase
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/rest/base.py", line 15, in <module>
+    from ..session import RetrySession
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/api/session.py", line 29, in <module>
+    from qiskit_ibm_runtime.utils.utils import filter_data
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/utils/__init__.py", line 22, in <module>
+    from .utils import (
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/qiskit_ibm_runtime/utils/utils.py", line 43, in <module>
+    from qiskit.primitives.containers.estimator_pub import EstimatorPub
+ModuleNotFoundError: No module named 'qiskit.primitives.containers'
+2025-12-10 03:56:31,216 INFO: Skipping lambda sweep as requested
+2025-12-10 03:56:31,216 INFO: Skipping saboteur-only as requested
+2025-12-10 03:56:31,216 INFO: Skipping adversarial as requested
+2025-12-10 03:56:31,219 INFO: Discovered 5 existing adversarial run(s) with robust circuits
+2025-12-10 03:56:31,223 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_0 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0
+2025-12-10 03:56:31,226 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_1 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1
+2025-12-10 03:56:31,229 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_2 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2
+2025-12-10 03:56:31,231 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_3 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3
+2025-12-10 03:56:31,233 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_4 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4
+2025-12-10 03:56:31,250 INFO: HEA baseline circuits copied into compare runs for analysis.
+2025-12-10 03:56:31,250 INFO: Running comparison across runs
+2025-12-10 03:57:46,370 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-10 03:57:46,371 INFO: Starting pipeline with metadata: {'timestamp': '20251210-035746', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 20480, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-10 03:57:46,371 INFO: Skipping baseline as requested
+2025-12-10 03:57:46,371 INFO: Running HEA baseline per seed
+2025-12-10 03:57:51,632 WARNING: Traceback (most recent call last):
+  File "/import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/experiments/architect/tq_train_simple_baseline.py", line 51, in <module>
+    import torchquantum as tq  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/__init__.py", line 29, in <module>
+    from .device import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/device/__init__.py", line 25, in <module>
+    from .devices import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/device/devices.py", line 30, in <module>
+    from torchquantum.functional import func_name_dict, func_name_dict_collect
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/functional/__init__.py", line 25, in <module>
+    from .gate_wrapper import gate_wrapper, apply_unitary_einsum, apply_unitary_bmm
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/functional/gate_wrapper.py", line 7, in <module>
+    from ..util.utils import pauli_eigs, diag
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/util/__init__.py", line 25, in <module>
+    from .utils import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/util/utils.py", line 33, in <module>
+    from qiskit_ibm_runtime import QiskitRuntimeService
+ModuleNotFoundError: No module named 'qiskit_ibm_runtime'
+2025-12-10 03:57:56,577 WARNING: Traceback (most recent call last):
+  File "/import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/experiments/architect/tq_train_simple_baseline.py", line 51, in <module>
+    import torchquantum as tq  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/__init__.py", line 29, in <module>
+    from .device import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/device/__init__.py", line 25, in <module>
+    from .devices import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/device/devices.py", line 30, in <module>
+    from torchquantum.functional import func_name_dict, func_name_dict_collect
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/functional/__init__.py", line 25, in <module>
+    from .gate_wrapper import gate_wrapper, apply_unitary_einsum, apply_unitary_bmm
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/functional/gate_wrapper.py", line 7, in <module>
+    from ..util.utils import pauli_eigs, diag
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/util/__init__.py", line 25, in <module>
+    from .utils import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/util/utils.py", line 33, in <module>
+    from qiskit_ibm_runtime import QiskitRuntimeService
+ModuleNotFoundError: No module named 'qiskit_ibm_runtime'
+2025-12-10 03:58:01,271 WARNING: Traceback (most recent call last):
+  File "/import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/experiments/architect/tq_train_simple_baseline.py", line 51, in <module>
+    import torchquantum as tq  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/__init__.py", line 29, in <module>
+    from .device import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/device/__init__.py", line 25, in <module>
+    from .devices import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/device/devices.py", line 30, in <module>
+    from torchquantum.functional import func_name_dict, func_name_dict_collect
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/functional/__init__.py", line 25, in <module>
+    from .gate_wrapper import gate_wrapper, apply_unitary_einsum, apply_unitary_bmm
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/functional/gate_wrapper.py", line 7, in <module>
+    from ..util.utils import pauli_eigs, diag
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/util/__init__.py", line 25, in <module>
+    from .utils import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/util/utils.py", line 33, in <module>
+    from qiskit_ibm_runtime import QiskitRuntimeService
+ModuleNotFoundError: No module named 'qiskit_ibm_runtime'
+2025-12-10 03:58:05,271 WARNING: Traceback (most recent call last):
+  File "/import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/experiments/architect/tq_train_simple_baseline.py", line 51, in <module>
+    import torchquantum as tq  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/__init__.py", line 29, in <module>
+    from .device import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/device/__init__.py", line 25, in <module>
+    from .devices import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/device/devices.py", line 30, in <module>
+    from torchquantum.functional import func_name_dict, func_name_dict_collect
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/functional/__init__.py", line 25, in <module>
+    from .gate_wrapper import gate_wrapper, apply_unitary_einsum, apply_unitary_bmm
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/functional/gate_wrapper.py", line 7, in <module>
+    from ..util.utils import pauli_eigs, diag
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/util/__init__.py", line 25, in <module>
+    from .utils import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/util/utils.py", line 33, in <module>
+    from qiskit_ibm_runtime import QiskitRuntimeService
+ModuleNotFoundError: No module named 'qiskit_ibm_runtime'
+2025-12-10 03:58:10,653 WARNING: Traceback (most recent call last):
+  File "/import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/experiments/architect/tq_train_simple_baseline.py", line 51, in <module>
+    import torchquantum as tq  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/__init__.py", line 29, in <module>
+    from .device import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/device/__init__.py", line 25, in <module>
+    from .devices import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/device/devices.py", line 30, in <module>
+    from torchquantum.functional import func_name_dict, func_name_dict_collect
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/functional/__init__.py", line 25, in <module>
+    from .gate_wrapper import gate_wrapper, apply_unitary_einsum, apply_unitary_bmm
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/functional/gate_wrapper.py", line 7, in <module>
+    from ..util.utils import pauli_eigs, diag
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/util/__init__.py", line 25, in <module>
+    from .utils import *
+  File "/home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torchquantum/util/utils.py", line 33, in <module>
+    from qiskit_ibm_runtime import QiskitRuntimeService
+ModuleNotFoundError: No module named 'qiskit_ibm_runtime'
+2025-12-10 03:58:10,669 INFO: Skipping lambda sweep as requested
+2025-12-10 03:58:10,670 INFO: Skipping saboteur-only as requested
+2025-12-10 03:58:10,671 INFO: Skipping adversarial as requested
+2025-12-10 03:58:10,675 INFO: Discovered 5 existing adversarial run(s) with robust circuits
+2025-12-10 03:58:10,680 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_0 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0
+2025-12-10 03:58:10,685 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_1 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1
+2025-12-10 03:58:10,687 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_2 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2
+2025-12-10 03:58:10,690 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_3 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3
+2025-12-10 03:58:10,693 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_4 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4
+2025-12-10 03:58:10,710 INFO: HEA baseline circuits copied into compare runs for analysis.
+2025-12-10 03:58:10,710 INFO: Running comparison across runs
+2025-12-10 03:59:46,903 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-10 03:59:46,905 INFO: Starting pipeline with metadata: {'timestamp': '20251210-035946', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 20480, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-10 03:59:46,905 INFO: Skipping baseline as requested
+2025-12-10 03:59:46,906 INFO: Running HEA baseline per seed
+2025-12-10 03:59:57,814 INFO: [GHZ] epoch 40/400 fidelity 0.980831
+[GHZ] epoch 80/400 fidelity 0.999451
+[GHZ] epoch 120/400 fidelity 0.999997
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_0/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 03:59:57,814 WARNING: /home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torch/cuda/__init__.py:182: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 304: OS call failed or operation not supported on this OS (Triggered internally at /pytorch/c10/cuda/CUDAFunctions.cpp:119.)
+  return torch._C._cuda_getDeviceCount() > 0
+2025-12-10 04:00:05,713 INFO: [GHZ] epoch 40/400 fidelity 0.997973
+[GHZ] epoch 80/400 fidelity 0.999776
+[GHZ] epoch 120/400 fidelity 0.999957
+[GHZ] epoch 160/400 fidelity 0.999989
+[GHZ] epoch 200/400 fidelity 0.999998
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_1/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 04:00:05,713 WARNING: /home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torch/cuda/__init__.py:182: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 304: OS call failed or operation not supported on this OS (Triggered internally at /pytorch/c10/cuda/CUDAFunctions.cpp:119.)
+  return torch._C._cuda_getDeviceCount() > 0
+2025-12-10 04:00:15,983 INFO: [GHZ] epoch 40/400 fidelity 0.988280
+[GHZ] epoch 80/400 fidelity 0.999757
+[GHZ] epoch 120/400 fidelity 0.999917
+[GHZ] epoch 160/400 fidelity 0.999936
+[GHZ] epoch 200/400 fidelity 0.999949
+[GHZ] epoch 240/400 fidelity 0.999960
+[GHZ] epoch 280/400 fidelity 0.999968
+[GHZ] epoch 320/400 fidelity 0.999974
+[GHZ] epoch 360/400 fidelity 0.999979
+[GHZ] epoch 400/400 fidelity 0.999982
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_2/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 04:00:15,984 WARNING: /home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torch/cuda/__init__.py:182: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 304: OS call failed or operation not supported on this OS (Triggered internally at /pytorch/c10/cuda/CUDAFunctions.cpp:119.)
+  return torch._C._cuda_getDeviceCount() > 0
+2025-12-10 04:00:25,456 INFO: [GHZ] epoch 40/400 fidelity 0.992662
+[GHZ] epoch 80/400 fidelity 0.999796
+[GHZ] epoch 120/400 fidelity 0.999998
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_3/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 04:00:25,456 WARNING: /home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torch/cuda/__init__.py:182: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 304: OS call failed or operation not supported on this OS (Triggered internally at /pytorch/c10/cuda/CUDAFunctions.cpp:119.)
+  return torch._C._cuda_getDeviceCount() > 0
+2025-12-10 04:00:36,229 INFO: [GHZ] epoch 40/400 fidelity 0.987302
+[GHZ] epoch 80/400 fidelity 0.999582
+[GHZ] epoch 120/400 fidelity 0.999936
+[GHZ] epoch 160/400 fidelity 0.999972
+[GHZ] epoch 200/400 fidelity 0.999986
+[GHZ] epoch 240/400 fidelity 0.999993
+[GHZ] epoch 280/400 fidelity 0.999997
+[GHZ] epoch 320/400 fidelity 0.999999
+[GHZ] epoch 360/400 fidelity 0.999999
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_4/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 04:00:36,229 WARNING: /home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torch/cuda/__init__.py:182: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 304: OS call failed or operation not supported on this OS (Triggered internally at /pytorch/c10/cuda/CUDAFunctions.cpp:119.)
+  return torch._C._cuda_getDeviceCount() > 0
+2025-12-10 04:00:36,233 INFO: Skipping lambda sweep as requested
+2025-12-10 04:00:36,234 INFO: Skipping saboteur-only as requested
+2025-12-10 04:00:36,234 INFO: Skipping adversarial as requested
+2025-12-10 04:00:36,236 INFO: Discovered 5 existing adversarial run(s) with robust circuits
+2025-12-10 04:00:36,240 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_0 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0
+2025-12-10 04:00:36,245 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_1 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1
+2025-12-10 04:00:36,247 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_2 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2
+2025-12-10 04:00:36,250 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_3 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3
+2025-12-10 04:00:36,253 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_4 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4
+2025-12-10 04:00:36,272 INFO: HEA baseline circuits copied into compare runs for analysis.
+2025-12-10 04:00:36,272 INFO: Running comparison across runs
+2025-12-10 04:01:56,628 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-10 04:01:56,631 INFO: Starting pipeline with metadata: {'timestamp': '20251210-040156', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 20480, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-10 04:01:56,632 INFO: Skipping baseline as requested
+2025-12-10 04:01:56,632 INFO: Running HEA baseline per seed
+2025-12-10 04:02:09,576 INFO: [GHZ] epoch 40/400 fidelity 0.980831
+[GHZ] epoch 80/400 fidelity 0.999451
+[GHZ] epoch 120/400 fidelity 0.999997
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_0/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 04:02:09,576 WARNING: /home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torch/cuda/__init__.py:182: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 304: OS call failed or operation not supported on this OS (Triggered internally at /pytorch/c10/cuda/CUDAFunctions.cpp:119.)
+  return torch._C._cuda_getDeviceCount() > 0
+2025-12-10 04:02:17,512 INFO: [GHZ] epoch 40/400 fidelity 0.997973
+[GHZ] epoch 80/400 fidelity 0.999776
+[GHZ] epoch 120/400 fidelity 0.999957
+[GHZ] epoch 160/400 fidelity 0.999989
+[GHZ] epoch 200/400 fidelity 0.999998
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_1/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 04:02:17,512 WARNING: /home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torch/cuda/__init__.py:182: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 304: OS call failed or operation not supported on this OS (Triggered internally at /pytorch/c10/cuda/CUDAFunctions.cpp:119.)
+  return torch._C._cuda_getDeviceCount() > 0
+2025-12-10 04:02:27,401 INFO: [GHZ] epoch 40/400 fidelity 0.988280
+[GHZ] epoch 80/400 fidelity 0.999757
+[GHZ] epoch 120/400 fidelity 0.999917
+[GHZ] epoch 160/400 fidelity 0.999936
+[GHZ] epoch 200/400 fidelity 0.999949
+[GHZ] epoch 240/400 fidelity 0.999960
+[GHZ] epoch 280/400 fidelity 0.999968
+[GHZ] epoch 320/400 fidelity 0.999974
+[GHZ] epoch 360/400 fidelity 0.999979
+[GHZ] epoch 400/400 fidelity 0.999982
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_2/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 04:02:27,401 WARNING: /home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torch/cuda/__init__.py:182: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 304: OS call failed or operation not supported on this OS (Triggered internally at /pytorch/c10/cuda/CUDAFunctions.cpp:119.)
+  return torch._C._cuda_getDeviceCount() > 0
+2025-12-10 04:02:36,044 INFO: [GHZ] epoch 40/400 fidelity 0.992662
+[GHZ] epoch 80/400 fidelity 0.999796
+[GHZ] epoch 120/400 fidelity 0.999998
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_3/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 04:02:36,044 WARNING: /home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torch/cuda/__init__.py:182: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 304: OS call failed or operation not supported on this OS (Triggered internally at /pytorch/c10/cuda/CUDAFunctions.cpp:119.)
+  return torch._C._cuda_getDeviceCount() > 0
+2025-12-10 04:02:44,921 INFO: [GHZ] epoch 40/400 fidelity 0.987302
+[GHZ] epoch 80/400 fidelity 0.999582
+[GHZ] epoch 120/400 fidelity 0.999936
+[GHZ] epoch 160/400 fidelity 0.999972
+[GHZ] epoch 200/400 fidelity 0.999986
+[GHZ] epoch 240/400 fidelity 0.999993
+[GHZ] epoch 280/400 fidelity 0.999997
+[GHZ] epoch 320/400 fidelity 0.999999
+[GHZ] epoch 360/400 fidelity 0.999999
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_4/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 04:02:44,921 WARNING: /home/gp.sc.cc.tohoku.ac.jp/jesus/anaconda3/lib/python3.12/site-packages/torch/cuda/__init__.py:182: UserWarning: CUDA initialization: Unexpected error from cudaGetDeviceCount(). Did you run some cuda functions before calling NumCudaDevices() that might have already set an error? Error 304: OS call failed or operation not supported on this OS (Triggered internally at /pytorch/c10/cuda/CUDAFunctions.cpp:119.)
+  return torch._C._cuda_getDeviceCount() > 0
+2025-12-10 04:02:44,925 INFO: Skipping lambda sweep as requested
+2025-12-10 04:02:44,925 INFO: Skipping saboteur-only as requested
+2025-12-10 04:02:44,925 INFO: Skipping adversarial as requested
+2025-12-10 04:02:44,927 INFO: Discovered 5 existing adversarial run(s) with robust circuits
+2025-12-10 04:02:44,933 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_0 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0
+2025-12-10 04:02:44,937 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_1 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1
+2025-12-10 04:02:44,939 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_2 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2
+2025-12-10 04:02:44,942 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_3 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3
+2025-12-10 04:02:44,944 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_4 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4
+2025-12-10 04:02:44,962 INFO: HEA baseline circuits copied into compare runs for analysis.
+2025-12-10 04:02:44,962 INFO: Running comparison across runs
+2025-12-10 04:59:02,356 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-10 04:59:02,358 INFO: Starting pipeline with metadata: {'timestamp': '20251210-045902', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 20480, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-10 04:59:02,358 INFO: Skipping baseline as requested
+2025-12-10 04:59:02,359 INFO: Running HEA baseline per seed
+2025-12-10 04:59:15,344 INFO: [GHZ] epoch 40/400 fidelity 0.980831
+[GHZ] epoch 80/400 fidelity 0.999451
+[GHZ] epoch 120/400 fidelity 0.999997
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz_3/quantumnas/seed_0/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 04:59:27,492 INFO: [GHZ] epoch 40/400 fidelity 0.997973
+[GHZ] epoch 80/400 fidelity 0.999776
+[GHZ] epoch 120/400 fidelity 0.999957
+[GHZ] epoch 160/400 fidelity 0.999989
+[GHZ] epoch 200/400 fidelity 0.999998
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz_3/quantumnas/seed_1/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 04:59:38,929 INFO: [GHZ] epoch 40/400 fidelity 0.988280
+[GHZ] epoch 80/400 fidelity 0.999757
+[GHZ] epoch 120/400 fidelity 0.999917
+[GHZ] epoch 160/400 fidelity 0.999936
+[GHZ] epoch 200/400 fidelity 0.999949
+[GHZ] epoch 240/400 fidelity 0.999960
+[GHZ] epoch 280/400 fidelity 0.999968
+[GHZ] epoch 320/400 fidelity 0.999974
+[GHZ] epoch 360/400 fidelity 0.999979
+[GHZ] epoch 400/400 fidelity 0.999982
+[GHZ] Saved circuit to results/ghz_3/quantumnas/seed_2/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 04:59:49,129 INFO: [GHZ] epoch 40/400 fidelity 0.992662
+[GHZ] epoch 80/400 fidelity 0.999796
+[GHZ] epoch 120/400 fidelity 0.999998
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz_3/quantumnas/seed_3/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 04:59:57,841 INFO: [GHZ] epoch 40/400 fidelity 0.987302
+[GHZ] epoch 80/400 fidelity 0.999582
+[GHZ] epoch 120/400 fidelity 0.999936
+[GHZ] epoch 160/400 fidelity 0.999972
+[GHZ] epoch 200/400 fidelity 0.999986
+[GHZ] epoch 240/400 fidelity 0.999993
+[GHZ] epoch 280/400 fidelity 0.999997
+[GHZ] epoch 320/400 fidelity 0.999999
+[GHZ] epoch 360/400 fidelity 0.999999
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz_3/quantumnas/seed_4/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 04:59:57,845 INFO: Skipping lambda sweep as requested
+2025-12-10 04:59:57,846 INFO: Skipping saboteur-only as requested
+2025-12-10 04:59:57,846 INFO: Skipping adversarial as requested
+2025-12-10 04:59:57,848 INFO: Discovered 5 existing adversarial run(s) with robust circuits
+2025-12-10 04:59:57,852 INFO: Robust circuit from results/ghz_3/adversarial/seed_0 copied to results/ghz_3/compare/run_0
+2025-12-10 04:59:57,856 INFO: Robust circuit from results/ghz_3/adversarial/seed_1 copied to results/ghz_3/compare/run_1
+2025-12-10 04:59:57,858 INFO: Robust circuit from results/ghz_3/adversarial/seed_2 copied to results/ghz_3/compare/run_2
+2025-12-10 04:59:57,860 INFO: Robust circuit from results/ghz_3/adversarial/seed_3 copied to results/ghz_3/compare/run_3
+2025-12-10 04:59:57,862 INFO: Robust circuit from results/ghz_3/adversarial/seed_4 copied to results/ghz_3/compare/run_4
+2025-12-10 04:59:57,874 INFO: HEA baseline circuits copied into compare runs for analysis.
+2025-12-10 04:59:57,874 INFO: Running comparison across runs
+2025-12-10 05:12:09,823 INFO: Running cross-noise robustness experiment (aggregated across 5 seeds)
+2025-12-10 05:12:09,824 INFO: === Cross-Noise Robustness Experiment (ExpPlan Part 2, Exp 2.1) ===
+2025-12-10 05:12:09,824 INFO: RL baseline circuit: ['results/ghz_3/compare/run_0/circuit_vanilla.json', 'results/ghz_3/compare/run_1/circuit_vanilla.json', 'results/ghz_3/compare/run_2/circuit_vanilla.json', 'results/ghz_3/compare/run_3/circuit_vanilla.json', 'results/ghz_3/compare/run_4/circuit_vanilla.json']
+2025-12-10 05:12:09,824 INFO: Robust circuit: ['results/ghz_3/compare/run_0/circuit_robust.json', 'results/ghz_3/compare/run_1/circuit_robust.json', 'results/ghz_3/compare/run_2/circuit_robust.json', 'results/ghz_3/compare/run_3/circuit_robust.json', 'results/ghz_3/compare/run_4/circuit_robust.json']
+2025-12-10 05:12:09,824 INFO: Output directory: results/ghz_3/cross_noise/cross_noise_20251210-051209
+2025-12-10 05:12:09,824 INFO: Number of qubits: 3
+2025-12-10 05:12:09,824 INFO: Number of seeds: 5
+2025-12-10 05:12:09,824 INFO: Base seed: 42
+2025-12-10 05:12:09,825 INFO: Loaded circuit results/ghz_3/compare/run_0/circuit_vanilla.json with 16 operations
+2025-12-10 05:12:09,826 INFO: Loaded circuit results/ghz_3/compare/run_1/circuit_vanilla.json with 17 operations
+2025-12-10 05:12:09,827 INFO: Loaded circuit results/ghz_3/compare/run_2/circuit_vanilla.json with 16 operations
+2025-12-10 05:12:09,827 INFO: Loaded circuit results/ghz_3/compare/run_3/circuit_vanilla.json with 16 operations
+2025-12-10 05:12:09,828 INFO: Loaded circuit results/ghz_3/compare/run_4/circuit_vanilla.json with 15 operations
+2025-12-10 05:12:09,829 INFO: Loaded circuit results/ghz_3/compare/run_0/circuit_robust.json with 3 operations
+2025-12-10 05:12:09,829 INFO: Loaded circuit results/ghz_3/compare/run_1/circuit_robust.json with 6 operations
+2025-12-10 05:12:09,830 INFO: Loaded circuit results/ghz_3/compare/run_2/circuit_robust.json with 5 operations
+2025-12-10 05:12:09,830 INFO: Loaded circuit results/ghz_3/compare/run_3/circuit_robust.json with 6 operations
+2025-12-10 05:12:09,831 INFO: Loaded circuit results/ghz_3/compare/run_4/circuit_robust.json with 4 operations
+2025-12-10 05:12:09,832 INFO: Loaded circuit results/ghz_3/compare/run_0/circuit_quantumnas.json with 15 operations
+2025-12-10 05:12:09,832 INFO: Loaded circuit results/ghz_3/compare/run_1/circuit_quantumnas.json with 15 operations
+2025-12-10 05:12:09,833 INFO: Loaded circuit results/ghz_3/compare/run_2/circuit_quantumnas.json with 15 operations
+2025-12-10 05:12:09,834 INFO: Loaded circuit results/ghz_3/compare/run_3/circuit_quantumnas.json with 15 operations
+2025-12-10 05:12:09,835 INFO: Loaded circuit results/ghz_3/compare/run_4/circuit_quantumnas.json with 15 operations
+2025-12-10 05:12:09,857 INFO: Clean fidelities — baseline: 1.0000, robust: 1.0000, HEA baseline: 1.0000; using shared reference 1.0000
+2025-12-10 05:12:09,858 INFO: 
+--- Over-rotation sweep (ε ∈ [0.0, 0.2]) ---
+2025-12-10 05:12:10,036 INFO: RL baseline avg retention ratio (over-rotation): 0.8058
+2025-12-10 05:12:10,036 INFO: Robust avg retention ratio (over-rotation): 0.9798
+2025-12-10 05:12:10,036 INFO: 
+--- Asymmetric Pauli noise sweep (p_x in [0.05], p_y=0.0, p_z=0.0) ---
+2025-12-10 05:12:10,204 INFO: p_x=0.050 | RL baseline retention: 0.3101 | Robust retention: 0.8170 | HEA baseline retention: 0.4435
+2025-12-10 05:12:10,329 INFO: 
+Results saved to results/ghz_3/cross_noise/cross_noise_20251210-051209/cross_noise_results.json
+2025-12-10 05:12:10,595 INFO: Plot saved to results/ghz_3/cross_noise/cross_noise_20251210-051209/cross_noise_robustness.png
+2025-12-10 05:12:10,596 INFO: Summary saved to results/ghz_3/cross_noise/cross_noise_20251210-051209/cross_noise_summary.txt
+2025-12-10 05:12:10,601 INFO: 
+=== Cross-Noise Robustness Experiment Complete ===
+2025-12-10 05:12:11,330 INFO: Running hardware-style eval on backends: ['fake_yorktown', 'fake_bogota', 'fake_lima', 'fake_vigo']
+2025-12-10 05:12:11,334 ERROR: Hardware eval failed: Unknown backend 'fake_bogota'. Supported: ['fake_quito', 'fake_belem', 'fake_athens', 'fake_yorktown', 'fake_lagos', 'fake_oslo']
+2025-12-10 05:12:11,369 WARNING: No fidelity data found to summarize.
+2025-12-10 05:12:23,517 INFO: Robustness sweep written to results/ghz_3/analysis/robustness_sweep.json/results/ghz_3/analysis/robustness_sweep.csv (legacy compare uses family=amplitude_damping, budget=1)
+2025-12-10 05:12:29,181 INFO: Pipeline finished. Results in results/ghz_3
+2025-12-10 07:43:09,438 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-10 07:43:09,440 INFO: Starting pipeline with metadata: {'timestamp': '20251210-074309', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 20480, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-10 07:43:09,440 INFO: Skipping baseline as requested
+2025-12-10 07:43:09,441 INFO: Running HEA baseline per seed
+2025-12-10 07:43:18,655 INFO: [GHZ] epoch 40/400 fidelity 0.980831
+[GHZ] epoch 80/400 fidelity 0.999451
+[GHZ] epoch 120/400 fidelity 0.999997
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_0/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 07:43:27,744 INFO: [GHZ] epoch 40/400 fidelity 0.997973
+[GHZ] epoch 80/400 fidelity 0.999776
+[GHZ] epoch 120/400 fidelity 0.999957
+[GHZ] epoch 160/400 fidelity 0.999989
+[GHZ] epoch 200/400 fidelity 0.999998
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_1/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 07:43:35,570 INFO: [GHZ] epoch 40/400 fidelity 0.988280
+[GHZ] epoch 80/400 fidelity 0.999757
+[GHZ] epoch 120/400 fidelity 0.999917
+[GHZ] epoch 160/400 fidelity 0.999936
+[GHZ] epoch 200/400 fidelity 0.999949
+[GHZ] epoch 240/400 fidelity 0.999960
+[GHZ] epoch 280/400 fidelity 0.999968
+[GHZ] epoch 320/400 fidelity 0.999974
+[GHZ] epoch 360/400 fidelity 0.999979
+[GHZ] epoch 400/400 fidelity 0.999982
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_2/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 07:43:42,889 INFO: [GHZ] epoch 40/400 fidelity 0.992662
+[GHZ] epoch 80/400 fidelity 0.999796
+[GHZ] epoch 120/400 fidelity 0.999998
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_3/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 07:43:51,918 INFO: [GHZ] epoch 40/400 fidelity 0.987302
+[GHZ] epoch 80/400 fidelity 0.999582
+[GHZ] epoch 120/400 fidelity 0.999936
+[GHZ] epoch 160/400 fidelity 0.999972
+[GHZ] epoch 200/400 fidelity 0.999986
+[GHZ] epoch 240/400 fidelity 0.999993
+[GHZ] epoch 280/400 fidelity 0.999997
+[GHZ] epoch 320/400 fidelity 0.999999
+[GHZ] epoch 360/400 fidelity 0.999999
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/quantumnas/seed_4/circuit_quantumnas.json (depth=3, max_gates=15)
+2025-12-10 07:43:51,924 INFO: Skipping lambda sweep as requested
+2025-12-10 07:43:51,925 INFO: Skipping saboteur-only as requested
+2025-12-10 07:43:51,925 INFO: Skipping adversarial as requested
+2025-12-10 07:43:51,928 INFO: Discovered 5 existing adversarial run(s) with robust circuits
+2025-12-10 07:43:51,932 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_0 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_0
+2025-12-10 07:43:51,935 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_1 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_1
+2025-12-10 07:43:51,938 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_2 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_2
+2025-12-10 07:43:51,940 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_3 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_3
+2025-12-10 07:43:51,942 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/adversarial/seed_4 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_3/compare/run_4
+2025-12-10 07:43:51,959 INFO: HEA baseline circuits copied into compare runs for analysis.
+2025-12-10 07:43:51,959 INFO: Running comparison across runs

@@ -1,0 +1,514 @@
+[
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"depolarizing",
+    "rate":0.0,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"depolarizing",
+    "rate":0.01,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"depolarizing",
+    "rate":0.02,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"depolarizing",
+    "rate":0.05,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"amplitude_damping",
+    "rate":0.0,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"amplitude_damping",
+    "rate":0.01,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"amplitude_damping",
+    "rate":0.02,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"amplitude_damping",
+    "rate":0.05,
+    "energy":-0.3436843556,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"coherent_overrotation",
+    "rate":0.0,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"coherent_overrotation",
+    "rate":0.01,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"coherent_overrotation",
+    "rate":0.02,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"coherent_overrotation",
+    "rate":0.05,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"readout",
+    "rate":0.0,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"readout",
+    "rate":0.01,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"readout",
+    "rate":0.02,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"readout",
+    "rate":0.05,
+    "energy":0.7199689944,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"depolarizing",
+    "rate":0.0,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"depolarizing",
+    "rate":0.01,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"depolarizing",
+    "rate":0.02,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"depolarizing",
+    "rate":0.05,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"amplitude_damping",
+    "rate":0.0,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"amplitude_damping",
+    "rate":0.01,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"amplitude_damping",
+    "rate":0.02,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"amplitude_damping",
+    "rate":0.05,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"coherent_overrotation",
+    "rate":0.0,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"coherent_overrotation",
+    "rate":0.01,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"coherent_overrotation",
+    "rate":0.02,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"coherent_overrotation",
+    "rate":0.05,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"readout",
+    "rate":0.0,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"readout",
+    "rate":0.01,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"readout",
+    "rate":0.02,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"readout",
+    "rate":0.05,
+    "energy":-1.1169989968,
+    "seed":0
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"depolarizing",
+    "rate":0.0,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"depolarizing",
+    "rate":0.01,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"depolarizing",
+    "rate":0.02,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"depolarizing",
+    "rate":0.05,
+    "energy":-0.5246155554,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"amplitude_damping",
+    "rate":0.0,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"amplitude_damping",
+    "rate":0.01,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"amplitude_damping",
+    "rate":0.02,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"amplitude_damping",
+    "rate":0.05,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"coherent_overrotation",
+    "rate":0.0,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"coherent_overrotation",
+    "rate":0.01,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"coherent_overrotation",
+    "rate":0.02,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"coherent_overrotation",
+    "rate":0.05,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"readout",
+    "rate":0.0,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"readout",
+    "rate":0.01,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"readout",
+    "rate":0.02,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"untwirled",
+    "noise_family":"readout",
+    "rate":0.05,
+    "energy":-0.5246155554,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"depolarizing",
+    "rate":0.0,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"depolarizing",
+    "rate":0.01,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"depolarizing",
+    "rate":0.02,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"depolarizing",
+    "rate":0.05,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"amplitude_damping",
+    "rate":0.0,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"amplitude_damping",
+    "rate":0.01,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"amplitude_damping",
+    "rate":0.02,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"amplitude_damping",
+    "rate":0.05,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"coherent_overrotation",
+    "rate":0.0,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"coherent_overrotation",
+    "rate":0.01,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"coherent_overrotation",
+    "rate":0.02,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"coherent_overrotation",
+    "rate":0.05,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"readout",
+    "rate":0.0,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"readout",
+    "rate":0.01,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"readout",
+    "rate":0.02,
+    "energy":-1.1169989968,
+    "seed":1
+  },
+  {
+    "method":"Architect adversarial",
+    "variant":"twirled",
+    "noise_family":"readout",
+    "rate":0.05,
+    "energy":-1.1169989968,
+    "seed":1
+  }
+]

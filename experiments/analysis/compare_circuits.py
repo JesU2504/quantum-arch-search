@@ -32,6 +32,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import json
 from datetime import datetime
+from typing import Sequence
 
 from experiments import config
 from qas_gym.utils import (
@@ -42,6 +43,103 @@ from qas_gym.utils import (
     build_frame_twirled_noisy_circuit,
     apply_inverse_pauli_frame_to_target,
 )
+
+
+MITIGATION_NONE = "none"
+MITIGATION_TWIRL = "twirl"
+MITIGATION_RC_ZNE = "rc_zne"
+
+MITIGATION_VARIANTS: dict[str, tuple[str, ...]] = {
+    MITIGATION_NONE: ("untwirled",),
+    MITIGATION_TWIRL: ("untwirled", "twirled"),
+    MITIGATION_RC_ZNE: ("untwirled", "mitigated"),
+}
+
+RC_ZNE_DEFAULT_SCALES: tuple[float, ...] = (1.0, 1.5, 2.0)
+
+
+def _richardson_extrapolate(scales: Sequence[float], values: Sequence[float]) -> float:
+    """Return zero-noise estimate via first-order Richardson extrapolation."""
+    if len(scales) != len(values) or not scales:
+        raise ValueError("Scale and value lists must match and be non-empty")
+    if len(scales) == 1:
+        return float(values[0])
+    x = np.asarray(scales, dtype=float)
+    y = np.asarray(values, dtype=float)
+    # Linear fit and evaluate at scale 0
+    coeffs = np.polyfit(x, y, deg=1)
+    return float(np.polyval(coeffs, 0.0))
+
+
+def _polyfit_extrapolate(scales: Sequence[float], values: Sequence[float], order: int) -> float:
+    """Generic polynomial fit extrapolation evaluated at zero noise."""
+    if len(scales) != len(values) or not scales:
+        raise ValueError("Scale and value lists must match and be non-empty")
+    if len(scales) == 1:
+        return float(values[0])
+    order = max(1, min(order, len(scales) - 1))
+    x = np.asarray(scales, dtype=float)
+    y = np.asarray(values, dtype=float)
+    coeffs = np.polyfit(x, y, deg=order)
+    return float(np.polyval(coeffs, 0.0))
+
+
+def _zero_noise_extrapolate(scales: Sequence[float], values: Sequence[float], fit: str = "linear") -> float:
+    """
+    Flexible zero-noise extrapolation with model selection.
+
+    Args:
+        scales: Noise scale factors.
+        values: Observed fidelities per scale.
+        fit: Extrapolation model ('linear'/'richardson' or 'quadratic').
+    """
+    mode = (fit or "linear").lower()
+    if mode in ("linear", "richardson", "order1"):
+        return _richardson_extrapolate(scales, values)
+    if mode in ("quadratic", "poly2", "order2", "richardson2"):
+        if len(scales) < 3:
+            return _richardson_extrapolate(scales, values)
+        return _polyfit_extrapolate(scales, values, order=2)
+    raise ValueError(f"Unknown rc_zne_fit '{fit}'")
+
+
+def _scale_noise_kwargs(
+    attack_mode: str,
+    scale: float,
+    *,
+    epsilon_overrot: float,
+    p_x: float,
+    p_y: float,
+    p_z: float,
+    gamma_amp: float,
+    gamma_phase: float,
+    p_readout: float,
+) -> dict[str, float]:
+    """Scale deterministic-noise parameters for zero-noise extrapolation."""
+
+    def _clamp_prob(value: float) -> float:
+        return float(np.clip(value, 0.0, 0.999999))
+
+    def _scale_damping(prob: float, factor: float) -> float:
+        prob = _clamp_prob(prob)
+        if prob <= 0.0:
+            return 0.0
+        # Preserve physicality via survival probability scaling
+        survival = 1.0 - prob
+        scaled = 1.0 - survival**factor
+        return _clamp_prob(scaled)
+
+    scale = float(max(scale, 0.0))
+    scaled = {
+        "epsilon_overrot": float(np.clip(epsilon_overrot * scale, -np.pi, np.pi)) if attack_mode == "over_rotation" else epsilon_overrot,
+        "p_x": _clamp_prob(p_x * scale) if attack_mode == "asymmetric_noise" else p_x,
+        "p_y": _clamp_prob(p_y * scale) if attack_mode == "asymmetric_noise" else p_y,
+        "p_z": _clamp_prob(p_z * scale) if attack_mode == "asymmetric_noise" else p_z,
+        "gamma_amp": _scale_damping(gamma_amp, scale) if attack_mode == "amplitude_damping" else gamma_amp,
+        "gamma_phase": _scale_damping(gamma_phase, scale) if attack_mode == "phase_damping" else gamma_phase,
+        "p_readout": _clamp_prob(p_readout * scale) if attack_mode == "readout" else p_readout,
+    }
+    return scaled
 
 # Import statistical utilities
 from utils.stats import (
@@ -72,53 +170,97 @@ def evaluate_multi_gate_attacks(
     gamma_amp: float = 0.05,
     gamma_phase: float = 0.05,
     p_readout: float = 0.03,
-    randomized_compile_flag: bool = False,
+    mitigation_mode: str = MITIGATION_NONE,
+    rc_zne_scales: Sequence[float] = RC_ZNE_DEFAULT_SCALES,
+    rc_zne_fit: str = "linear",
+    rc_zne_reps: int = 1,
 ):
     """
     Evaluate circuit robustness under multi-gate attacks sampled from saboteur_agent.
     Returns dict with clean fidelity, mean/min/std attacked fidelity, and all samples.
     If saboteur_agent is None, uses zero-vector (no noise) as fallback.
     Budgeted top-k attack mirrors training (default budget=3).
+
+    rc_zne_fit: Extrapolation model for RC-ZNE ('linear' or 'quadratic').
+    rc_zne_reps: Number of RC draws to average per noise scale before extrapolation.
     """
     from qas_gym.envs.saboteur_env import SaboteurMultiGateEnv
     qubits = sorted(list(circuit.all_qubits()))
+    deterministic_modes = {"over_rotation", "asymmetric_noise", "amplitude_damping", "phase_damping", "readout"}
+    rc_scales = tuple(float(s) for s in rc_zne_scales if s is not None and float(s) >= 0.0)
+    if mitigation_mode == MITIGATION_RC_ZNE and len(rc_scales) < 2:
+        rc_scales = RC_ZNE_DEFAULT_SCALES
+    rc_zne_reps = max(1, int(rc_zne_reps) if rc_zne_reps is not None else 1)
     # --- Dimension check ---
-    # Get state vector size from circuit and target_state
     circuit_n_qubits = len(qubits)
     target_dim = target_state.shape[0]
     expected_dim = 2 ** circuit_n_qubits
     if expected_dim != target_dim:
-        raise ValueError(f"[ERROR] Circuit qubit count ({circuit_n_qubits}) does not match target_state dimension ({target_dim}). "
-                         f"Expected dimension: {expected_dim}.\n"
-                         f"Check that the circuit and target_state are for the same number of qubits.\n"
-                         f"Circuit: {circuit}\nTarget state shape: {target_state.shape}")
+        raise ValueError(
+            f"[ERROR] Circuit qubit count ({circuit_n_qubits}) does not match target_state dimension ({target_dim}). "
+            f"Expected dimension: {expected_dim}.\n"
+            f"Check that the circuit and target_state are for the same number of qubits.\n"
+            f"Circuit: {circuit}\nTarget state shape: {target_state.shape}"
+        )
     clean_fid = fidelity_pure_target(circuit, target_state, qubits)
     ops = list(circuit.all_operations())
     attacked_vals = []
+    rc_zne_scale_values: list[list[float]] = []
     rng = rng or np.random.default_rng()
-    # Precompute static helpers outside the sampling loop
-    ops = list(circuit.all_operations())
     all_rates = SaboteurMultiGateEnv.all_error_rates
     max_idx = len(all_rates) - 1
     valid_gate_count = min(len(ops), config.MAX_CIRCUIT_TIMESTEPS)
 
     for _ in range(samples):
-        # Enable twirling for deterministic gate noise modes; skip readout and random_high
-        twirl_for_mode = randomized_compile_flag and attack_mode in (
-            "over_rotation",
-            "asymmetric_noise",
-            "amplitude_damping",
-            "phase_damping",
-        )
         work_circuit = circuit
-        # Deterministic noise modes bypass saboteur
-        if attack_mode in ("over_rotation", "asymmetric_noise", "amplitude_damping", "phase_damping", "readout"):
+        if attack_mode in deterministic_modes:
+            if mitigation_mode == MITIGATION_RC_ZNE:
+                sample_seed = int(rng.integers(0, 2**32 - 1, dtype=np.uint32))
+                zne_values: list[float] = []
+                for scale in rc_scales:
+                    scale_reps: list[float] = []
+                    for rep in range(rc_zne_reps):
+                        rep_seed = sample_seed + rep
+                        local_rng = np.random.default_rng(rep_seed)
+                        scaled = _scale_noise_kwargs(
+                            attack_mode,
+                            scale,
+                            epsilon_overrot=epsilon_overrot,
+                            p_x=p_x,
+                            p_y=p_y,
+                            p_z=p_z,
+                            gamma_amp=gamma_amp,
+                            gamma_phase=gamma_phase,
+                            p_readout=p_readout,
+                        )
+                        noisy_circuit, frame = build_frame_twirled_noisy_circuit(
+                            work_circuit,
+                            local_rng,
+                            attack_mode,
+                            epsilon_overrot=scaled["epsilon_overrot"],
+                            p_x=scaled["p_x"],
+                            p_y=scaled["p_y"],
+                            p_z=scaled["p_z"],
+                            gamma_amp=scaled["gamma_amp"],
+                            gamma_phase=scaled["gamma_phase"],
+                            p_readout=scaled["p_readout"],
+                        )
+                        scale_reps.append(
+                            fidelity_pure_target(noisy_circuit, target_state, qubits, frame=frame)
+                        )
+                    zne_values.append(float(np.mean(scale_reps)))
+                rc_zne_scale_values.append(zne_values)
+                estimate = _zero_noise_extrapolate(rc_scales, zne_values, fit=rc_zne_fit)
+                attacked_vals.append(float(np.clip(estimate, 0.0, 1.0)))
+                continue
+
+            twirl_for_mode = mitigation_mode == MITIGATION_TWIRL and attack_mode in deterministic_modes
             if twirl_for_mode:
-                # Frame-based twirl: build noisy circuit with per-op virtual sandwich conjugation of noise.
-                # Returns identity frame since virtual sandwich has no net frame accumulation.
+                twirl_seed = int(rng.integers(0, 2**32 - 1, dtype=np.uint32))
+                local_rng = np.random.default_rng(twirl_seed)
                 noisy_circuit, frame = build_frame_twirled_noisy_circuit(
                     work_circuit,
-                    rng,
+                    local_rng,
                     attack_mode,
                     epsilon_overrot=epsilon_overrot,
                     p_x=p_x,
@@ -128,7 +270,6 @@ def evaluate_multi_gate_attacks(
                     gamma_phase=gamma_phase,
                     p_readout=p_readout,
                 )
-                # Frame is identity for virtual sandwich; fidelity_pure_target checks for non-identity before applying correction
                 attacked_vals.append(fidelity_pure_target(noisy_circuit, target_state, qubits, frame=frame))
             else:
                 noisy_ops = []
@@ -210,13 +351,22 @@ def evaluate_multi_gate_attacks(
         noisy_circuit = cirq.Circuit(noisy_ops)
         attacked_vals.append(fidelity_pure_target(noisy_circuit, target_state, qubits))
     attacked_arr = np.array(attacked_vals)
-    return {
+    result = {
         "clean_fidelity": float(clean_fid),
         "mean_attacked": float(attacked_arr.mean()),
         "min_attacked": float(attacked_arr.min()),
         "std_attacked": float(attacked_arr.std()),
         "samples": attacked_vals
     }
+    if mitigation_mode == MITIGATION_RC_ZNE:
+        result["rc_zne_scales_used"] = list(rc_scales)
+        result["rc_zne_fit"] = rc_zne_fit
+        result["rc_zne_reps"] = rc_zne_reps
+        if rc_zne_scale_values:
+            scale_arr = np.asarray(rc_zne_scale_values, dtype=float)
+            result["rc_zne_scale_mean"] = scale_arr.mean(axis=0).tolist()
+            result["rc_zne_scale_std"] = scale_arr.std(axis=0).tolist()
+    return result
 
 def calculate_fidelity(circuit: cirq.Circuit, target_state: np.ndarray) -> float:
     """Unified fidelity via fidelity_pure_target helper."""
@@ -252,7 +402,10 @@ def compare_noise_resilience(
     p_readout: float = 0.03,
     quantumnas_circuit_path: str | None = None,
     ignore_saboteur: bool = False,
-    randomized_compile_flag: bool = False,
+    mitigation_mode: str = MITIGATION_NONE,
+    rc_zne_scales: Sequence[float] = RC_ZNE_DEFAULT_SCALES,
+    rc_zne_fit: str = "linear",
+    rc_zne_reps: int = 1,
 ):
     """
     Aggregate and compare circuit robustness under multi-gate attacks.
@@ -261,7 +414,7 @@ def compare_noise_resilience(
         - Multiple attack samples per circuit
         - Results include mean ± std for attacked fidelities  
         - Error bars and sample size annotations on plots
-        - Automatic A/B variant generation when randomized_compile_flag=True
+    - Automatic A/B variant generation when mitigation_mode!='none'
     
     Args:
         base_results_dir: Base directory containing run subdirectories.
@@ -275,8 +428,11 @@ def compare_noise_resilience(
         gamma_amp: Amplitude damping probability for 'amplitude_damping' attack mode.
         gamma_phase: Phase damping (dephasing) probability for 'phase_damping' attack mode.
         p_readout: Readout error probability for 'readout' attack mode (applied as bit-flip channel).
-        randomized_compile_flag: If True, auto-generates both 'untwirled' and 'twirled' variants for each run/mode/circuit.
-            Twirled variants use frame-based Pauli conjugation for deterministic modes. Default is False for backward compatibility.
+        mitigation_mode: Mitigation strategy for deterministic noise ('none', 'twirl', 'rc_zne').
+            'twirl' reproduces Pauli-frame twirling; 'rc_zne' performs randomized compiling plus zero-noise extrapolation.
+        rc_zne_scales: Noise scaling factors used when mitigation_mode='rc_zne'.
+        rc_zne_fit: Extrapolation model for RC-ZNE ('linear' or 'quadratic').
+        rc_zne_reps: Number of randomized-compiling draws averaged per scale.
     """
     attack_modes = attack_modes or [attack_mode]
     primary_mode = attack_modes[0]
@@ -286,6 +442,17 @@ def compare_noise_resilience(
             logger.info(msg)
         else:
             print(msg)
+
+    if mitigation_mode not in MITIGATION_VARIANTS:
+        log(f"[compare_circuits] Unknown mitigation_mode '{mitigation_mode}', defaulting to 'none'.")
+        mitigation_mode = MITIGATION_NONE
+    variants_for_mode = MITIGATION_VARIANTS[mitigation_mode]
+    secondary_variant = next((v for v in variants_for_mode if v != "untwirled"), None)
+    if rc_zne_scales is None:
+        rc_zne_scales = RC_ZNE_DEFAULT_SCALES
+    else:
+        rc_zne_scales = tuple(rc_zne_scales)
+    rc_zne_reps = max(1, int(rc_zne_reps) if rc_zne_reps is not None else 1)
     
     log("--- Aggregating and Comparing Circuit Robustness (Multi-Gate Attacks) ---")
     summary_json = os.path.join(base_results_dir, "robust_eval.json")
@@ -361,17 +528,25 @@ def compare_noise_resilience(
 
         for mode in attack_modes:
             rng = np.random.default_rng(None if seed is None else seed + i)
-            # Generate both variants if randomized_compile_flag is enabled; otherwise untwirled only
-            variants_to_test = ("untwirled", "twirled") if randomized_compile_flag else ("untwirled",)
-            for variant in variants_to_test:
-                do_twirl = (variant == "twirled")
+            for variant in variants_for_mode:
+                if variant == "untwirled":
+                    eval_mitigation = MITIGATION_NONE
+                elif variant == "twirled":
+                    eval_mitigation = MITIGATION_TWIRL
+                elif variant == "mitigated":
+                    eval_mitigation = MITIGATION_RC_ZNE
+                else:
+                    eval_mitigation = MITIGATION_NONE
                 metrics_v = evaluate_multi_gate_attacks(
                     circuit_vanilla, saboteur_agent, target_state, n_qubits,
                     samples=samples, fallback_error_idx=fallback_error_idx,
                     saboteur_budget=saboteur_budget, rng=rng, attack_mode=mode,
                     epsilon_overrot=epsilon_overrot, p_x=p_x, p_y=p_y, p_z=p_z,
                     gamma_amp=gamma_amp, gamma_phase=gamma_phase, p_readout=p_readout,
-                    randomized_compile_flag=do_twirl
+                    mitigation_mode=eval_mitigation,
+                    rc_zne_scales=rc_zne_scales,
+                    rc_zne_fit=rc_zne_fit,
+                    rc_zne_reps=rc_zne_reps,
                 )
                 metrics_v["variant"] = variant
                 metrics_v["seed"] = i
@@ -389,7 +564,10 @@ def compare_noise_resilience(
                     saboteur_budget=saboteur_budget, rng=rng, attack_mode=mode,
                     epsilon_overrot=epsilon_overrot, p_x=p_x, p_y=p_y, p_z=p_z,
                     gamma_amp=gamma_amp, gamma_phase=gamma_phase, p_readout=p_readout,
-                    randomized_compile_flag=do_twirl
+                    mitigation_mode=eval_mitigation,
+                    rc_zne_scales=rc_zne_scales,
+                    rc_zne_fit=rc_zne_fit,
+                    rc_zne_reps=rc_zne_reps,
                 )
                 metrics_r["variant"] = variant
                 metrics_r["seed"] = i
@@ -408,7 +586,10 @@ def compare_noise_resilience(
                         saboteur_budget=saboteur_budget, rng=rng, attack_mode=mode,
                         epsilon_overrot=epsilon_overrot, p_x=p_x, p_y=p_y, p_z=p_z,
                         gamma_amp=gamma_amp, gamma_phase=gamma_phase, p_readout=p_readout,
-                        randomized_compile_flag=do_twirl
+                        mitigation_mode=eval_mitigation,
+                        rc_zne_scales=rc_zne_scales,
+                        rc_zne_fit=rc_zne_fit,
+                        rc_zne_reps=rc_zne_reps,
                     )
                     metrics_q["variant"] = variant
                     metrics_q["seed"] = i
@@ -432,39 +613,56 @@ def compare_noise_resilience(
             return [m["mean_attacked"] for m in metrics_list if m.get("variant") == variant]
 
         vanilla_means = _split_variant(vm, "untwirled")
-        vanilla_twirl = _split_variant(vm, "twirled")
+        vanilla_sec = _split_variant(vm, secondary_variant) if secondary_variant else []
         robust_means = _split_variant(rm, "untwirled")
-        robust_twirl = _split_variant(rm, "twirled")
+        robust_sec = _split_variant(rm, secondary_variant) if secondary_variant else []
         qnas_means = _split_variant(qm, "untwirled") if qm else []
-        qnas_twirl = _split_variant(qm, "twirled") if qm else []
+        qnas_sec = _split_variant(qm, secondary_variant) if qm and secondary_variant else []
 
         vanilla_overall = aggregate_metrics(vanilla_means)
         robust_overall = aggregate_metrics(robust_means)
         qnas_overall = aggregate_metrics(qnas_means) if qnas_means else None
-        vanilla_twirl_overall = aggregate_metrics(vanilla_twirl) if vanilla_twirl else None
-        robust_twirl_overall = aggregate_metrics(robust_twirl) if robust_twirl else None
-        qnas_twirl_overall = aggregate_metrics(qnas_twirl) if qnas_twirl else None
+        vanilla_sec_overall = aggregate_metrics(vanilla_sec) if vanilla_sec else None
+        robust_sec_overall = aggregate_metrics(robust_sec) if robust_sec else None
+        qnas_sec_overall = aggregate_metrics(qnas_sec) if qnas_sec else None
 
         aggregated_by_mode[mode] = {
             "vanilla": vanilla_overall,
             "robust": robust_overall,
             "quantumnas": qnas_overall,
-            "vanilla_twirl": vanilla_twirl_overall,
-            "robust_twirl": robust_twirl_overall,
-            "quantumnas_twirl": qnas_twirl_overall,
         }
+        if secondary_variant:
+            aggregated_by_mode[mode][f"vanilla_{secondary_variant}"] = vanilla_sec_overall
+            aggregated_by_mode[mode][f"robust_{secondary_variant}"] = robust_sec_overall
+            aggregated_by_mode[mode][f"quantumnas_{secondary_variant}"] = qnas_sec_overall
+            if secondary_variant == "twirled":
+                aggregated_by_mode[mode]["vanilla_twirl"] = vanilla_sec_overall
+                aggregated_by_mode[mode]["robust_twirl"] = robust_sec_overall
+                aggregated_by_mode[mode]["quantumnas_twirl"] = qnas_sec_overall
 
         log(f"\nOverall Statistics [{mode}] (n={len(vanilla_means)} runs, {samples} samples each):")
         log(
             f"  Vanilla: {format_metric_with_error(vanilla_overall['mean'], vanilla_overall['std'], int(vanilla_overall['n']))}"
         )
+        if vanilla_sec_overall:
+            log(
+                f"    └ Mitigated ({secondary_variant}): {format_metric_with_error(vanilla_sec_overall['mean'], vanilla_sec_overall['std'], int(vanilla_sec_overall['n']))}"
+            )
         log(
             f"  Robust:  {format_metric_with_error(robust_overall['mean'], robust_overall['std'], int(robust_overall['n']))}"
         )
+        if robust_sec_overall:
+            log(
+                f"    └ Mitigated ({secondary_variant}): {format_metric_with_error(robust_sec_overall['mean'], robust_sec_overall['std'], int(robust_sec_overall['n']))}"
+            )
         if qnas_overall:
             log(
                 f"  HEA baseline: {format_metric_with_error(qnas_overall['mean'], qnas_overall['std'], int(qnas_overall['n']))}"
             )
+            if qnas_sec_overall:
+                log(
+                    f"    └ Mitigated ({secondary_variant}): {format_metric_with_error(qnas_sec_overall['mean'], qnas_sec_overall['std'], int(qnas_sec_overall['n']))}"
+                )
 
     # Backward-compatible primary mode aliases
     primary_metrics = per_mode_metrics.get(primary_mode, {})
@@ -484,6 +682,11 @@ def compare_noise_resilience(
             "samples_per_circuit": samples,
             "primary_attack_mode": primary_mode,
             "attack_modes": attack_modes,
+            "mitigation_mode": mitigation_mode,
+            "mitigation_secondary_variant": secondary_variant,
+            "rc_zne_scales": list(rc_zne_scales) if mitigation_mode == MITIGATION_RC_ZNE else None,
+            "rc_zne_fit": rc_zne_fit if mitigation_mode == MITIGATION_RC_ZNE else None,
+            "rc_zne_reps": rc_zne_reps if mitigation_mode == MITIGATION_RC_ZNE else None,
             "statistical_protocol": {
                 "aggregation_method": "mean ± std",
                 "samples_per_circuit": samples,
@@ -522,45 +725,55 @@ def compare_noise_resilience(
     # --- Plot comparison of vanilla vs robust with error bars ---
     try:
         if all_metrics_vanilla and all_metrics_robust:
-            def _series(metrics_list, overall_base, overall_twirl):
+            def _series(metrics_list, overall_base, overall_variant, variant_label):
                 untwirled = {m["seed"]: m for m in metrics_list if m.get("variant") == "untwirled" and "seed" in m}
-                twirled = {m["seed"]: m for m in metrics_list if m.get("variant") == "twirled" and "seed" in m}
+                mitigated = (
+                    {m["seed"]: m for m in metrics_list if m.get("variant") == variant_label and "seed" in m}
+                    if variant_label else {}
+                )
                 seeds_sorted = sorted(untwirled.keys())
                 labels_local = [f"seed_{s}" for s in seeds_sorted]
                 base_means = [untwirled[s]["mean_attacked"] for s in seeds_sorted]
                 base_stds = [untwirled[s]["std_attacked"] for s in seeds_sorted]
-                twirl_raw = [twirled.get(s, {}).get("mean_attacked", 0.0) for s in seeds_sorted]
-                twirl_stds = [twirled.get(s, {}).get("std_attacked", 0.0) for s in seeds_sorted]
-                twirl_gain = [max(0.0, t - b) for t, b in zip(twirl_raw, base_means)]
+                mitigated_raw = [mitigated.get(s, {}).get("mean_attacked", 0.0) for s in seeds_sorted]
+                mitigated_stds = [mitigated.get(s, {}).get("std_attacked", 0.0) for s in seeds_sorted]
+                variant_gain = [max(0.0, m - b) for m, b in zip(mitigated_raw, base_means)] if variant_label else [0.0] * len(base_means)
                 labels_local.append("Mean")
                 base_means.append(overall_base["mean"] if overall_base else 0.0)
                 base_stds.append(overall_base["std"] if overall_base else 0.0)
-                agg_twirl = overall_twirl["mean"] if overall_twirl else 0.0
-                twirl_gain.append(max(0.0, agg_twirl - base_means[-1]))
-                twirl_stds.append(overall_twirl["std"] if overall_twirl else 0.0)
-                twirl_stds = [ts if g > 0 else 0.0 for ts, g in zip(twirl_stds, twirl_gain)]
-                has_twirl = randomized_compile_flag and (bool(twirled) or overall_twirl is not None)
-                return labels_local, base_means, base_stds, twirl_gain, twirl_stds, has_twirl
+                if variant_label:
+                    agg_variant = overall_variant["mean"] if overall_variant else 0.0
+                    variant_gain.append(max(0.0, agg_variant - base_means[-1]))
+                    mitigated_stds.append(overall_variant["std"] if overall_variant else 0.0)
+                else:
+                    variant_gain.append(0.0)
+                    mitigated_stds.append(0.0)
+                mitigated_stds = [ts if g > 0 else 0.0 for ts, g in zip(mitigated_stds, variant_gain)]
+                has_variant = variant_label is not None and (bool(mitigated) or overall_variant is not None)
+                return labels_local, base_means, base_stds, variant_gain, mitigated_stds, has_variant
 
             agg_primary = aggregated_by_mode.get(primary_mode, {})
 
-            labels_v, means_v, stds_v, twirl_v_gain, twirl_v_std, twirl_v_present = _series(
+            variant_key = secondary_variant
+            labels_v, means_v, stds_v, variant_v_gain, variant_v_std, variant_v_present = _series(
                 all_metrics_vanilla,
                 vanilla_overall,
-                agg_primary.get("vanilla_twirl"),
+                agg_primary.get(f"vanilla_{variant_key}") if variant_key else None,
+                variant_key,
             )
-            labels_r, means_r, stds_r, twirl_r_gain, twirl_r_std, twirl_r_present = _series(
+            labels_r, means_r, stds_r, variant_r_gain, variant_r_std, variant_r_present = _series(
                 all_metrics_robust,
                 robust_overall,
-                agg_primary.get("robust_twirl"),
+                agg_primary.get(f"robust_{variant_key}") if variant_key else None,
+                variant_key,
             )
-            labels_q, means_q, stds_q, twirl_q_gain, twirl_q_std, twirl_q_present = ([], [], [], [], [], False)
-            qt_overall = agg_primary.get("quantumnas_twirl")
+            labels_q, means_q, stds_q, variant_q_gain, variant_q_std, variant_q_present = ([], [], [], [], [], False)
             if all_metrics_qnas:
-                labels_q, means_q, stds_q, twirl_q_gain, twirl_q_std, twirl_q_present = _series(
+                labels_q, means_q, stds_q, variant_q_gain, variant_q_std, variant_q_present = _series(
                     all_metrics_qnas,
                     qnas_overall,
-                    qt_overall,
+                    agg_primary.get(f"quantumnas_{variant_key}") if variant_key else None,
+                    variant_key,
                 )
 
             labels = labels_v  # assume same seeds across methods
@@ -571,7 +784,37 @@ def compare_noise_resilience(
             used_labels = set()
             err_kw = {"capsize": 4, "capthick": 1.2, "elinewidth": 1.0}
 
-            def _plot_method(offset, base_means, base_stds, twirl_gain, twirl_stds, base_color, twirl_color, name, has_twirl):
+            if variant_key == "twirled":
+                variant_display_name = "Twirl gain"
+            elif variant_key == "mitigated":
+                variant_display_name = (
+                    "RC-ZNE gain" if mitigation_mode == MITIGATION_RC_ZNE else "Mitigated gain"
+                )
+            elif variant_key:
+                variant_display_name = f"{variant_key.capitalize()} gain"
+            else:
+                variant_display_name = "Mitigation gain"
+
+            base_colors = {
+                "vanilla": "#54A24B",
+                "robust": "#F58518",
+                "quantumnas": "#4C78A8",
+            }
+            variant_colors_by_key = {
+                "twirled": {
+                    "vanilla": "#a1d99b",
+                    "robust": "#fdae6b",
+                    "quantumnas": "#9ecae1",
+                },
+                "mitigated": {
+                    "vanilla": "#74c476",
+                    "robust": "#fdd0a2",
+                    "quantumnas": "#6baed6",
+                },
+            }
+            variant_colors = variant_colors_by_key[variant_key] if variant_key in variant_colors_by_key else {}
+
+            def _plot_method(offset, base_means, base_stds, variant_gain, variant_stds, base_color, variant_color, name, has_variant):
                 lb = name if name not in used_labels else None
                 ax.bar(
                     x + offset,
@@ -585,17 +828,17 @@ def compare_noise_resilience(
                 )
                 if lb:
                     used_labels.add(lb)
-                if has_twirl and any(g > 0 for g in twirl_gain):
-                    lt = f"{name} (twirl gain)"
+                if has_variant and any(g > 0 for g in variant_gain):
+                    lt = f"{name} ({variant_display_name})"
                     lt = lt if lt not in used_labels else None
                     ax.bar(
                         x + offset,
-                        twirl_gain,
+                        variant_gain,
                         width=width,
                         bottom=base_means,
-                        yerr=twirl_stds,
+                        yerr=variant_stds,
                         error_kw=err_kw,
-                        color=twirl_color,
+                        color=variant_color,
                         alpha=0.75,
                         label=lt,
                     )
@@ -603,10 +846,40 @@ def compare_noise_resilience(
                         used_labels.add(lt)
 
             offsets = [-width, 0, width]
-            _plot_method(offsets[0], means_v, stds_v, twirl_v_gain, twirl_v_std, "#2ecc71", "#a6d96a", "RL baseline", twirl_v_present)
-            _plot_method(offsets[1], means_r, stds_r, twirl_r_gain, twirl_r_std, "#e67e22", "#fdae6b", "Robust", twirl_r_present)
+            _plot_method(
+                offsets[0],
+                means_v,
+                stds_v,
+                variant_v_gain,
+                variant_v_std,
+                base_colors["vanilla"],
+                variant_colors.get("vanilla", base_colors["vanilla"]),
+                "RL baseline",
+                variant_v_present,
+            )
+            _plot_method(
+                offsets[1],
+                means_r,
+                stds_r,
+                variant_r_gain,
+                variant_r_std,
+                base_colors["robust"],
+                variant_colors.get("robust", base_colors["robust"]),
+                "Robust",
+                variant_r_present,
+            )
             if means_q:
-                _plot_method(offsets[2], means_q, stds_q, twirl_q_gain, twirl_q_std, "#2c7fb8", "#9ecae1", "HEA baseline", twirl_q_present)
+                _plot_method(
+                    offsets[2],
+                    means_q,
+                    stds_q,
+                    variant_q_gain,
+                    variant_q_std,
+                    base_colors["quantumnas"],
+                    variant_colors.get("quantumnas", base_colors["quantumnas"]),
+                    "HEA baseline",
+                    variant_q_present,
+                )
 
             ax.set_ylabel("Mean Attacked Fidelity")
             ax.set_title(
@@ -626,9 +899,9 @@ def compare_noise_resilience(
                 return max(base_vals)
 
             max_height = max(
-                _max_height(means_v, twirl_v_gain, twirl_v_present),
-                _max_height(means_r, twirl_r_gain, twirl_r_present),
-                _max_height(means_q, twirl_q_gain, twirl_q_present) if means_q else 0.0,
+                _max_height(means_v, variant_v_gain, variant_v_present),
+                _max_height(means_r, variant_r_gain, variant_r_present),
+                _max_height(means_q, variant_q_gain, variant_q_present) if means_q else 0.0,
             )
             ax.set_ylim(0, max(1.05, max_height + 0.1))
 
@@ -664,6 +937,12 @@ def compare_noise_resilience(
             "num_runs": num_runs,
             "samples_per_circuit": samples,
         }
+        if mitigation_mode == MITIGATION_RC_ZNE:
+            hyperparameters.update({
+                "rc_zne_scales": list(rc_zne_scales),
+                "rc_zne_fit": rc_zne_fit,
+                "rc_zne_reps": rc_zne_reps,
+            })
         
         aggregated_results = {
             "vanilla_fidelity": vanilla_overall,
@@ -729,6 +1008,14 @@ if __name__ == "__main__":
     parser.add_argument('--quantumnas-circuit', type=str, default=None,
                         help='Optional path to a Cirq JSON QuantumNAS circuit. If omitted, looks under ../quantumnas/.')
     parser.add_argument('--ignore-saboteur', action='store_true', help='Skip loading saboteur policy and use non-policy attacks.')
+    parser.add_argument('--mitigation-mode', choices=[MITIGATION_NONE, MITIGATION_TWIRL, MITIGATION_RC_ZNE], default=MITIGATION_NONE,
+                        help="Mitigation strategy applied during evaluation ('none', 'twirl', 'rc_zne').")
+    parser.add_argument('--rc-zne-scales', type=float, nargs='+', default=None,
+                        help='Noise scale factors for rc_zne mitigation (default: 1.0 1.5 2.0).')
+    parser.add_argument('--rc-zne-fit', type=str, default="linear", choices=["linear", "quadratic"],
+                        help="Extrapolation model for rc_zne ('linear' or 'quadratic').")
+    parser.add_argument('--rc-zne-reps', type=int, default=1,
+                        help='Number of RC draws averaged per scale for rc_zne extrapolation (default: 1).')
     args = parser.parse_args()
 
     compare_noise_resilience(
@@ -747,4 +1034,8 @@ if __name__ == "__main__":
         p_readout=args.p_readout,
         quantumnas_circuit_path=args.quantumnas_circuit,
         ignore_saboteur=args.ignore_saboteur,
+        mitigation_mode=args.mitigation_mode,
+        rc_zne_scales=args.rc_zne_scales,
+        rc_zne_fit=args.rc_zne_fit,
+        rc_zne_reps=args.rc_zne_reps,
     )

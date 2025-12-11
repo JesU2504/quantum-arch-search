@@ -1,3 +1,0 @@
-2025-12-09 14:56:05,957 INFO: Loading experimental parameters for 5 qubits from config.py
-2025-12-09 14:56:05,959 INFO: Starting pipeline with metadata: {'timestamp': '20251209-145605', 'n_qubits': 5, 'baseline_steps': 1638400, 'saboteur_steps': 409600, 'adversarial_gens': 200, 'adversarial_arch_steps': 8192, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
-2025-12-09 14:56:05,959 INFO: Running baseline architect (noiseless) for 5 seed(s)

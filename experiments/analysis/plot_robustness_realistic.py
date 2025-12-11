@@ -18,12 +18,15 @@ import numpy as np
 from matplotlib.container import BarContainer
 
 PALETTE = {
-    "baseline": "#4C78A8",
+    "baseline": "#54A24B",  # RL baseline (green)
     "robust": "#F58518",
-    "quantumnas": "#54A24B",
-    "baseline_twirl": "#9ecae1",
+    "quantumnas": "#4C78A8",  # HEA baseline (blue)
+    "baseline_twirl": "#a1d99b",
     "robust_twirl": "#fdae6b",
-    "quantumnas_twirl": "#a1d99b",
+    "quantumnas_twirl": "#9ecae1",
+    "baseline_mitigated": "#74c476",
+    "robust_mitigated": "#fdd0a2",
+    "quantumnas_mitigated": "#6baed6",
 }
 
 LABEL_MAP = {
@@ -108,34 +111,46 @@ def plot(df: pd.DataFrame, out_path: Path, families: list[str] | None = None):
         sub = summary[summary["circuit"] == circuit].set_index(["noise_family", "variant"]).reindex(order, level=0)
         level_vals = sub.index.get_level_values(1) if not sub.empty else pd.Index([])
         untwirled_present = "untwirled" in level_vals
-        twirled_present = "twirled" in level_vals
+        variant_choice = None
+        if "mitigated" in level_vals:
+            variant_choice = "mitigated"
+        elif "twirled" in level_vals:
+            variant_choice = "twirled"
+
         if untwirled_present:
             base_means = sub.xs("untwirled", level="variant")["mean"].reindex(order, fill_value=0)
             base_stds = sub.xs("untwirled", level="variant")["std"].reindex(order, fill_value=0)
         else:
             base_means = pd.Series(0.0, index=order)
             base_stds = pd.Series(0.0, index=order)
-        if twirled_present:
-            twr_means = sub.xs("twirled", level="variant")["mean"].reindex(order, fill_value=0)
-            twr_stds = sub.xs("twirled", level="variant")["std"].reindex(order, fill_value=0)
-        else:
-            twr_means = pd.Series(0.0, index=order)
-            twr_stds = pd.Series(0.0, index=order)
 
-        # Stack only the gain from twirling so bar height reflects twirled fidelity
+        if variant_choice:
+            variant_means = sub.xs(variant_choice, level="variant")["mean"].reindex(order, fill_value=0)
+            variant_stds = sub.xs(variant_choice, level="variant")["std"].reindex(order, fill_value=0)
+        else:
+            variant_means = pd.Series(0.0, index=order)
+            variant_stds = pd.Series(0.0, index=order)
+
         base_vals = np.clip(base_means.to_numpy(dtype=float, na_value=0.0), 0.0, 1.0)
-        gain_vals = np.maximum(0.0, twr_means.to_numpy(dtype=float, na_value=0.0) - base_vals)
+        gain_vals = np.maximum(0.0, variant_means.to_numpy(dtype=float, na_value=0.0) - base_vals)
         total_vals = base_vals + gain_vals
         over_mask = total_vals > 1.0
         gain_vals[over_mask] = np.maximum(0.0, 1.0 - base_vals[over_mask])
-        gain_stds = np.where(gain_vals > 0, twr_stds.to_numpy(dtype=float, na_value=0.0), 0.0)
+        gain_stds = np.where(gain_vals > 0, variant_stds.to_numpy(dtype=float, na_value=0.0), 0.0)
         base_err = base_stds.fillna(0.0).to_numpy(dtype=float, na_value=0.0)
         base_err_upper = np.minimum(base_err, np.maximum(0.0, 1.0 - base_vals))
         base_err_lower = np.minimum(base_err, base_vals)
         base_yerr = np.vstack([base_err_lower, base_err_upper])
         xpos = x + (j - 1) * width
         lb = LABEL_MAP.get(circuit, circuit) if LABEL_MAP.get(circuit, circuit) not in used_labels else None
-        lt = f"{LABEL_MAP.get(circuit, circuit)} (twirl gain)" if f"{LABEL_MAP.get(circuit, circuit)} (twirl gain)" not in used_labels else None
+        if variant_choice == "mitigated":
+            gain_label = "mitigated gain"
+        elif variant_choice == "twirled":
+            gain_label = "twirl gain"
+        else:
+            gain_label = "mitigation gain"
+        lt_candidate = f"{LABEL_MAP.get(circuit, circuit)} ({gain_label})"
+        lt = lt_candidate if (variant_choice and lt_candidate not in used_labels) else None
 
         ax.bar(
             xpos,
@@ -147,7 +162,7 @@ def plot(df: pd.DataFrame, out_path: Path, families: list[str] | None = None):
             alpha=0.9,
             error_kw=err_kw,
         )
-        if twirled_present and np.any(gain_vals > 0):
+        if variant_choice and np.any(gain_vals > 0):
             gain_err_upper = np.minimum(gain_stds, np.maximum(0.0, 1.0 - (base_vals + gain_vals)))
             gain_err_lower = np.minimum(gain_stds, gain_vals)
             gain_yerr = np.vstack([gain_err_lower, gain_err_upper])
@@ -158,7 +173,7 @@ def plot(df: pd.DataFrame, out_path: Path, families: list[str] | None = None):
                 bottom=base_vals,
                 yerr=gain_yerr,
                 label=lt,
-                color=PALETTE.get(f"{circuit}_twirl", "#c7e9c0"),
+                color=PALETTE.get(f"{circuit}_{variant_choice}", PALETTE.get(f"{circuit}_twirl", "#c7e9c0")),
                 alpha=0.8,
                 error_kw=err_kw,
             )
