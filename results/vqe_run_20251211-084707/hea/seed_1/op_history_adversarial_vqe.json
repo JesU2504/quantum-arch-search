@@ -1,0 +1,274 @@
+[
+  {
+    "name": "ry",
+    "wires": 0,
+    "params": -1.4514838457107544,
+    "inverse": false,
+    "trainable": true
+  },
+  {
+    "name": "ry",
+    "wires": 1,
+    "params": -1.1650246381759644,
+    "inverse": false,
+    "trainable": true
+  },
+  {
+    "name": "ry",
+    "wires": 2,
+    "params": 1.5706489086151123,
+    "inverse": false,
+    "trainable": true
+  },
+  {
+    "name": "ry",
+    "wires": 3,
+    "params": 1.5840895175933838,
+    "inverse": false,
+    "trainable": true
+  },
+  {
+    "name": "cnot",
+    "wires": [
+      0,
+      1
+    ],
+    "params": null,
+    "inverse": false,
+    "trainable": false
+  },
+  {
+    "name": "cnot",
+    "wires": [
+      1,
+      2
+    ],
+    "params": null,
+    "inverse": false,
+    "trainable": false
+  },
+  {
+    "name": "cnot",
+    "wires": [
+      2,
+      3
+    ],
+    "params": null,
+    "inverse": false,
+    "trainable": false
+  },
+  {
+    "name": "cnot",
+    "wires": [
+      3,
+      0
+    ],
+    "params": null,
+    "inverse": false,
+    "trainable": false
+  },
+  {
+    "name": "ry",
+    "wires": 0,
+    "params": -0.4375162422657013,
+    "inverse": false,
+    "trainable": true
+  },
+  {
+    "name": "ry",
+    "wires": 1,
+    "params": 0.6870217323303223,
+    "inverse": false,
+    "trainable": true
+  },
+  {
+    "name": "ry",
+    "wires": 2,
+    "params": -1.578899621963501,
+    "inverse": false,
+    "trainable": true
+  },
+  {
+    "name": "ry",
+    "wires": 3,
+    "params": -1.3215564489364624,
+    "inverse": false,
+    "trainable": true
+  },
+  {
+    "name": "cnot",
+    "wires": [
+      0,
+      1
+    ],
+    "params": null,
+    "inverse": false,
+    "trainable": false
+  },
+  {
+    "name": "cnot",
+    "wires": [
+      1,
+      2
+    ],
+    "params": null,
+    "inverse": false,
+    "trainable": false
+  },
+  {
+    "name": "cnot",
+    "wires": [
+      2,
+      3
+    ],
+    "params": null,
+    "inverse": false,
+    "trainable": false
+  },
+  {
+    "name": "cnot",
+    "wires": [
+      3,
+      0
+    ],
+    "params": null,
+    "inverse": false,
+    "trainable": false
+  },
+  {
+    "name": "ry",
+    "wires": 0,
+    "params": -1.528414249420166,
+    "inverse": false,
+    "trainable": true
+  },
+  {
+    "name": "ry",
+    "wires": 1,
+    "params": -1.5838431119918823,
+    "inverse": false,
+    "trainable": true
+  },
+  {
+    "name": "ry",
+    "wires": 2,
+    "params": -1.5713154077529907,
+    "inverse": false,
+    "trainable": true
+  },
+  {
+    "name": "ry",
+    "wires": 3,
+    "params": 1.2054935693740845,
+    "inverse": false,
+    "trainable": true
+  },
+  {
+    "name": "cnot",
+    "wires": [
+      0,
+      1
+    ],
+    "params": null,
+    "inverse": false,
+    "trainable": false
+  },
+  {
+    "name": "cnot",
+    "wires": [
+      1,
+      2
+    ],
+    "params": null,
+    "inverse": false,
+    "trainable": false
+  },
+  {
+    "name": "cnot",
+    "wires": [
+      2,
+      3
+    ],
+    "params": null,
+    "inverse": false,
+    "trainable": false
+  },
+  {
+    "name": "cnot",
+    "wires": [
+      3,
+      0
+    ],
+    "params": null,
+    "inverse": false,
+    "trainable": false
+  },
+  {
+    "name": "ry",
+    "wires": 0,
+    "params": 0.45244690775871277,
+    "inverse": false,
+    "trainable": true
+  },
+  {
+    "name": "ry",
+    "wires": 1,
+    "params": 1.5632561445236206,
+    "inverse": false,
+    "trainable": true
+  },
+  {
+    "name": "ry",
+    "wires": 2,
+    "params": -1.8467193841934204,
+    "inverse": false,
+    "trainable": true
+  },
+  {
+    "name": "ry",
+    "wires": 3,
+    "params": -0.7285667061805725,
+    "inverse": false,
+    "trainable": true
+  },
+  {
+    "name": "cnot",
+    "wires": [
+      0,
+      1
+    ],
+    "params": null,
+    "inverse": false,
+    "trainable": false
+  },
+  {
+    "name": "cnot",
+    "wires": [
+      1,
+      2
+    ],
+    "params": null,
+    "inverse": false,
+    "trainable": false
+  },
+  {
+    "name": "cnot",
+    "wires": [
+      2,
+      3
+    ],
+    "params": null,
+    "inverse": false,
+    "trainable": false
+  },
+  {
+    "name": "cnot",
+    "wires": [
+      3,
+      0
+    ],
+    "params": null,
+    "inverse": false,
+    "trainable": false
+  }
+]

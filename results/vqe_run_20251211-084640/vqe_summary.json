@@ -1,0 +1,107 @@
+[
+  {
+    "clean_energy":2.2149986297,
+    "worst_energy":3.3921616085,
+    "hf":-15.560334936,
+    "fci":-0.5304960745,
+    "method":"RL"
+  },
+  {
+    "clean_energy":2.2149986297,
+    "worst_energy":3.3921616085,
+    "hf":-15.560334936,
+    "fci":-0.5304960745,
+    "method":"RL"
+  },
+  {
+    "clean_energy":2.2149986297,
+    "worst_energy":2.2156063094,
+    "hf":-15.560334936,
+    "fci":-0.5304960745,
+    "method":"RL"
+  },
+  {
+    "clean_energy":2.2149986297,
+    "worst_energy":3.3921616085,
+    "hf":-15.560334936,
+    "fci":-0.5304960745,
+    "method":"RL"
+  },
+  {
+    "clean_energy":2.2149986297,
+    "worst_energy":3.3921616085,
+    "hf":-15.560334936,
+    "fci":-0.5304960745,
+    "method":"RL"
+  },
+  {
+    "clean_energy":-0.5245965719,
+    "worst_energy":-0.4711796045,
+    "hf":-15.560334936,
+    "fci":-0.5304960745,
+    "method":"HEA adversarial"
+  },
+  {
+    "clean_energy":-0.5276092887,
+    "worst_energy":-0.4740416706,
+    "hf":-15.560334936,
+    "fci":-0.5304960745,
+    "method":"HEA adversarial"
+  },
+  {
+    "clean_energy":-0.5247004032,
+    "worst_energy":-0.4712782502,
+    "hf":-15.560334936,
+    "fci":-0.5304960745,
+    "method":"HEA adversarial"
+  },
+  {
+    "clean_energy":-0.5274292231,
+    "worst_energy":-0.4738706052,
+    "hf":-15.560334936,
+    "fci":-0.5304960745,
+    "method":"HEA adversarial"
+  },
+  {
+    "clean_energy":-0.5276087523,
+    "worst_energy":-0.4740411937,
+    "hf":-15.560334936,
+    "fci":-0.5304960745,
+    "method":"HEA adversarial"
+  },
+  {
+    "clean_energy":-0.524595829,
+    "worst_energy":0.6041093691,
+    "hf":-15.560334936,
+    "fci":-0.5304960745,
+    "method":"Architect adversarial"
+  },
+  {
+    "clean_energy":-0.524595829,
+    "worst_energy":-0.524595829,
+    "hf":-15.560334936,
+    "fci":-0.5304960745,
+    "method":"Architect adversarial"
+  },
+  {
+    "clean_energy":-0.524595829,
+    "worst_energy":-0.524595829,
+    "hf":-15.560334936,
+    "fci":-0.5304960745,
+    "method":"Architect adversarial"
+  },
+  {
+    "clean_energy":-0.524595829,
+    "worst_energy":3.3921616085,
+    "hf":-15.560334936,
+    "fci":-0.5304960745,
+    "method":"Architect adversarial"
+  },
+  {
+    "clean_energy":-0.524595829,
+    "worst_energy":-0.524595829,
+    "hf":-15.560334936,
+    "fci":-0.5304960745,
+    "method":"Architect adversarial"
+  }
+]

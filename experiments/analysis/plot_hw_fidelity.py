@@ -43,7 +43,8 @@ def load_results(path: Path) -> pd.DataFrame:
                     {
                         "backend": backend,
                         "circuit": stats.get("circuit"),
-                        "success_prob": stats.get("success_prob", 0.0),
+                        "success_prob": stats.get("success_prob"),
+                        "energy": stats.get("energy"),
                         "shots": stats.get("shots", None),
                         "depth": stats.get("depth", None),
                         "variant": stats.get("variant", "untwirled"),
@@ -56,7 +57,8 @@ def load_results(path: Path) -> pd.DataFrame:
                     {
                         "backend": backend,
                         "circuit": label,
-                        "success_prob": stats.get("success_prob", 0.0),
+                        "success_prob": stats.get("success_prob"),
+                        "energy": stats.get("energy"),
                         "shots": stats.get("shots", None),
                         "depth": stats.get("depth", None),
                         "variant": stats.get("variant", "untwirled"),
@@ -74,15 +76,56 @@ def plot(df: pd.DataFrame, out_path: Path):
         "quantumnas": "HEA baseline",
     }
 
-    # Aggregate across seeds/runs if multiple entries per backend/circuit
+    metric_col = "energy" if df.get("energy") is not None and df["energy"].notna().any() else "success_prob"
+    if metric_col not in df.columns:
+        metric_col = "success_prob"
+
     if "variant" not in df.columns:
         df["variant"] = "untwirled"
+
     summary = (
         df.groupby(["backend", "circuit", "variant"])
-        .agg(mean=("success_prob", "mean"), std=("success_prob", "std"), n=("success_prob", "count"))
+        .agg(mean=(metric_col, "mean"), std=(metric_col, "std"), n=(metric_col, "count"))
         .reset_index()
     )
     summary["std"] = summary["std"].fillna(0)
+
+    if metric_col == "energy":
+        order = sorted(summary["backend"].unique())
+        variant_order = ["untwirled", "mitigated", "twirled"]
+        summary["plot_label"] = summary.apply(
+            lambda r: label_map.get(r["circuit"], r["circuit"]) if r["variant"] == "untwirled" else f"{label_map.get(r['circuit'], r['circuit'])} ({r['variant']})",
+            axis=1,
+        )
+        label_order = []
+        for circuit in hue_order:
+            for variant in variant_order:
+                lab_base = label_map.get(circuit, circuit)
+                label = lab_base if variant == "untwirled" else f"{lab_base} ({variant})"
+                if label in summary["plot_label"].values and label not in label_order:
+                    label_order.append(label)
+        if not label_order:
+            label_order = sorted(summary["plot_label"].unique())
+        fig, ax = plt.subplots(figsize=(max(6.0, 2.0 * len(order)), 4.5))
+        x = np.arange(len(order))
+        width = 0.8 / max(1, len(label_order))
+        for idx, label in enumerate(label_order):
+            sub = summary[summary["plot_label"] == label].set_index("backend")
+            means = sub.reindex(order)["mean"].astype(float)
+            stds = sub.reindex(order)["std"].astype(float).fillna(0.0)
+            pos = x - 0.4 + width / 2 + idx * width
+            ax.bar(pos, means, width, yerr=stds, label=label)
+        ax.set_ylabel("Energy (Ha)")
+        ax.set_xlabel("Backend")
+        ax.set_xticks(x)
+        ax.set_xticklabels(order, rotation=10)
+        ax.legend(frameon=True, title="Circuit / Variant", fontsize=7)
+        ax.set_title("Hardware-style energy evaluation")
+        plt.tight_layout()
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        plt.savefig(out_path, dpi=300)
+        plt.close(fig)
+        return
 
     order = sorted(summary["backend"].unique())
     fig, ax = plt.subplots(figsize=(7.5, 4.5))

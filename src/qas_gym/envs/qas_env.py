@@ -62,7 +62,11 @@ class QuantumArchSearchEnv(gym.Env):
             include_rotations: bool = False,
             default_rotation_angle: float = np.pi / 4,
             task_mode: Optional[str] = None,
-            ideal_unitary: Optional[np.ndarray] = None,
+        ideal_unitary: Optional[np.ndarray] = None,
+        # Reward shaping for STOP behavior and per-step cost
+        stop_success_bonus: float = 0.1,
+        stop_failure_penalty: float = -0.05,
+        per_step_penalty: float = -0.01,
     ):
         """
         Initialize the Quantum Architecture Search Environment.
@@ -92,6 +96,10 @@ class QuantumArchSearchEnv(gym.Env):
         self.default_rotation_angle = default_rotation_angle
         self.task_mode = task_mode or 'state_preparation'
         self.ideal_unitary = ideal_unitary
+        # Reward shaping params
+        self.stop_success_bonus = stop_success_bonus
+        self.stop_failure_penalty = stop_failure_penalty
+        self.per_step_penalty = per_step_penalty
 
         # --- Initialize Qubits, Observables, and Gates ---
         # This logic must come before defining the observation and action spaces.
@@ -117,8 +125,13 @@ class QuantumArchSearchEnv(gym.Env):
                                             high=1.,
                                             shape=(len(state_observables),),
                                             dtype=np.float32)
-        self.action_space = spaces.Discrete(n=len(action_gates))
-        
+        # Add a special STOP action so the architect can choose to finish
+        # the circuit before reaching max_timesteps. The STOP action index
+        # equals len(action_gates). When chosen, no gate is appended and
+        # the environment terminates (agent-controlled early stopping).
+        self.stop_action_index = len(action_gates)
+        self.action_space = spaces.Discrete(n=len(action_gates) + 1)
+
         # Track rotation parameters for the current episode
         self.rotation_params: Dict[int, float] = {}
         
@@ -129,10 +142,12 @@ class QuantumArchSearchEnv(gym.Env):
                 self._rotation_action_indices.append(i)
 
     def __str__(self):
-        return f"QuantumArchSearch-v0(Qubits={len(self.qubits)}, Target={self.target}, " \
-               f"Gates={', '.join(gate.__str__() for gate in self.action_gates)}, " \
-               f"Observables={', '.join(gate.__str__() for gate in self.state_observables)}, " \
-               f"IncludesRotations={self.include_rotations})"
+        gates_str = ', '.join(gate.__str__() for gate in self.action_gates)
+        obs_str = ', '.join(ob.__str__() for ob in self.state_observables)
+        return (
+            f"QuantumArchSearch-v0(Qubits={len(self.qubits)}, Target={self.target}, "
+            f"Gates={gates_str}, Observables={obs_str}, IncludesRotations={self.include_rotations})"
+        )
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
@@ -170,7 +185,15 @@ class QuantumArchSearchEnv(gym.Env):
         return fidelity_pure_target(circuit, self.target, self.qubits)
 
     def get_circuit_complexity(self, circuit):
-        return len(circuit)
+        """
+        Return the circuit complexity measured as the total number of
+        operations (gates) in the circuit. Previously this returned
+        the number of Cirq moments (len(circuit)), which can be smaller
+        than the actual gate count when multiple operations share a
+        moment. Using the operation count makes `max_timesteps` a strict
+        cap on how many gates an agent may add.
+        """
+        return len(list(circuit.all_operations()))
     
     def set_rotation_angle(self, gate_index: int, angle: float):
         """
@@ -243,6 +266,43 @@ class QuantumArchSearchEnv(gym.Env):
     def step(self, action):
         # The action from the agent can be a numpy array, so we must convert it to a scalar int for indexing.
         action_idx = int(action)
+
+        # If the agent selected the STOP action, end the episode immediately
+        # without appending another gate. This enables variable-length
+        # circuits shorter than max_timesteps.
+        if action_idx == self.stop_action_index:
+            circuit = self._get_cirq()
+            observation = self._get_obs()
+            current_fidelity = self.get_fidelity(circuit)
+            terminated = True
+            truncated = False
+
+            # Terminal reward for agent-initiated stop: positive bonus if
+            # the fidelity meets threshold, negative penalty otherwise.
+            if current_fidelity >= self.fidelity_threshold:
+                reward = float(self.stop_success_bonus)
+            else:
+                reward = float(self.stop_failure_penalty)
+
+            circuit_info = self.get_circuit_info()
+            info = {
+                'fidelity': current_fidelity,
+                'circuit': circuit,
+                'rotation_counts': circuit_info['rotation_counts'],
+                'rotation_angles': circuit_info['rotation_angles'],
+                'total_gates': circuit_info['total_gates'],
+                'cnot_count': circuit_info['cnot_count'],
+                'stop_reason': 'agent_stop'
+            }
+            info['moment_count'] = len(circuit)
+            info['operation_count'] = len(list(circuit.all_operations()))
+            # Debug print to indicate an agent-triggered stop
+            print(f"[Env Terminated] agent chose STOP: moments={info['moment_count']}, ops={info['operation_count']}, reward={reward}")
+            # Update previous fidelity for reward shaping consistency
+            self.previous_final_fidelity = current_fidelity
+            return observation, reward, terminated, truncated, info
+
+        # Normal gate action
         action_gate = self.action_gates[action_idx]
         reward_penalty = 0.0
         last_op_on_qubits = next((gate for gate in reversed(self.circuit_gates)
@@ -280,6 +340,9 @@ class QuantumArchSearchEnv(gym.Env):
         # In unitary mode, terminal reward is replaced by unitary process fidelity if available.
         fidelity_delta = current_fidelity - self.previous_final_fidelity
         reward = (0.1 * fidelity_delta) + reward_penalty  # Small shaping reward
+        # Per-step complexity / time penalty to encourage shorter circuits
+        # This is applied only when the agent actually appends a gate.
+        reward += float(self.per_step_penalty)
         if terminated:
             reward -= self.complexity_penalty_weight * self.get_circuit_complexity(circuit)
             # Override terminal reward in unitary mode using process fidelity
@@ -318,6 +381,11 @@ class QuantumArchSearchEnv(gym.Env):
             'total_gates': circuit_info['total_gates'],
             'cnot_count': circuit_info['cnot_count']
         }
+        # Expose both Cirq moment-count and actual operation (gate) count for
+        # downstream analysis and debugging. Historically the env used
+        # len(circuit) (moments) which could differ from total operations.
+        info['moment_count'] = len(circuit)
+        info['operation_count'] = len(list(circuit.all_operations()))
         if terminated and self.task_mode == 'unitary_preparation' and self.ideal_unitary is not None:
             info['process_fidelity'] = reward
         
@@ -326,6 +394,30 @@ class QuantumArchSearchEnv(gym.Env):
             self.champion_circuit = circuit
             info['is_champion'] = True
             info['champion_fidelity'] = current_fidelity
+
+        # Debug print on termination to make it explicit when an episode
+        # finishes why it finished (fidelity or complexity) and to show
+        # the difference between moments and operations.
+        if terminated:
+            # Be defensive when printing max_timesteps: sometimes callers
+            # may pass None or non-int-like values. Show both the int-cast
+            # (when possible) and the raw repr for debugging.
+            raw_mt = getattr(self, 'max_timesteps', None)
+            try:
+                mt_val = int(raw_mt) if raw_mt is not None else None
+            except Exception:
+                mt_val = None
+
+            if mt_val is None:
+                mt_str = f"(raw={raw_mt!r})"
+            else:
+                mt_str = f"{mt_val} (raw={raw_mt!r})"
+
+            print(
+                f"[Env Terminated] fidelity={current_fidelity:.6f}, "
+                f"moments={info['moment_count']}, ops={info['operation_count']}, "
+                f"max_timesteps={mt_str}"
+            )
 
         # Update the previous final fidelity for the next step's reward shaping
         self.previous_final_fidelity = current_fidelity

@@ -1,0 +1,81 @@
+method,variant,noise_family,rate,energy,seed
+RL,untwirled,depolarizing,0.0,0.0816049465308079,0
+RL,untwirled,depolarizing,0.01,0.08160494653080788,0
+RL,untwirled,depolarizing,0.02,0.08160494653080785,0
+RL,untwirled,depolarizing,0.05,0.0816049465308079,0
+RL,untwirled,depolarizing,0.1,0.08160494653080784,0
+RL,untwirled,amplitude_damping,0.0,0.0816049465308079,0
+RL,untwirled,amplitude_damping,0.01,0.08223413071395182,0
+RL,untwirled,amplitude_damping,0.02,0.08289604433576414,0
+RL,untwirled,amplitude_damping,0.05,0.08508783296233907,0
+RL,untwirled,amplitude_damping,0.1,0.08948673121028827,0
+RL,untwirled,coherent_overrotation,0.0,0.0816049465308079,0
+RL,untwirled,coherent_overrotation,0.01,0.08160496504947501,0
+RL,untwirled,coherent_overrotation,0.02,0.08160493902009505,0
+RL,untwirled,coherent_overrotation,0.05,0.08160494692822537,0
+RL,untwirled,coherent_overrotation,0.1,0.08160493658236456,0
+RL,untwirled,readout,0.0,0.0816049465308079,0
+RL,untwirled,readout,0.01,0.08160494653080785,0
+RL,untwirled,readout,0.02,0.0816049465308079,0
+RL,untwirled,readout,0.05,0.0816049465308079,0
+RL,untwirled,readout,0.1,0.08160494653080788,0
+RL,untwirled,depolarizing,0.0,-0.023235913075449907,1
+RL,untwirled,depolarizing,0.01,-0.023235913075449907,1
+RL,untwirled,depolarizing,0.02,-0.023235913075449907,1
+RL,untwirled,depolarizing,0.05,-0.023235913075449907,1
+RL,untwirled,depolarizing,0.1,-0.023235913075449907,1
+RL,untwirled,amplitude_damping,0.0,-0.023235913075449907,1
+RL,untwirled,amplitude_damping,0.01,-0.019492452006101137,1
+RL,untwirled,amplitude_damping,0.02,-0.015705301664960016,1
+RL,untwirled,amplitude_damping,0.05,-0.1298586946045172,1
+RL,untwirled,amplitude_damping,0.1,0.015446345049064947,1
+RL,untwirled,coherent_overrotation,0.0,-0.023235913075449907,1
+RL,untwirled,coherent_overrotation,0.01,-0.022254753709253457,1
+RL,untwirled,coherent_overrotation,0.02,-0.021975658689454947,1
+RL,untwirled,coherent_overrotation,0.05,-0.03452959621282686,1
+RL,untwirled,coherent_overrotation,0.1,-0.12291691049360208,1
+RL,untwirled,readout,0.0,-0.023235913075449907,1
+RL,untwirled,readout,0.01,-0.023235913075449907,1
+RL,untwirled,readout,0.02,-0.023235913075449907,1
+RL,untwirled,readout,0.05,-0.023235913075449907,1
+RL,untwirled,readout,0.1,-0.023235913075449907,1
+HEA adversarial,untwirled,depolarizing,0.0,-1.137306035740347,0
+HEA adversarial,untwirled,depolarizing,0.01,0.10550837665315108,0
+HEA adversarial,untwirled,depolarizing,0.02,-0.5246155553444718,0
+HEA adversarial,untwirled,depolarizing,0.05,-1.137306035740347,0
+HEA adversarial,untwirled,depolarizing,0.1,0.4533734363646559,0
+HEA adversarial,untwirled,amplitude_damping,0.0,-1.137306035740347,0
+HEA adversarial,untwirled,amplitude_damping,0.01,-1.1360519999499217,0
+HEA adversarial,untwirled,amplitude_damping,0.02,-0.44019201604544184,0
+HEA adversarial,untwirled,amplitude_damping,0.05,-1.0876916254281161,0
+HEA adversarial,untwirled,amplitude_damping,0.1,-0.17389716633807586,0
+HEA adversarial,untwirled,coherent_overrotation,0.0,-1.137306035740347,0
+HEA adversarial,untwirled,coherent_overrotation,0.01,-1.093744124551401,0
+HEA adversarial,untwirled,coherent_overrotation,0.02,-0.96981178356733,0
+HEA adversarial,untwirled,coherent_overrotation,0.05,-0.3390252166597437,0
+HEA adversarial,untwirled,coherent_overrotation,0.1,0.17284393804063974,0
+HEA adversarial,untwirled,readout,0.0,-1.137306035740347,0
+HEA adversarial,untwirled,readout,0.01,-0.6802379274047463,0
+HEA adversarial,untwirled,readout,0.02,-0.5246155553401137,0
+HEA adversarial,untwirled,readout,0.05,0.7253744080819032,0
+HEA adversarial,untwirled,readout,0.1,0.03646075175430541,0
+HEA adversarial,untwirled,depolarizing,0.0,-1.1373060355713542,1
+HEA adversarial,untwirled,depolarizing,0.01,-1.1373060355713542,1
+HEA adversarial,untwirled,depolarizing,0.02,-1.1373060355713542,1
+HEA adversarial,untwirled,depolarizing,0.05,-0.5216476530459894,1
+HEA adversarial,untwirled,depolarizing,0.1,0.2978631406081339,1
+HEA adversarial,untwirled,amplitude_damping,0.0,-1.1373060355713542,1
+HEA adversarial,untwirled,amplitude_damping,0.01,-1.137120644690937,1
+HEA adversarial,untwirled,amplitude_damping,0.02,-0.7853377948706189,1
+HEA adversarial,untwirled,amplitude_damping,0.05,-1.1321462716761814,1
+HEA adversarial,untwirled,amplitude_damping,0.1,-0.5105555207512057,1
+HEA adversarial,untwirled,coherent_overrotation,0.0,-1.1373060355713542,1
+HEA adversarial,untwirled,coherent_overrotation,0.01,-1.1301553219002078,1
+HEA adversarial,untwirled,coherent_overrotation,0.02,-1.1084218505606824,1
+HEA adversarial,untwirled,coherent_overrotation,0.05,-0.9492822331986677,1
+HEA adversarial,untwirled,coherent_overrotation,0.1,-0.45801344635102814,1
+HEA adversarial,untwirled,readout,0.0,-1.1373060355713542,1
+HEA adversarial,untwirled,readout,0.01,-0.3837932024191058,1
+HEA adversarial,untwirled,readout,0.02,-0.38379316914994865,1
+HEA adversarial,untwirled,readout,0.05,0.3554101482707634,1
+HEA adversarial,untwirled,readout,0.1,0.2092485703538889,1

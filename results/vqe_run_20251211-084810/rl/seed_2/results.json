@@ -1,0 +1,7 @@
+{
+  "molecule": "HeH+",
+  "energy": 1.0,
+  "n_qubits": 2,
+  "hf_energy": 1.0,
+  "fci_energy": -1.0
+}

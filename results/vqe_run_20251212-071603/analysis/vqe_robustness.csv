@@ -1,0 +1,21 @@
+method,variant,noise_family,energy,seed
+RL,untwirled,clean,0.0816049465308079,0
+RL,untwirled,depolarizing,0.0816049465308079,0
+RL,untwirled,amplitude_damping,0.08289604433576414,0
+RL,untwirled,coherent_overrotation,0.08160493549915929,0
+RL,untwirled,readout,0.0816049465308079,0
+RL,untwirled,clean,-0.023235913075449907,1
+RL,untwirled,depolarizing,-0.023235913075449907,1
+RL,untwirled,amplitude_damping,-0.015705301664960016,1
+RL,untwirled,coherent_overrotation,-0.021975658689454947,1
+RL,untwirled,readout,-0.023235913075449907,1
+HEA adversarial,untwirled,clean,-1.137306035740347,0
+HEA adversarial,untwirled,depolarizing,-0.04284189698864821,0
+HEA adversarial,untwirled,amplitude_damping,-1.131675761940647,0
+HEA adversarial,untwirled,coherent_overrotation,-0.96981178356733,0
+HEA adversarial,untwirled,readout,-0.3147219629510105,0
+HEA adversarial,untwirled,clean,-1.1373060355713542,1
+HEA adversarial,untwirled,depolarizing,-1.1373060355713542,1
+HEA adversarial,untwirled,amplitude_damping,-1.136544332072609,1
+HEA adversarial,untwirled,coherent_overrotation,-1.1084218505606824,1
+HEA adversarial,untwirled,readout,-0.47870273274941594,1

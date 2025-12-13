@@ -1,0 +1,111 @@
+{
+  "experiment_name": "circuit_robustness_comparison",
+  "timestamp": "2025-12-13T11:35:07.011066",
+  "statistical_protocol": {
+    "n_seeds": 5,
+    "seeds_used": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "aggregation_method": "mean \u00b1 std (sample standard deviation with ddof=1)",
+    "confidence_level": 0.95
+  },
+  "hyperparameters": {
+    "n_qubits": 3,
+    "num_runs": 5,
+    "samples_per_circuit": 32
+  },
+  "aggregated_results": {
+    "vanilla_fidelity": {
+      "mean": 0.7936504893004892,
+      "std": 0.08510201063962752,
+      "median": 0.8364731417968867,
+      "min": 0.6672295741736888,
+      "max": 0.8724948531016705,
+      "n": 5,
+      "sem": 0.0380587761624235,
+      "ci_lower": 0.6879823865145098,
+      "ci_upper": 0.8993185920864686
+    },
+    "robust_fidelity": {
+      "mean": 0.8325117709115146,
+      "std": 0.023389083472509217,
+      "median": 0.8256196035072205,
+      "min": 0.8097959603182969,
+      "max": 0.8586787171661854,
+      "n": 5,
+      "sem": 0.010459916115189488,
+      "ci_lower": 0.8034703880127172,
+      "ci_upper": 0.8615531538103121
+    },
+    "quantumnas_fidelity": {
+      "mean": 0.663462786003947,
+      "std": 0.010912836712412074,
+      "median": 0.6643468416295943,
+      "min": 0.6484236563555895,
+      "max": 0.6751756262965498,
+      "n": 5,
+      "sem": 0.004880368943261744,
+      "ci_lower": 0.6499127095398686,
+      "ci_upper": 0.6770128624680255
+    },
+    "vanilla_counts": {
+      "gate_count_mean": 7.4,
+      "gate_count_std": 4.498888751680797,
+      "cnot_count_mean": 3.2,
+      "cnot_count_std": 1.16619037896906
+    },
+    "robust_counts": {
+      "gate_count_mean": 5.6,
+      "gate_count_std": 1.0198039027185568,
+      "cnot_count_mean": 2.0,
+      "cnot_count_std": 0.0
+    },
+    "quantumnas_counts": {
+      "gate_count_mean": 15.0,
+      "gate_count_std": 0.0,
+      "cnot_count_mean": 6.0,
+      "cnot_count_std": 0.0
+    },
+    "noise_agnostic_summary": {
+      "vanilla": {
+        "mean": 0.8491725663564018,
+        "std": 0.07825440722174555,
+        "median": 0.8886137679968621,
+        "min": 0.7449040537850942,
+        "max": 0.9209757402394305,
+        "n": 5,
+        "sem": 0.0349964348173547,
+        "ci_lower": 0.7520068862083835,
+        "ci_upper": 0.9463382465044201
+      },
+      "robust": {
+        "mean": 0.8849594891457293,
+        "std": 0.01997508539930377,
+        "median": 0.8832334309900006,
+        "min": 0.8564027913790594,
+        "max": 0.9076135515601892,
+        "n": 5,
+        "sem": 0.008933129761841352,
+        "ci_lower": 0.8601571447443681,
+        "ci_upper": 0.9097618335470905
+      },
+      "quantumnas": {
+        "mean": 0.7837818588006418,
+        "std": 0.04572820859405025,
+        "median": 0.7996742647382818,
+        "min": 0.7051656813428927,
+        "max": 0.821903178482405,
+        "n": 5,
+        "sem": 0.02045027658111729,
+        "ci_lower": 0.7270027884870575,
+        "ci_upper": 0.8405609291142261
+      }
+    }
+  },
+  "commit_hash": "e0422ab3",
+  "additional_notes": "Robustness comparison using 32 attack samples per circuit. Primary attack mode: random_high. Other evaluated modes: random_high"
+}

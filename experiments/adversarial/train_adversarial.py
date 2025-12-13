@@ -239,6 +239,12 @@ def train_adversarial(
     saboteur_start_budget_scale: float = 0.3,
     alpha_start: float = 0.6,
     alpha_end: float = 0.0,
+    saboteur_attack_candidate_fraction: float = 1.0,
+    saboteur_seed: int | None = None,
+    # Architect reward-shaping passthroughs for STOP/per-step behavior
+    stop_success_bonus: float = 0.1,
+    stop_failure_penalty: float = -0.05,
+    per_step_penalty: float = -0.01,
 ):
     # --- Configuration ---
     effective_task_mode = task_mode if task_mode is not None else config.TASK_MODE
@@ -306,6 +312,10 @@ def train_adversarial(
         qubits=qubits,
         task_mode=effective_task_mode,
         ideal_unitary=ideal_U,
+        # Wire STOP/per-step shaping into the architect env
+        stop_success_bonus=float(stop_success_bonus),
+        stop_failure_penalty=float(stop_failure_penalty),
+        per_step_penalty=float(per_step_penalty),
     )
 
     dummy_qubits = list(cirq.LineQubit.range(int(np.log2(len(target_state))))) if target_state is not None else qubits
@@ -324,6 +334,8 @@ def train_adversarial(
         noise_family=saboteur_noise_family,
         noise_kwargs=saboteur_noise_kwargs,
         n_qubits=n_qubits,
+        attack_candidate_fraction=saboteur_attack_candidate_fraction,
+        saboteur_seed=saboteur_seed,
     )
 
     # --- Initialize Agents (Persistent Saboteur) ---
@@ -337,6 +349,8 @@ def train_adversarial(
         saboteur_budget=saboteur_budget,
         saboteur_budget_fraction=saboteur_budget_fraction,
         saboteur_start_budget_scale=saboteur_start_budget_scale,
+        saboteur_attack_candidate_fraction=saboteur_attack_candidate_fraction,
+        saboteur_seed=saboteur_seed,
         saboteur_error_rates=sab_error_rates,
         saboteur_noise_family=saboteur_noise_family,
         saboteur_noise_kwargs=saboteur_noise_kwargs,

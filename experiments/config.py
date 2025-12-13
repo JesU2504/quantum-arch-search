@@ -95,6 +95,7 @@ def get_metric_key_for_task_mode(task_mode: str | None = None) -> str:
 # --- Per-Qubit Hyperparameter Configurations ---
 EXPERIMENT_PARAMS = {
     # "Quick" Implementation (3 Qubits) - For debugging and rapid testing
+    # MODIFIED (Publication): Increased saboteur by 25% (4096 → 5120) for better attack sophistication
     3: {
         # More rollout per update to help PPO escape the 0.69 plateau
         "ARCHITECT_N_STEPS": 2048,
@@ -105,15 +106,16 @@ EXPERIMENT_PARAMS = {
         "ARCHITECT_STEPS_PER_GENERATION": 12000,
         
         # Give the saboteur enough budget to learn, scaled to shorter run
-        "SABOTEUR_STEPS_PER_GENERATION": 4096,
-        "SABOTEUR_N_STEPS": 4096,
+        # INCREASED: 4096 → 5120 (+25%) for publication-quality adversarial training
+        "SABOTEUR_STEPS_PER_GENERATION": 5120,
+        "SABOTEUR_N_STEPS": 5120,
         # Saboteur Total
-        "SABOTEUR_STEPS": 4096 * 5,      # = 20,480 steps
+        "SABOTEUR_STEPS": 5120 * 5,      # = 25,600 steps (was 20,480, +25%)
     },
     
     # "Full" Implementation (4 Qubits) - Standard Experiment (ExpPlan.md)
-    # MODIFIED: Increased architect steps by 17% and saboteur steps by 50%
-    # to address analysis findings: better architect exploration and well-trained saboteur
+    # MODIFIED (Publication): Increased architect steps by 17% and saboteur steps by 80%
+    # Rationale: Better architect exploration + ultra-trained saboteur for publication-grade adversarial training
     4: {
         # More rollout per update to help PPO escape the 0.69 plateau
         "ARCHITECT_N_STEPS": 2048,
@@ -123,16 +125,18 @@ EXPERIMENT_PARAMS = {
         "N_GENERATIONS": 10,
         "ARCHITECT_STEPS_PER_GENERATION": 14000,  # was 12000
         
-        # Give the saboteur enough budget to learn well (increased by 50% for sophistication)
-        "SABOTEUR_STEPS_PER_GENERATION": 6144,     # was 4096 (+50%)
-        "SABOTEUR_N_STEPS": 6144,
+        # Give the saboteur enough budget to learn extremely well (increased by 80% total)
+        # INCREASED: 6144 → 7360 (+80% from original 4096) for publication-quality attacks
+        "SABOTEUR_STEPS_PER_GENERATION": 7360,     # was 4096, now +80%
+        "SABOTEUR_N_STEPS": 7360,
         # Saboteur Total
-        "SABOTEUR_STEPS": 6144 * 10,      # = 61,440 steps (was 40,960, +50%)
+        "SABOTEUR_STEPS": 7360 * 10,      # = 73,600 steps (was 40,960, +80%)
     },
     
     # "Long" Implementation (5 Qubits) - Scalability / Wall Test
-    # MODIFIED: Increased saboteur steps by 50% to produce well-trained, sophisticated attacks
+    # MODIFIED (Publication): Increased saboteur steps by 87.5% to produce ultra-trained, sophisticated attacks
     # Architect steps kept at current level (180K is already substantial for 5Q)
+    # Rationale: Publication-quality adversarial training requires heavily-trained saboteur at 5 qubits
     5: {
         # More rollout per update to help PPO escape the 0.69 plateau
         "ARCHITECT_N_STEPS": 2048,
@@ -142,11 +146,12 @@ EXPERIMENT_PARAMS = {
         "N_GENERATIONS": 15,
         "ARCHITECT_STEPS_PER_GENERATION": 12000,
         
-        # Give the saboteur enough budget to learn well (increased by 50% for sophistication)
-        "SABOTEUR_STEPS_PER_GENERATION": 6144,     # was 4096 (+50%)
-        "SABOTEUR_N_STEPS": 6144,
+        # Give the saboteur enough budget to learn extremely well (increased by 87.5% total)
+        # INCREASED: 6144 → 7680 (+87.5% from original 4096) for publication-grade adversarial training
+        "SABOTEUR_STEPS_PER_GENERATION": 7680,     # was 4096, now +87.5%
+        "SABOTEUR_N_STEPS": 7680,
         # Saboteur Total
-        "SABOTEUR_STEPS": 6144 * 15,      # = 92,160 steps (was 61,440, +50%)
+        "SABOTEUR_STEPS": 7680 * 15,      # = 115,200 steps (was 61,440, +87.5%)
     }
 }
 
@@ -206,10 +211,10 @@ from qas_gym.utils import get_gates_by_name
 # Default setting for including parameterized rotation gates (Rx, Ry, Rz) in experiments.
 # Set to True to enable VQE-style variational circuits with more expressive action space.
 # Set to False (default) for backward compatibility with Clifford+T gate set.
-INCLUDE_ROTATIONS = False
+INCLUDE_ROTATIONS = True
 # Limit rotation gate types to reduce action space while preserving Toffoli synthesis.
 # Rz(π/4) acts as the T gate (up to global phase). Rx is helpful for GHZ prep.
-ROTATION_TYPES = ['Rz', 'Ry', 'Rx']
+ROTATION_TYPES = ['Rz', 'Rx']
 
 
 def get_action_gates(
@@ -234,9 +239,23 @@ def get_action_gates(
         The default gate set is Clifford+T: X, Y, Z, H, T, S (plus CNOT).
         When include_rotations=True, Rx, Ry, Rz gates are added for each qubit.
     """
-    single_qubit_gate_names = ['X', 'Y', 'Z', 'H', 'T', 'S']
-    # Use a single default rotation angle to align with tests expecting one Rx/Ry/Rz per qubit.
-    allowed_angles = 0.25 * np.pi
+    # Keep a minimal discrete primitive set for GHZ: H is sufficient
+    # (optionally add 'X' if explicit bit-flips are desired).
+    single_qubit_gate_names = ['H']
+    # Use a discrete set of allowed rotation angles (radians). Expanded from a
+    # single π/4 value to a small grid so the agent can choose finer rotations.
+    # Keep the grid reasonably small to avoid exploding the action space.
+    # Symmetric discrete grid of rotation angles (radians). We include
+    # negative angles so the agent can select clockwise vs counter-clockwise
+    # rotations. The grid is intentionally small to limit action-space growth.
+    # Smallest symmetric grid: ±{π/16, π/8}. Keeps action-space small but
+    # provides sign and fine-grained control for Rx/Rz.
+    allowed_angles = np.array([
+        -np.pi / 8,
+        -np.pi / 16,
+        np.pi / 16,
+        np.pi / 8,
+    ])
     return get_gates_by_name(
         qubits,
         single_qubit_gate_names,

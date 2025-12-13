@@ -1,0 +1,933 @@
+[
+  {
+    "metric": -0.5245958290032077,
+    "clean_energy": -0.5245958290032077,
+    "step": 12242,
+    "circuit": {
+      "cirq_type": "Circuit",
+      "moments": [
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 7
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 6
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 4
+                }
+              ]
+            },
+            {
+              "cirq_type": "SingleQubitPauliStringGateOperation",
+              "pauli": {
+                "cirq_type": "_PauliY",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubit": {
+                "cirq_type": "LineQubit",
+                "x": 3
+              }
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 0.7853981633974483
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 6
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 5
+                }
+              ]
+            },
+            {
+              "cirq_type": "SingleQubitPauliStringGateOperation",
+              "pauli": {
+                "cirq_type": "_PauliX",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubit": {
+                "cirq_type": "LineQubit",
+                "x": 7
+              }
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "ZPowGate",
+                "exponent": 0.5,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 3
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "metric": -0.5245958290032076,
+    "clean_energy": -0.5245958290032076,
+    "step": 4347,
+    "circuit": {
+      "cirq_type": "Circuit",
+      "moments": [
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 6
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 3
+                }
+              ]
+            },
+            {
+              "cirq_type": "SingleQubitPauliStringGateOperation",
+              "pauli": {
+                "cirq_type": "_PauliY",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubit": {
+                "cirq_type": "LineQubit",
+                "x": 2
+              }
+            },
+            {
+              "cirq_type": "SingleQubitPauliStringGateOperation",
+              "pauli": {
+                "cirq_type": "_PauliY",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubit": {
+                "cirq_type": "LineQubit",
+                "x": 4
+              }
+            },
+            {
+              "cirq_type": "SingleQubitPauliStringGateOperation",
+              "pauli": {
+                "cirq_type": "_PauliX",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubit": {
+                "cirq_type": "LineQubit",
+                "x": 1
+              }
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 0.7853981633974483
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 5
+                }
+              ]
+            },
+            {
+              "cirq_type": "SingleQubitPauliStringGateOperation",
+              "pauli": {
+                "cirq_type": "_PauliX",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubit": {
+                "cirq_type": "LineQubit",
+                "x": 7
+              }
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "SingleQubitPauliStringGateOperation",
+              "pauli": {
+                "cirq_type": "_PauliX",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubit": {
+                "cirq_type": "LineQubit",
+                "x": 4
+              }
+            },
+            {
+              "cirq_type": "SingleQubitPauliStringGateOperation",
+              "pauli": {
+                "cirq_type": "_PauliX",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubit": {
+                "cirq_type": "LineQubit",
+                "x": 3
+              }
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 6
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            },
+            {
+              "cirq_type": "SingleQubitPauliStringGateOperation",
+              "pauli": {
+                "cirq_type": "_PauliX",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubit": {
+                "cirq_type": "LineQubit",
+                "x": 2
+              }
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 3
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "ZPowGate",
+                "exponent": 0.25,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "ZPowGate",
+                "exponent": 0.25,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 3
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 4
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 4
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "metric": -0.5245958290032076,
+    "clean_energy": -0.5245958290032076,
+    "step": 4348,
+    "circuit": {
+      "cirq_type": "Circuit",
+      "moments": [
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 6
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 3
+                }
+              ]
+            },
+            {
+              "cirq_type": "SingleQubitPauliStringGateOperation",
+              "pauli": {
+                "cirq_type": "_PauliY",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubit": {
+                "cirq_type": "LineQubit",
+                "x": 2
+              }
+            },
+            {
+              "cirq_type": "SingleQubitPauliStringGateOperation",
+              "pauli": {
+                "cirq_type": "_PauliY",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubit": {
+                "cirq_type": "LineQubit",
+                "x": 4
+              }
+            },
+            {
+              "cirq_type": "SingleQubitPauliStringGateOperation",
+              "pauli": {
+                "cirq_type": "_PauliX",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubit": {
+                "cirq_type": "LineQubit",
+                "x": 1
+              }
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "Rz",
+                "rads": 0.7853981633974483
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 5
+                }
+              ]
+            },
+            {
+              "cirq_type": "SingleQubitPauliStringGateOperation",
+              "pauli": {
+                "cirq_type": "_PauliX",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubit": {
+                "cirq_type": "LineQubit",
+                "x": 7
+              }
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "SingleQubitPauliStringGateOperation",
+              "pauli": {
+                "cirq_type": "_PauliX",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubit": {
+                "cirq_type": "LineQubit",
+                "x": 4
+              }
+            },
+            {
+              "cirq_type": "SingleQubitPauliStringGateOperation",
+              "pauli": {
+                "cirq_type": "_PauliX",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubit": {
+                "cirq_type": "LineQubit",
+                "x": 3
+              }
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 6
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            },
+            {
+              "cirq_type": "SingleQubitPauliStringGateOperation",
+              "pauli": {
+                "cirq_type": "_PauliX",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubit": {
+                "cirq_type": "LineQubit",
+                "x": 2
+              }
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 3
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 1
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "ZPowGate",
+                "exponent": 0.25,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 6
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "ZPowGate",
+                "exponent": 0.25,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 3
+                }
+              ]
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 4
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 4
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "metric": -0.5245958290032076,
+    "clean_energy": -0.5245958290032076,
+    "step": 7086,
+    "circuit": {
+      "cirq_type": "Circuit",
+      "moments": [
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 7
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            },
+            {
+              "cirq_type": "SingleQubitPauliStringGateOperation",
+              "pauli": {
+                "cirq_type": "_PauliX",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubit": {
+                "cirq_type": "LineQubit",
+                "x": 3
+              }
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 7
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 5
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            },
+            {
+              "cirq_type": "SingleQubitPauliStringGateOperation",
+              "pauli": {
+                "cirq_type": "_PauliY",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubit": {
+                "cirq_type": "LineQubit",
+                "x": 7
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "metric": -0.5245958290032076,
+    "clean_energy": -0.5245958290032076,
+    "step": 7087,
+    "circuit": {
+      "cirq_type": "Circuit",
+      "moments": [
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 7
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            },
+            {
+              "cirq_type": "SingleQubitPauliStringGateOperation",
+              "pauli": {
+                "cirq_type": "_PauliX",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubit": {
+                "cirq_type": "LineQubit",
+                "x": 3
+              }
+            },
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 4
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 6
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 7
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "cirq_type": "Moment",
+          "operations": [
+            {
+              "cirq_type": "GateOperation",
+              "gate": {
+                "cirq_type": "CXPowGate",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubits": [
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 5
+                },
+                {
+                  "cirq_type": "LineQubit",
+                  "x": 0
+                }
+              ]
+            },
+            {
+              "cirq_type": "SingleQubitPauliStringGateOperation",
+              "pauli": {
+                "cirq_type": "_PauliY",
+                "exponent": 1.0,
+                "global_shift": 0.0
+              },
+              "qubit": {
+                "cirq_type": "LineQubit",
+                "x": 7
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

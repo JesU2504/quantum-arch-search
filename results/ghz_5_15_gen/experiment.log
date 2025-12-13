@@ -405,3 +405,69 @@ Results saved to results/run_20251210-110126/cross_noise/cross_noise_20251211-00
 2025-12-11 02:40:44,836 INFO: Running adversarial co-evolution for 5 seeds (15 generations each)
 2025-12-11 02:40:44,836 INFO: Adversarial training: seed index 0 (global seed=2042)
 2025-12-11 02:40:44,836 INFO: Setting global seed = 2042
+2025-12-11 04:15:04,663 INFO: Adversarial training: seed index 1 (global seed=2043)
+2025-12-11 04:15:04,663 INFO: Setting global seed = 2043
+2025-12-11 04:19:15,479 INFO: Loading experimental parameters for 5 qubits from config.py
+2025-12-11 04:19:15,481 INFO: Starting pipeline with metadata: {'timestamp': '20251211-041915', 'n_qubits': 5, 'baseline_steps': 180000, 'saboteur_steps': 92160, 'adversarial_gens': 15, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 1, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-11 04:19:15,481 INFO: Skipping baseline as requested
+2025-12-11 04:19:15,481 INFO: Running HEA baseline per seed
+2025-12-11 04:19:22,079 INFO: [GHZ] epoch 40/400 fidelity 0.925704
+[GHZ] epoch 80/400 fidelity 0.998916
+[GHZ] epoch 120/400 fidelity 0.999971
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/quantumnas/seed_0/circuit_quantumnas.json (n=5, depth=2, max_gates=15)
+2025-12-11 04:19:22,084 INFO: Truncated circuit at /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/quantumnas/circuit_quantumnas.json from 18 to 15 gates
+2025-12-11 04:19:22,084 INFO: Skipping lambda sweep as requested
+2025-12-11 04:19:22,085 INFO: Skipping saboteur-only as requested
+2025-12-11 04:19:22,085 INFO: Skipping adversarial as requested
+2025-12-11 04:19:22,086 INFO: Discovered 5 existing adversarial run(s) with robust circuits
+2025-12-11 04:19:22,088 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/adversarial/seed_0 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/compare/run_0
+2025-12-11 04:19:22,092 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/adversarial/seed_1 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/compare/run_1
+2025-12-11 04:19:22,093 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/adversarial/seed_2 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/compare/run_2
+2025-12-11 04:19:22,095 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/adversarial/seed_3 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/compare/run_3
+2025-12-11 04:19:22,097 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/adversarial/seed_4 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/compare/run_4
+2025-12-11 04:19:22,101 INFO: Truncated circuit at /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/compare/run_0/circuit_quantumnas.json from 18 to 15 gates
+2025-12-11 04:19:22,117 INFO: Truncated circuit at /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/compare/run_1/circuit_quantumnas.json from 18 to 15 gates
+2025-12-11 04:19:22,121 INFO: Truncated circuit at /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/compare/run_2/circuit_quantumnas.json from 18 to 15 gates
+2025-12-11 04:19:22,135 INFO: Truncated circuit at /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/compare/run_3/circuit_quantumnas.json from 18 to 15 gates
+2025-12-11 04:19:22,142 INFO: Truncated circuit at /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/compare/run_4/circuit_quantumnas.json from 18 to 15 gates
+2025-12-11 04:19:22,142 INFO: HEA baseline circuits copied into compare runs for analysis.
+2025-12-11 04:19:22,142 INFO: Running comparison across runs
+2025-12-11 04:23:19,563 INFO: Loading experimental parameters for 5 qubits from config.py
+2025-12-11 04:23:19,564 INFO: Starting pipeline with metadata: {'timestamp': '20251211-042319', 'n_qubits': 5, 'baseline_steps': 180000, 'saboteur_steps': 92160, 'adversarial_gens': 15, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 1, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-11 04:23:19,564 INFO: Skipping baseline as requested
+2025-12-11 04:23:19,565 INFO: Running HEA baseline per seed
+2025-12-11 04:23:28,712 INFO: [GHZ] epoch 40/400 fidelity 0.925704
+[GHZ] epoch 80/400 fidelity 0.998916
+[GHZ] epoch 120/400 fidelity 0.999971
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/quantumnas/seed_0/circuit_quantumnas.json (n=5, depth=2, max_gates=15)
+2025-12-11 04:23:28,716 INFO: Truncated circuit at /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/quantumnas/circuit_quantumnas.json from 18 to 15 gates
+2025-12-11 04:23:28,717 INFO: Skipping lambda sweep as requested
+2025-12-11 04:23:28,717 INFO: Skipping saboteur-only as requested
+2025-12-11 04:23:28,717 INFO: Skipping adversarial as requested
+2025-12-11 04:23:28,719 INFO: Discovered 5 existing adversarial run(s) with robust circuits
+2025-12-11 04:23:28,721 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/adversarial/seed_0 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/compare/run_0
+2025-12-11 04:23:28,724 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/adversarial/seed_1 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/compare/run_1
+2025-12-11 04:23:28,726 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/adversarial/seed_2 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/compare/run_2
+2025-12-11 04:23:28,727 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/adversarial/seed_3 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/compare/run_3
+2025-12-11 04:23:28,729 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/adversarial/seed_4 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/compare/run_4
+2025-12-11 04:23:28,732 INFO: Truncated circuit at /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/compare/run_0/circuit_quantumnas.json from 18 to 15 gates
+2025-12-11 04:23:28,735 INFO: Truncated circuit at /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/compare/run_1/circuit_quantumnas.json from 18 to 15 gates
+2025-12-11 04:23:28,738 INFO: Truncated circuit at /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/compare/run_2/circuit_quantumnas.json from 18 to 15 gates
+2025-12-11 04:23:28,741 INFO: Truncated circuit at /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/compare/run_3/circuit_quantumnas.json from 18 to 15 gates
+2025-12-11 04:23:28,744 INFO: Truncated circuit at /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_5_15_gen/compare/run_4/circuit_quantumnas.json from 18 to 15 gates
+2025-12-11 04:23:28,744 INFO: HEA baseline circuits copied into compare runs for analysis.
+2025-12-11 04:23:28,745 INFO: Running comparison across runs

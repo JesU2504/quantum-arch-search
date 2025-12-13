@@ -12,7 +12,7 @@ import argparse
 import json
 import os
 from datetime import datetime
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 from pathlib import Path
 
 import numpy as np
@@ -28,7 +28,7 @@ try:
 except Exception:  # pragma: no cover - fallback for older installs
     from qiskit.providers.aer import AerSimulator  # type: ignore
     from qiskit.providers.aer.noise import NoiseModel  # type: ignore
-from qiskit import transpile
+from qiskit import transpile, QuantumRegister
 import matplotlib.pyplot as plt
 
 # Resolve Fake backends across qiskit versions (include newer devices like Lagos/Oslo)
@@ -83,6 +83,9 @@ def resolve_backends(names: List[str]):
     return backends
 
 
+DENSITY_SAVE_LABEL = "_density_matrix"
+
+
 def load_qiskit_circuit_from_json(path: str, randomized_compile_flag: bool = False, rng=None):
     """Load and optionally twirl a circuit for qiskit execution.
     
@@ -122,6 +125,16 @@ def compute_success_prob(counts: Dict[str, int], success_bitstrings: List[str]) 
     if total == 0:
         return 0.0
     return float(sum(counts.get(bs, 0) for bs in success_bitstrings) / total)
+
+
+def _energy_from_density_matrix(dm, ham_matrix: np.ndarray) -> float:
+    if hasattr(dm, "data"):
+        rho = np.asarray(dm.data, dtype=complex)
+    else:
+        rho = np.asarray(dm, dtype=complex)
+    if ham_matrix.shape != rho.shape:
+        raise ValueError(f"Hamiltonian matrix shape {ham_matrix.shape} does not match density matrix shape {rho.shape}")
+    return float(np.real(np.trace(ham_matrix @ rho)))
 
 
 def _build_readout_filter(
@@ -243,6 +256,8 @@ def evaluate_on_backend(
     randomized_compile_flag: bool = False,
     readout_mitigation: bool = False,
     use_noise_model: bool = False,
+    hamiltonian_matrix: Optional[np.ndarray] = None,
+    hamiltonian_nqubits: Optional[int] = None,
 ) -> Dict[str, Dict]:
     results = []
     noise_model = None
@@ -253,6 +268,8 @@ def evaluate_on_backend(
             print(f"[qiskit_hw_eval] Warning: failed to build noise model from {backend_name}: {exc}")
             noise_model = None
 
+    energy_mode = hamiltonian_matrix is not None
+
     if noise_model is not None:
         coupling_map = None
         try:
@@ -260,14 +277,27 @@ def evaluate_on_backend(
             coupling_map = getattr(cfg, "coupling_map", None) if cfg else None
         except Exception:
             coupling_map = None
-        sim = AerSimulator(noise_model=noise_model, basis_gates=getattr(noise_model, "basis_gates", None), coupling_map=coupling_map)
+        sim_kwargs = {
+            "noise_model": noise_model,
+            "basis_gates": getattr(noise_model, "basis_gates", None),
+            "coupling_map": coupling_map,
+        }
+        if energy_mode:
+            sim_kwargs["method"] = "density_matrix"
+        sim = AerSimulator(**sim_kwargs)
     else:
         sim = AerSimulator.from_backend(backend_obj)
+        if energy_mode:
+            try:
+                sim.set_options(method="density_matrix")
+            except Exception:
+                sim = AerSimulator(method="density_matrix")
+
     meas_filter = None
     cal_data = None
     mitigate_from_matrix = None
     basis_states = None
-    if readout_mitigation:
+    if readout_mitigation and not energy_mode:
         # Estimate max width to size mitigation tools
         max_width = 0
         for paths in circuits.values():
@@ -300,54 +330,84 @@ def evaluate_on_backend(
 
     for label, paths in circuits.items():
         for path in paths:
-            qc = load_qiskit_circuit_from_json(path, randomized_compile_flag=randomized_compile_flag, rng=np.random.default_rng(seed=seed))
-            qc_meas = ensure_measurements(qc)
-            tqc = transpile(
-                qc_meas,
-                backend=backend_obj,
-                optimization_level=opt_level,
-                seed_transpiler=seed,
-                initial_layout=initial_layout,
-            )
-            job = sim.run(tqc, shots=shots, seed_simulator=seed)
-            res = job.result()
-            counts_raw = res.get_counts()
-            counts = counts_raw
-            success_prob_raw = compute_success_prob(counts_raw, target_bitstrings)
-            success_prob = success_prob_raw
-            mitigated_counts = None
-            if meas_filter is not None:
-                try:
-                    mitigated_counts = meas_filter(counts_raw)
-                    success_prob = compute_success_prob(mitigated_counts, target_bitstrings)
-                except Exception as exc:
-                    print(f"[qiskit_hw_eval] Warning: failed to apply readout mitigation on {backend_name}/{label}: {exc}")
-                    mitigated_counts = None
-            elif mitigate_from_matrix is not None and basis_states is not None:
-                try:
-                    mitigated_counts = mitigate_from_matrix(counts_raw, basis_states)
-                    success_prob = compute_success_prob(mitigated_counts, target_bitstrings)
-                except Exception as exc:
-                    print(f"[qiskit_hw_eval] Warning: failed to apply matrix-based readout mitigation on {backend_name}/{label}: {exc}")
-                    mitigated_counts = None
+            rng = np.random.default_rng(seed=seed)
+            qc = load_qiskit_circuit_from_json(path, randomized_compile_flag=randomized_compile_flag, rng=rng)
+            if energy_mode and hamiltonian_nqubits is not None and qc.num_qubits < hamiltonian_nqubits:
+                from qiskit import QuantumRegister
 
-            results.append({
+                deficit = hamiltonian_nqubits - qc.num_qubits
+                anc = QuantumRegister(deficit, "anc")
+                qc.add_register(anc)
+
+            entry: Dict[str, object] = {
                 "backend": backend_name,
                 "circuit": label,
                 "circuit_path": path,
                 "shots": shots,
-                "success_prob": success_prob,
-                "success_prob_raw": success_prob_raw,
-                "depth": tqc.depth(),
-                "width": tqc.num_qubits,
-                "gate_counts": gate_counts(tqc),
-                "counts": counts,
-                "counts_raw": counts_raw,
-                "counts_mitigated": mitigated_counts,
-                "readout_mitigated": bool(mitigated_counts),
-                "readout_calibration": cal_data if cal_data else None,
-                "noise_model": bool(noise_model),
-            })
+            }
+            if energy_mode and hamiltonian_matrix is not None:
+                qc_energy = qc.copy()
+                qc_energy.save_density_matrix(label=DENSITY_SAVE_LABEL)
+                entry["depth"] = qc_energy.depth()
+                entry["width"] = qc_energy.num_qubits
+                entry["gate_counts"] = gate_counts(qc_energy)
+                job = sim.run(qc_energy, shots=1, seed_simulator=seed)
+                try:
+                    dm = job.result().data(0)[DENSITY_SAVE_LABEL]
+                    energy = _energy_from_density_matrix(dm, hamiltonian_matrix)
+                except Exception as exc:
+                    print(f"[qiskit_hw_eval] Warning: failed to compute energy on {backend_name}/{label}: {exc}")
+                    energy = float("nan")
+                entry["energy"] = energy
+                entry["metric"] = "energy"
+            else:
+                qc_meas = ensure_measurements(qc)
+                tqc = transpile(
+                    qc_meas,
+                    backend=backend_obj,
+                    optimization_level=opt_level,
+                    seed_transpiler=seed,
+                    initial_layout=initial_layout,
+                )
+                entry["depth"] = tqc.depth()
+                entry["width"] = tqc.num_qubits
+                entry["gate_counts"] = gate_counts(tqc)
+                job = sim.run(tqc, shots=shots, seed_simulator=seed)
+                res = job.result()
+                counts_raw = res.get_counts()
+                counts = counts_raw
+                success_prob_raw = compute_success_prob(counts_raw, target_bitstrings)
+                success_prob = success_prob_raw
+                mitigated_counts = None
+                if meas_filter is not None:
+                    try:
+                        mitigated_counts = meas_filter(counts_raw)
+                        success_prob = compute_success_prob(mitigated_counts, target_bitstrings)
+                    except Exception as exc:
+                        print(f"[qiskit_hw_eval] Warning: failed to apply readout mitigation on {backend_name}/{label}: {exc}")
+                        mitigated_counts = None
+                elif mitigate_from_matrix is not None and basis_states is not None:
+                    try:
+                        mitigated_counts = mitigate_from_matrix(counts_raw, basis_states)
+                        success_prob = compute_success_prob(mitigated_counts, target_bitstrings)
+                    except Exception as exc:
+                        print(f"[qiskit_hw_eval] Warning: failed to apply matrix-based readout mitigation on {backend_name}/{label}: {exc}")
+                        mitigated_counts = None
+
+                entry.update(
+                    {
+                        "success_prob": success_prob,
+                        "success_prob_raw": success_prob_raw,
+                        "counts": counts,
+                        "counts_raw": counts_raw,
+                        "counts_mitigated": mitigated_counts,
+                        "readout_mitigated": bool(mitigated_counts),
+                        "readout_calibration": cal_data if cal_data else None,
+                        "noise_model": bool(noise_model),
+                        "metric": "success_prob",
+                    }
+                )
+            results.append(entry)
     return results
 
 
@@ -374,6 +434,8 @@ def run_hw_eval(
     randomized_compile_flag: bool = False,
     readout_mitigation: bool = False,
     use_noise_model: bool = False,
+    hamiltonian_matrix: Optional[np.ndarray] = None,
+    hamiltonian_nqubits: Optional[int] = None,
 ):
     circuits: Dict[str, list[str]] = {"baseline": [], "robust": [], "quantumnas": []}
     for path in baseline_circuits or ([] if baseline_circuit is None else [baseline_circuit]):
@@ -414,6 +476,8 @@ def run_hw_eval(
                 randomized_compile_flag=twirl,
                 readout_mitigation=readout_mitigation,
                 use_noise_model=use_noise_model,
+                hamiltonian_matrix=hamiltonian_matrix,
+                hamiltonian_nqubits=hamiltonian_nqubits,
             )
             for res in backend_results:
                 res["variant"] = variant

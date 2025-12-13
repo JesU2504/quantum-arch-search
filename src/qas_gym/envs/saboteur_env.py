@@ -65,6 +65,8 @@ class SaboteurMultiGateEnv(gym.Env):
         noise_family: str = "depolarizing",
         noise_kwargs: dict | None = None,
         max_concurrent_attacks: int = 5,
+        attack_candidate_fraction: float = 1.0,
+        saboteur_seed: int | None = None,
         **kwargs
     ):
         super().__init__()
@@ -82,6 +84,16 @@ class SaboteurMultiGateEnv(gym.Env):
         
         # MODIFICATION 2: Define the Attack Budget (configurable)
         self.max_concurrent_attacks = max_concurrent_attacks
+        # Fraction of gates to consider as candidates for attack. If < 1.0,
+        # the saboteur will sample a subset of gates and choose the top-K
+        # attacks among those. This reduces heavy concentration and runtime
+        # when circuits are long. Value in (0,1], default 1.0 (consider all).
+        self.attack_candidate_fraction = float(attack_candidate_fraction)
+        # RNG for reproducible candidate sampling when desired
+        try:
+            self._rng = np.random.RandomState(int(saboteur_seed)) if saboteur_seed is not None else np.random.RandomState()
+        except Exception:
+            self._rng = np.random.RandomState()
 
         # Noise configuration
         self.error_rates = list(error_rates) if error_rates is not None else self.all_error_rates
@@ -99,7 +111,11 @@ class SaboteurMultiGateEnv(gym.Env):
         # --- Enriched Observation Space (Dict) ---
         self.observation_space = spaces.Dict({
             "projected_state": spaces.Box(low=-1.0, high=1.0, shape=(2 * self.n_qubits,), dtype=np.float32),
-            "gate_structure": spaces.Box(low=0, high=10, shape=(self.max_gates,), dtype=np.int32)
+            "gate_structure": spaces.Box(low=0, high=10, shape=(self.max_gates,), dtype=np.int32),
+            # Provide both moment and operation counts so policies / analysis
+            # can reason about the true gate budget vs Cirq packing into moments.
+            "moment_count": spaces.Box(low=0, high=self.max_gates, shape=(1,), dtype=np.int32),
+            "operation_count": spaces.Box(low=0, high=self.max_gates, shape=(1,), dtype=np.int32),
         })
 
     def set_circuit(self, circuit: cirq.Circuit):
@@ -162,9 +178,15 @@ class SaboteurMultiGateEnv(gym.Env):
         for i, op in enumerate(ops[:self.max_gates]):
             structure[i] = self._encode_gate(op)
 
+        # Count moments vs operations for consistency with the architect env
+        moment_count = len(circuit)
+        operation_count = len(ops)
+
         return {
             "projected_state": state_obs,
             "gate_structure": structure,
+            "moment_count": np.array([moment_count], dtype=np.int32),
+            "operation_count": np.array([operation_count], dtype=np.int32),
         }
 
     @staticmethod
@@ -230,6 +252,8 @@ class SaboteurMultiGateEnv(gym.Env):
         noise_family: str,
         max_concurrent_attacks: int,
         max_gates: int | None = None,
+        attack_candidate_fraction: float = 1.0,
+        rng: np.random.RandomState | None = None,
         noise_kwargs: dict | None = None,
     ):
         """Apply the saboteur action to a circuit and return the noisy circuit.
@@ -244,8 +268,30 @@ class SaboteurMultiGateEnv(gym.Env):
         if valid_gate_count > 0:
             raw_action = np.array(action[:valid_gate_count], dtype=int)
             budget = min(max_concurrent_attacks, valid_gate_count)
-            top_k_indices = np.argsort(raw_action)[-budget:]
-            effective_action[top_k_indices] = raw_action[top_k_indices]
+
+            # Candidate sampling: optionally sample a subset of gate indices
+            # to consider for attack. This reduces the saboteur's candidate
+            # set and avoids concentrating attacks deterministically on the
+            # earliest/highest-index gates when circuits are long.
+            acf = float(attack_candidate_fraction) if attack_candidate_fraction is not None else 1.0
+            if acf <= 0.0:
+                acf = 1.0
+            if acf >= 1.0:
+                candidate_indices = np.arange(valid_gate_count)
+            else:
+                n_candidates = max(1, int(np.ceil(valid_gate_count * acf)))
+                # Randomly sample candidate indices without replacement
+                if rng is None:
+                    candidate_indices = np.random.choice(valid_gate_count, size=n_candidates, replace=False)
+                else:
+                    candidate_indices = rng.choice(valid_gate_count, size=n_candidates, replace=False)
+
+            # Select top-k among the candidates based on the raw_action scores
+            if budget > 0:
+                candidate_actions = raw_action[candidate_indices]
+                rel_top = np.argsort(candidate_actions)[-min(budget, len(candidate_indices)):]
+                top_k_indices = candidate_indices[rel_top]
+                effective_action[top_k_indices] = raw_action[top_k_indices]
 
         noisy_ops = []
         applied_rates = []
@@ -275,6 +321,8 @@ class SaboteurMultiGateEnv(gym.Env):
             noise_family=self.noise_family,
             max_concurrent_attacks=self.max_concurrent_attacks,
             max_gates=self.max_gates,
+            attack_candidate_fraction=self.attack_candidate_fraction,
+            rng=self._rng,
             noise_kwargs=self.noise_kwargs,
         )
         
@@ -388,6 +436,8 @@ class Saboteur(gym.Env):
             noise_family=self.noise_family,
             max_concurrent_attacks=self.max_concurrent_attacks,
             max_gates=self.max_gates,
+            attack_candidate_fraction=self.attack_candidate_fraction,
+            rng=self._rng,
             noise_kwargs=self.noise_kwargs,
         )
         return noisy_circuit, len(applied_rates)

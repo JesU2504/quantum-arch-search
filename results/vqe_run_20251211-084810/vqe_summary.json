@@ -1,0 +1,107 @@
+[
+  {
+    "clean_energy":1.0,
+    "worst_energy":1.0,
+    "hf":1.0,
+    "fci":-1.0,
+    "method":"RL"
+  },
+  {
+    "clean_energy":1.0,
+    "worst_energy":1.0,
+    "hf":1.0,
+    "fci":-1.0,
+    "method":"RL"
+  },
+  {
+    "clean_energy":1.0,
+    "worst_energy":1.0,
+    "hf":1.0,
+    "fci":-1.0,
+    "method":"RL"
+  },
+  {
+    "clean_energy":1.0,
+    "worst_energy":1.0,
+    "hf":1.0,
+    "fci":-1.0,
+    "method":"RL"
+  },
+  {
+    "clean_energy":1.0,
+    "worst_energy":1.0,
+    "hf":1.0,
+    "fci":-1.0,
+    "method":"RL"
+  },
+  {
+    "clean_energy":-1.000000596,
+    "worst_energy":-0.9500005245,
+    "hf":-1.0,
+    "fci":-1.0,
+    "method":"HEA adversarial"
+  },
+  {
+    "clean_energy":-1.0000007153,
+    "worst_energy":-0.9500006437,
+    "hf":-1.0,
+    "fci":-1.0,
+    "method":"HEA adversarial"
+  },
+  {
+    "clean_energy":-1.0000004768,
+    "worst_energy":-0.9500004649,
+    "hf":-1.0,
+    "fci":-1.0,
+    "method":"HEA adversarial"
+  },
+  {
+    "clean_energy":-1.000000596,
+    "worst_energy":-0.9500005245,
+    "hf":-1.0,
+    "fci":-1.0,
+    "method":"HEA adversarial"
+  },
+  {
+    "clean_energy":-1.000000596,
+    "worst_energy":-0.9500005245,
+    "hf":-1.0,
+    "fci":-1.0,
+    "method":"HEA adversarial"
+  },
+  {
+    "clean_energy":-1.0,
+    "worst_energy":-1.0,
+    "hf":-1.0,
+    "fci":-1.0,
+    "method":"Architect adversarial"
+  },
+  {
+    "clean_energy":-1.0,
+    "worst_energy":-1.0,
+    "hf":-1.0,
+    "fci":-1.0,
+    "method":"Architect adversarial"
+  },
+  {
+    "clean_energy":-1.0,
+    "worst_energy":1.0,
+    "hf":-1.0,
+    "fci":-1.0,
+    "method":"Architect adversarial"
+  },
+  {
+    "clean_energy":-1.0,
+    "worst_energy":1.0,
+    "hf":-1.0,
+    "fci":-1.0,
+    "method":"Architect adversarial"
+  },
+  {
+    "clean_energy":-1.0,
+    "worst_energy":-1.0,
+    "hf":-1.0,
+    "fci":-1.0,
+    "method":"Architect adversarial"
+  }
+]

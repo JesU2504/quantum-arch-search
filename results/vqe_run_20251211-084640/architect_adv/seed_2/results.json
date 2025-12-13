@@ -1,0 +1,11 @@
+{
+  "molecule": "BeH2",
+  "n_qubits": 8,
+  "seed": 44,
+  "best_attacked_energy": -0.5245958290032077,
+  "best_clean_energy": -0.5245958290032077,
+  "best_gate_count": 11,
+  "hf_energy": -15.560334935987186,
+  "fci_energy": -0.5304960745373908,
+  "hall_of_fame_size": 5
+}

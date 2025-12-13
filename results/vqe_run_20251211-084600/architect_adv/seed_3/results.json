@@ -1,0 +1,11 @@
+{
+  "molecule": "H2",
+  "n_qubits": 4,
+  "seed": 45,
+  "best_attacked_energy": -1.1169989967540044,
+  "best_clean_energy": -1.1169989967540044,
+  "best_gate_count": 5,
+  "hf_energy": -1.116998996754004,
+  "fci_energy": -1.1373060357533997,
+  "hall_of_fame_size": 5
+}

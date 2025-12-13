@@ -14,7 +14,7 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Sequence
 
 import cirq
 import gymnasium as gym
@@ -42,6 +42,23 @@ _MOLECULE_QUBITS = {
     "LiH": 4,
     "BeH2": 6,
 }
+
+
+def _canonical_noise_families(noise_families: Optional[Sequence[str]], fallback: str) -> List[str]:
+    """Return a de-duplicated list of noise families with at least one entry."""
+    if noise_families is None:
+        return [fallback]
+    families = [str(f).strip() for f in noise_families if str(f).strip()]
+    if not families:
+        families = [fallback]
+    # Preserve order but drop duplicates
+    seen = set()
+    ordered = []
+    for fam in families:
+        if fam not in seen:
+            seen.add(fam)
+            ordered.append(fam)
+    return ordered
 
 
 def _zz_chain_hamiltonian(n_qubits: int) -> np.ndarray:
@@ -79,7 +96,7 @@ class SaboteurVQEnv(gym.Env):
         hamiltonian_matrix: np.ndarray,
         max_circuit_timesteps: int,
         error_rates: List[float],
-        noise_family: str,
+        noise_families: Sequence[str],
         noise_kwargs: Optional[dict],
         lambda_penalty: float = 0.5,
         n_qubits: int = 3,
@@ -88,7 +105,7 @@ class SaboteurVQEnv(gym.Env):
         self.hamiltonian_matrix = hamiltonian_matrix
         self.lambda_penalty = lambda_penalty
         self.n_qubits = n_qubits
-        self.noise_family = noise_family
+        self.noise_families = list(noise_families) if noise_families else ["depolarizing"]
         self.noise_kwargs = noise_kwargs.copy() if noise_kwargs is not None else {}
         self.error_rates = list(error_rates)
         self.max_circuit_timesteps = max_circuit_timesteps
@@ -101,7 +118,7 @@ class SaboteurVQEnv(gym.Env):
             max_circuit_timesteps=max_circuit_timesteps,
             n_qubits=n_qubits,
             error_rates=self.error_rates,
-            noise_family=noise_family,
+            noise_family=self.noise_families[0],
             noise_kwargs=self.noise_kwargs,
             max_concurrent_attacks=max_circuit_timesteps,
             lambda_penalty=lambda_penalty,
@@ -112,6 +129,11 @@ class SaboteurVQEnv(gym.Env):
 
         self.current_circuit = architect_circuit
         self.clean_energy = self._energy(self.current_circuit)
+
+    def _sample_noise_family(self) -> str:
+        if len(self.noise_families) == 1:
+            return self.noise_families[0]
+        return str(np.random.choice(self.noise_families))
 
     def _energy(self, circuit: cirq.Circuit) -> float:
         res = self.sim.simulate(circuit, qubit_order=cirq.LineQubit.range(self.n_qubits))
@@ -128,11 +150,12 @@ class SaboteurVQEnv(gym.Env):
         return self._base_env.reset(seed=seed, options=options)
 
     def step(self, action):
+        noise_family = self._sample_noise_family()
         noisy_circuit, applied_rates, _ = SaboteurMultiGateEnv.build_noisy_circuit(
             circuit=self.current_circuit,
             action=action,
             error_rates=self.error_rates,
-            noise_family=self.noise_family,
+            noise_family=noise_family,
             max_concurrent_attacks=self.max_circuit_timesteps,
             max_gates=self.max_circuit_timesteps,
             noise_kwargs=self.noise_kwargs,
@@ -141,7 +164,11 @@ class SaboteurVQEnv(gym.Env):
         mean_err = float(np.mean(applied_rates)) if applied_rates else 0.0
         reward = (noisy_energy - self.clean_energy) - self.lambda_penalty * mean_err
         obs = self._base_env._get_obs(self.current_circuit)
-        info = {"energy_noisy": noisy_energy, "mean_error_rate": mean_err}
+        info = {
+            "energy_noisy": noisy_energy,
+            "mean_error_rate": mean_err,
+            "noise_family": noise_family,
+        }
         return obs, reward, True, False, info
 
 
@@ -155,7 +182,7 @@ class AdversarialVQEEnv(ArchitectEnv):
         self,
         saboteur_agent: PPO | None,
         saboteur_error_rates: List[float],
-        saboteur_noise_family: str,
+        saboteur_noise_families: Sequence[str],
         saboteur_noise_kwargs: Optional[dict],
         alpha_start: float,
         alpha_end: float,
@@ -166,13 +193,18 @@ class AdversarialVQEEnv(ArchitectEnv):
         super().__init__(**kwargs)
         self.saboteur_agent = saboteur_agent
         self.saboteur_error_rates = saboteur_error_rates
-        self.saboteur_noise_family = saboteur_noise_family
+        self.saboteur_noise_families = list(saboteur_noise_families) if saboteur_noise_families else ["depolarizing"]
         self.saboteur_noise_kwargs = saboteur_noise_kwargs.copy() if saboteur_noise_kwargs is not None else {}
         self.alpha_start = alpha_start
         self.alpha_end = alpha_end
         self.total_training_steps = float(total_training_steps)
         self.global_step = 0
         self.saboteur_budget = saboteur_budget
+
+    def _sample_noise_family(self) -> str:
+        if len(self.saboteur_noise_families) == 1:
+            return self.saboteur_noise_families[0]
+        return str(np.random.choice(self.saboteur_noise_families))
 
     def step(self, action):
         obs, clean_reward, terminated, truncated, info = super().step(action)
@@ -185,12 +217,13 @@ class AdversarialVQEEnv(ArchitectEnv):
         if terminated and self.saboteur_agent is not None and clean_energy is not None:
             final_circuit = self._get_cirq()
             if final_circuit is not None:
+                noise_family = self._sample_noise_family()
                 sab_obs = SaboteurMultiGateEnv.create_observation_from_circuit(
                     final_circuit,
                     n_qubits=len(self.qubits),
                     max_circuit_timesteps=self.max_timesteps,
                     error_rates=self.saboteur_error_rates,
-                    noise_family=self.saboteur_noise_family,
+                    noise_family=noise_family,
                     noise_kwargs=self.saboteur_noise_kwargs,
                 )
                 sab_action, _ = self.saboteur_agent.predict(sab_obs, deterministic=True)
@@ -198,7 +231,7 @@ class AdversarialVQEEnv(ArchitectEnv):
                     circuit=final_circuit,
                     action=sab_action,
                     error_rates=self.saboteur_error_rates,
-                    noise_family=self.saboteur_noise_family,
+                    noise_family=noise_family,
                     max_concurrent_attacks=min(self.saboteur_budget, self.max_timesteps),
                     max_gates=self.max_timesteps,
                     noise_kwargs=self.saboteur_noise_kwargs,
@@ -207,6 +240,7 @@ class AdversarialVQEEnv(ArchitectEnv):
                 result = sim.simulate(noisy_circuit, qubit_order=self.qubits)
                 attacked_energy = state_energy(result.final_state_vector, self.hamiltonian_matrix)
                 info["mean_error_rate"] = float(np.mean(applied_rates)) if applied_rates else 0.0
+                info["noise_family"] = noise_family
 
                 # Anneal alpha from start -> end over training
                 t = min(1.0, self.global_step / self.total_training_steps) if self.total_training_steps > 0 else 1.0
@@ -315,34 +349,40 @@ def evaluate_attacked_energy(
     circuit: cirq.Circuit,
     saboteur_agent: PPO,
     saboteur_error_rates: List[float],
-    saboteur_noise_family: str,
+    saboteur_noise_families: Sequence[str],
     saboteur_noise_kwargs: dict,
     max_timesteps: int,
     hamiltonian_matrix: np.ndarray,
     qubits: List[cirq.LineQubit],
 ) -> float:
-    """Deterministic saboteur attack energy."""
-    sab_obs = SaboteurMultiGateEnv.create_observation_from_circuit(
-        circuit,
-        n_qubits=len(qubits),
-        max_circuit_timesteps=max_timesteps,
-        error_rates=saboteur_error_rates,
-        noise_family=saboteur_noise_family,
-        noise_kwargs=saboteur_noise_kwargs,
-    )
-    sab_action, _ = saboteur_agent.predict(sab_obs, deterministic=True)
-    noisy_circuit, _, _ = SaboteurMultiGateEnv.build_noisy_circuit(
-        circuit=circuit,
-        action=sab_action,
-        error_rates=saboteur_error_rates,
-        noise_family=saboteur_noise_family,
-        max_concurrent_attacks=max_timesteps,
-        max_gates=max_timesteps,
-        noise_kwargs=saboteur_noise_kwargs,
-    )
-    sim = cirq.Simulator()
-    result = sim.simulate(noisy_circuit, qubit_order=qubits)
-    return state_energy(result.final_state_vector, hamiltonian_matrix)
+    """Deterministic saboteur attack energy; return the worst across noise families."""
+    worst_energy = None
+    families = saboteur_noise_families if saboteur_noise_families else ["depolarizing"]
+    for noise_family in families:
+        sab_obs = SaboteurMultiGateEnv.create_observation_from_circuit(
+            circuit,
+            n_qubits=len(qubits),
+            max_circuit_timesteps=max_timesteps,
+            error_rates=saboteur_error_rates,
+            noise_family=noise_family,
+            noise_kwargs=saboteur_noise_kwargs,
+        )
+        sab_action, _ = saboteur_agent.predict(sab_obs, deterministic=True)
+        noisy_circuit, _, _ = SaboteurMultiGateEnv.build_noisy_circuit(
+            circuit=circuit,
+            action=sab_action,
+            error_rates=saboteur_error_rates,
+            noise_family=noise_family,
+            max_concurrent_attacks=max_timesteps,
+            max_gates=max_timesteps,
+            noise_kwargs=saboteur_noise_kwargs,
+        )
+        sim = cirq.Simulator()
+        result = sim.simulate(noisy_circuit, qubit_order=qubits)
+        energy = state_energy(result.final_state_vector, hamiltonian_matrix)
+        if worst_energy is None or energy > worst_energy:
+            worst_energy = energy
+    return float(worst_energy if worst_energy is not None else 0.0)
 
 
 # ------------------------------ Training loop --------------------------------
@@ -356,7 +396,7 @@ def train_adversarial_vqe_architect(
     alpha_start: float,
     alpha_end: float,
     saboteur_budget: int,
-    saboteur_noise_family: str,
+    saboteur_noise_families: Sequence[str],
     saboteur_error_rates: List[float],
     saboteur_noise_kwargs: dict,
     seed: int,
@@ -390,12 +430,14 @@ def train_adversarial_vqe_architect(
 
     # Saboteur env/agent
     dummy_circuit = cirq.Circuit()
+    noise_families = list(saboteur_noise_families) if saboteur_noise_families else ["depolarizing"]
+
     sab_env = SaboteurVQEnv(
         architect_circuit=dummy_circuit,
         hamiltonian_matrix=hamiltonian_matrix,
         max_circuit_timesteps=max_circuit_gates,
         error_rates=saboteur_error_rates,
-        noise_family=saboteur_noise_family,
+        noise_families=noise_families,
         noise_kwargs=saboteur_noise_kwargs,
         n_qubits=n_qubits,
     )
@@ -419,7 +461,7 @@ def train_adversarial_vqe_architect(
     arch_env = AdversarialVQEEnv(
         saboteur_agent=sab_agent,
         saboteur_error_rates=saboteur_error_rates,
-        saboteur_noise_family=saboteur_noise_family,
+        saboteur_noise_families=noise_families,
         saboteur_noise_kwargs=saboteur_noise_kwargs,
         alpha_start=alpha_start,
         alpha_end=alpha_end,
@@ -442,7 +484,7 @@ def train_adversarial_vqe_architect(
         env_gen = AdversarialVQEEnv(
             saboteur_agent=sab_agent,
             saboteur_error_rates=saboteur_error_rates,
-            saboteur_noise_family=saboteur_noise_family,
+            saboteur_noise_families=noise_families,
             saboteur_noise_kwargs=saboteur_noise_kwargs,
             alpha_start=alpha_start,
             alpha_end=alpha_end,
@@ -499,7 +541,7 @@ def train_adversarial_vqe_architect(
             best_circ,
             sab_agent,
             saboteur_error_rates,
-            saboteur_noise_family,
+            noise_families,
             saboteur_noise_kwargs,
             max_circuit_gates,
             hamiltonian_matrix,
@@ -541,6 +583,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--alpha-end", type=float, default=0.0)
     p.add_argument("--saboteur-budget", type=int, default=3)
     p.add_argument("--saboteur-noise-family", type=str, default="depolarizing")
+    p.add_argument("--saboteur-noise-families", type=str, nargs="+", default=None)
     p.add_argument("--saboteur-error-rates", type=float, nargs="+", default=None)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--out-dir", required=True)
@@ -552,6 +595,7 @@ def main():
     error_rates = args.saboteur_error_rates
     if error_rates is None or len(error_rates) == 0:
         error_rates = list(SaboteurMultiGateEnv.all_error_rates)
+    noise_families = _canonical_noise_families(args.saboteur_noise_families, args.saboteur_noise_family)
     train_adversarial_vqe_architect(
         molecule=args.molecule,
         n_generations=args.n_generations,
@@ -562,7 +606,7 @@ def main():
         alpha_start=args.alpha_start,
         alpha_end=args.alpha_end,
         saboteur_budget=args.saboteur_budget,
-        saboteur_noise_family=args.saboteur_noise_family,
+        saboteur_noise_families=noise_families,
         saboteur_error_rates=error_rates,
         saboteur_noise_kwargs={},
         seed=args.seed,

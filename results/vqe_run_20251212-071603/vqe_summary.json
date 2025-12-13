@@ -1,0 +1,30 @@
+[
+  {
+    "clean_energy":0.0816049465,
+    "worst_energy":-0.3163324783,
+    "hf":-1.1169989968,
+    "fci":-1.1373060358,
+    "method":"RL"
+  },
+  {
+    "clean_energy":-0.0232359131,
+    "worst_energy":-0.3163324783,
+    "hf":-1.1169989968,
+    "fci":-1.1373060358,
+    "method":"RL"
+  },
+  {
+    "clean_energy":-1.1373068094,
+    "worst_energy":-1.0849704742,
+    "hf":-1.1169989968,
+    "fci":-1.1373060358,
+    "method":"HEA adversarial"
+  },
+  {
+    "clean_energy":-1.1373071671,
+    "worst_energy":-1.0849708319,
+    "hf":-1.1169989968,
+    "fci":-1.1373060358,
+    "method":"HEA adversarial"
+  }
+]

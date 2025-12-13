@@ -1,0 +1,11 @@
+{
+  "molecule": "LiH",
+  "n_qubits": 4,
+  "seed": 44,
+  "best_attacked_energy": 0.012571360710938676,
+  "best_clean_energy": -0.06564520103159957,
+  "best_gate_count": 11,
+  "hf_energy": -7.8618647698086574,
+  "fci_energy": -0.06590926466153926,
+  "hall_of_fame_size": 5
+}

@@ -23,7 +23,13 @@ Use this as a checklist to generate all artifacts for the paper. Run from the re
   --hw-shots 4096 \
   --hw-opt-level 1 \
   --skip-lambda-sweep \
-  --mitigation-mode rc_zne --rc-zne-scales 0.75 1.0 1.5 2.0 3.0 --rc-zne-fit linear --rc-zne-reps 3"
+  --mitigation-mode rc_zne --rc-zne-scales 0.75 1.0 1.5 2.0 3.0 --rc-zne-fit linear --rc-zne-reps 3 \
+  --per-step-penalty -0.05 \
+  --stop-success-bonus 0.4 \
+  --stop-failure-penalty -0.3 \
+  --saboteur-attack-candidate-fraction 0.6"
+
+
 
 - **Unitary prep (Toffoli family by default; set TARGET_TYPE=\"toffoli\" in experiments/config.py and pass `--task-mode unitary_preparation`)**  
   - `python run_experiments.py --n-qubits 3 --task-mode unitary_preparation --n-seeds 5 --saboteur-noise-family depolarizing --robustness-noise-families depolarizing amplitude_damping coherent_overrotation --robustness-budgets 1,3 --attack-samples 2000`  
@@ -36,10 +42,19 @@ Use this as a checklist to generate all artifacts for the paper. Run from the re
     QuantumNAS scaffold baseline for unitary prep (if applicable).
 d
 ## 2) VQE evidence
-2. "python run_vqe.py \
+2. " python run_vqe.py \
   --molecule H2 \
   --n-seeds 2 \
-  --run-adv-architect
+  --rl-total-timesteps 50000 \
+  --run-adv-architect \
+  --adv-n-generations 10 \
+  --adv-architect-steps-per-gen 4000 \
+  --adv-saboteur-steps-per-gen 2000 \
+  --adv-saboteur-budget 3 \
+  --adv-max-gates 20 \
+  --adv-saboteur-noise-family depolarizing \
+  --skip-robustness \
+  --skip-cross-noise
 "
 
   > Re-run plots/analysis without retraining by pointing at the prior results directory:  

@@ -1,0 +1,441 @@
+2025-12-13 05:04:20,706 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-13 05:04:20,708 INFO: Starting pipeline with metadata: {'timestamp': '20251213-050420', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 25600, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-13 05:04:20,708 INFO: Running baseline architect (noiseless) for 5 seed(s)
+2025-12-13 05:34:10,919 INFO: Running HEA baseline per seed
+2025-12-13 05:34:19,813 INFO: [GHZ] epoch 40/400 fidelity 0.980831
+[GHZ] epoch 80/400 fidelity 0.999451
+[GHZ] epoch 120/400 fidelity 0.999997
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz3_new/quantumnas/seed_0/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-13 05:34:28,866 INFO: [GHZ] epoch 40/400 fidelity 0.997973
+[GHZ] epoch 80/400 fidelity 0.999776
+[GHZ] epoch 120/400 fidelity 0.999957
+[GHZ] epoch 160/400 fidelity 0.999989
+[GHZ] epoch 200/400 fidelity 0.999998
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz3_new/quantumnas/seed_1/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-13 05:34:37,184 INFO: [GHZ] epoch 40/400 fidelity 0.988280
+[GHZ] epoch 80/400 fidelity 0.999757
+[GHZ] epoch 120/400 fidelity 0.999917
+[GHZ] epoch 160/400 fidelity 0.999936
+[GHZ] epoch 200/400 fidelity 0.999949
+[GHZ] epoch 240/400 fidelity 0.999960
+[GHZ] epoch 280/400 fidelity 0.999968
+[GHZ] epoch 320/400 fidelity 0.999974
+[GHZ] epoch 360/400 fidelity 0.999979
+[GHZ] epoch 400/400 fidelity 0.999982
+[GHZ] Saved circuit to results/ghz3_new/quantumnas/seed_2/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-13 05:34:45,250 INFO: [GHZ] epoch 40/400 fidelity 0.992662
+[GHZ] epoch 80/400 fidelity 0.999796
+[GHZ] epoch 120/400 fidelity 0.999998
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz3_new/quantumnas/seed_3/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-13 05:34:53,588 INFO: [GHZ] epoch 40/400 fidelity 0.987302
+[GHZ] epoch 80/400 fidelity 0.999582
+[GHZ] epoch 120/400 fidelity 0.999936
+[GHZ] epoch 160/400 fidelity 0.999972
+[GHZ] epoch 200/400 fidelity 0.999986
+[GHZ] epoch 240/400 fidelity 0.999993
+[GHZ] epoch 280/400 fidelity 0.999997
+[GHZ] epoch 320/400 fidelity 0.999999
+[GHZ] epoch 360/400 fidelity 0.999999
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz3_new/quantumnas/seed_4/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-13 05:34:53,591 INFO: Skipping lambda sweep as requested
+2025-12-13 05:34:53,592 INFO: Running saboteur-only (attacks baseline circuit)
+2025-12-13 05:39:50,275 INFO: Running adversarial co-evolution for 5 seeds (5 generations each)
+2025-12-13 05:39:50,275 INFO: Adversarial training: seed index 0 (global seed=2042)
+2025-12-13 05:39:50,275 INFO: Setting global seed = 2042
+2025-12-13 05:53:31,529 INFO: Adversarial training: seed index 1 (global seed=2043)
+2025-12-13 05:53:31,529 INFO: Setting global seed = 2043
+2025-12-13 06:07:26,620 INFO: Adversarial training: seed index 2 (global seed=2044)
+2025-12-13 06:07:26,620 INFO: Setting global seed = 2044
+2025-12-13 06:21:31,872 INFO: Adversarial training: seed index 3 (global seed=2045)
+2025-12-13 06:21:31,872 INFO: Setting global seed = 2045
+2025-12-13 06:35:31,668 INFO: Adversarial training: seed index 4 (global seed=2046)
+2025-12-13 06:35:31,668 INFO: Setting global seed = 2046
+2025-12-13 06:49:27,867 INFO: Canonical adversarial run (for comparison): results/ghz3_new/adversarial/seed_0
+2025-12-13 06:49:27,867 INFO: Plotting multi-seed coevolution from results/ghz3_new/adversarial
+2025-12-13 06:49:31,545 INFO: [plot_coevolution_multiseed] Found runs:
+  - results/ghz3_new/adversarial/seed_0
+  - results/ghz3_new/adversarial/seed_1
+  - results/ghz3_new/adversarial/seed_2
+  - results/ghz3_new/adversarial/seed_3
+  - results/ghz3_new/adversarial/seed_4
+[plot_coevolution_multiseed] Saved multi-seed figure to results/ghz3_new/adversarial/coevolution_multiseed.png
+
+2025-12-13 06:49:35,914 INFO: --- Generating Co-Evolution Plot for results/ghz3_new/adversarial/seed_0 ---
+[plot_coevolution] Robust circuit /import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/results/ghz3_new/adversarial/seed_0/circuit_robust.json has 4 gates
+[plot_coevolution] Saved plot to results/ghz3_new/adversarial/coevolution_seed_0.png
+2025-12-13 06:49:38,494 INFO: --- Generating Co-Evolution Plot for results/ghz3_new/adversarial/seed_1 ---
+[plot_coevolution] Robust circuit /import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/results/ghz3_new/adversarial/seed_1/circuit_robust.json has 7 gates
+[plot_coevolution] Saved plot to results/ghz3_new/adversarial/coevolution_seed_1.png
+2025-12-13 06:49:40,915 INFO: --- Generating Co-Evolution Plot for results/ghz3_new/adversarial/seed_2 ---
+[plot_coevolution] Robust circuit /import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/results/ghz3_new/adversarial/seed_2/circuit_robust.json has 6 gates
+[plot_coevolution] Saved plot to results/ghz3_new/adversarial/coevolution_seed_2.png
+2025-12-13 06:49:44,843 INFO: --- Generating Co-Evolution Plot for results/ghz3_new/adversarial/seed_3 ---
+[plot_coevolution] Robust circuit /import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/results/ghz3_new/adversarial/seed_3/circuit_robust.json has 5 gates
+[plot_coevolution] Saved plot to results/ghz3_new/adversarial/coevolution_seed_3.png
+2025-12-13 06:49:47,502 INFO: --- Generating Co-Evolution Plot for results/ghz3_new/adversarial/seed_4 ---
+[plot_coevolution] Robust circuit /import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/results/ghz3_new/adversarial/seed_4/circuit_robust.json has 6 gates
+[plot_coevolution] Saved plot to results/ghz3_new/adversarial/coevolution_seed_4.png
+2025-12-13 06:49:47,508 INFO: Robust circuit from results/ghz3_new/adversarial/seed_0 copied to results/ghz3_new/compare/run_0
+2025-12-13 06:49:47,514 INFO: Robust circuit from results/ghz3_new/adversarial/seed_1 copied to results/ghz3_new/compare/run_1
+2025-12-13 06:49:47,519 INFO: Robust circuit from results/ghz3_new/adversarial/seed_2 copied to results/ghz3_new/compare/run_2
+2025-12-13 06:49:47,524 INFO: Robust circuit from results/ghz3_new/adversarial/seed_3 copied to results/ghz3_new/compare/run_3
+2025-12-13 06:49:47,528 INFO: Robust circuit from results/ghz3_new/adversarial/seed_4 copied to results/ghz3_new/compare/run_4
+2025-12-13 06:49:47,537 INFO: HEA baseline circuits copied into compare runs for analysis.
+2025-12-13 06:49:47,538 INFO: Running comparison across runs
+2025-12-13 06:55:26,043 INFO: Running parameter recovery experiment
+2025-12-13 06:55:26,044 INFO: === Parameter Recovery Experiment ===
+2025-12-13 06:55:26,044 INFO: Qubits: 3
+2025-12-13 06:55:26,044 INFO: Noise parameters to test: [0.02, 0.05, 0.08, 0.12, 0.16, 0.2, 0.25]
+2025-12-13 06:55:26,044 INFO: Shots per trial: 150
+2025-12-13 06:55:26,044 INFO: Repetitions per p (seeds): 5
+2025-12-13 06:55:26,044 INFO: Base seed: 42
+2025-12-13 06:55:26,044 INFO: Results directory: results/ghz3_new/parameter_recovery
+2025-12-13 06:55:26,045 INFO: Loaded baseline circuit from results/ghz3_new/baseline/seed_4/circuit_vanilla.json
+2025-12-13 06:55:26,045 INFO: Loaded robust circuit from results/ghz3_new/compare/run_0/circuit_robust.json
+2025-12-13 06:55:26,045 INFO: 
+  Testing baseline circuit (n_repetitions=5):
+2025-12-13 06:55:26,557 INFO:     p=0.020: recovered=0.0199±0.0005 (n=5), fidelity=0.7897±0.0046
+2025-12-13 06:55:27,054 INFO:     p=0.050: recovered=0.0498±0.0002 (n=5), fidelity=0.5700±0.0011
+2025-12-13 06:55:27,632 INFO:     p=0.080: recovered=0.0799±0.0004 (n=5), fidelity=0.4265±0.0016
+2025-12-13 06:55:28,170 INFO:     p=0.120: recovered=0.1213±0.0002 (n=5), fidelity=0.3069±0.0005
+2025-12-13 06:55:28,708 INFO:     p=0.160: recovered=0.1593±0.0017 (n=5), fidelity=0.2427±0.0023
+2025-12-13 06:55:29,274 INFO:     p=0.200: recovered=0.2012±0.0026 (n=5), fidelity=0.1995±0.0021
+2025-12-13 06:55:29,729 INFO:     p=0.250: recovered=0.2473±0.0030 (n=5), fidelity=0.1708±0.0014
+2025-12-13 06:55:29,732 INFO: 
+  Testing robust circuit (n_repetitions=5):
+2025-12-13 06:55:29,964 INFO:     p=0.020: recovered=0.0199±0.0003 (n=5), fidelity=0.9018±0.0015
+2025-12-13 06:55:30,162 INFO:     p=0.050: recovered=0.0504±0.0005 (n=5), fidelity=0.7690±0.0019
+2025-12-13 06:55:30,365 INFO:     p=0.080: recovered=0.0803±0.0008 (n=5), fidelity=0.6573±0.0027
+2025-12-13 06:55:30,568 INFO:     p=0.120: recovered=0.1193±0.0010 (n=5), fidelity=0.5358±0.0028
+2025-12-13 06:55:30,780 INFO:     p=0.160: recovered=0.1604±0.0009 (n=5), fidelity=0.4334±0.0020
+2025-12-13 06:55:31,007 INFO:     p=0.200: recovered=0.2022±0.0020 (n=5), fidelity=0.3515±0.0034
+2025-12-13 06:55:31,203 INFO:     p=0.250: recovered=0.2502±0.0022 (n=5), fidelity=0.2807±0.0027
+2025-12-13 06:55:31,205 INFO: 
+  Testing quantumnas circuit (n_repetitions=5):
+2025-12-13 06:55:31,933 INFO:     p=0.020: recovered=0.0199±0.0002 (n=5), fidelity=0.7198±0.0024
+2025-12-13 06:55:32,682 INFO:     p=0.050: recovered=0.0500±0.0004 (n=5), fidelity=0.4558±0.0024
+2025-12-13 06:55:33,432 INFO:     p=0.080: recovered=0.0799±0.0008 (n=5), fidelity=0.3099±0.0028
+2025-12-13 06:55:34,160 INFO:     p=0.120: recovered=0.1208±0.0013 (n=5), fidelity=0.2089±0.0021
+2025-12-13 06:55:34,920 INFO:     p=0.160: recovered=0.1613±0.0024 (n=5), fidelity=0.1637±0.0017
+2025-12-13 06:55:35,703 INFO:     p=0.200: recovered=0.2032±0.0110 (n=5), fidelity=0.1429±0.0037
+2025-12-13 06:55:36,474 INFO:     p=0.250: recovered=0.2511±0.0172 (n=5), fidelity=0.1324±0.0027
+2025-12-13 06:55:36,478 INFO: 
+Results saved to results/ghz3_new/parameter_recovery/parameter_recovery_results.json
+2025-12-13 06:55:36,820 INFO: Plot saved to results/ghz3_new/parameter_recovery/parameter_recovery_plot.png
+2025-12-13 06:55:36,829 INFO: Summary saved to results/ghz3_new/parameter_recovery/parameter_recovery_summary.txt
+2025-12-13 06:55:36,829 INFO: 
+=== Parameter Recovery Experiment Complete ===
+2025-12-13 06:55:36,833 INFO: Running cross-noise robustness experiment (aggregated across 5 seeds)
+2025-12-13 06:55:36,833 INFO: === Cross-Noise Robustness Experiment (ExpPlan Part 2, Exp 2.1) ===
+2025-12-13 06:55:36,833 INFO: RL baseline circuit: ['results/ghz3_new/compare/run_0/circuit_vanilla.json', 'results/ghz3_new/compare/run_1/circuit_vanilla.json', 'results/ghz3_new/compare/run_2/circuit_vanilla.json', 'results/ghz3_new/compare/run_3/circuit_vanilla.json', 'results/ghz3_new/compare/run_4/circuit_vanilla.json']
+2025-12-13 06:55:36,833 INFO: Robust circuit: ['results/ghz3_new/compare/run_0/circuit_robust.json', 'results/ghz3_new/compare/run_1/circuit_robust.json', 'results/ghz3_new/compare/run_2/circuit_robust.json', 'results/ghz3_new/compare/run_3/circuit_robust.json', 'results/ghz3_new/compare/run_4/circuit_robust.json']
+2025-12-13 06:55:36,833 INFO: Output directory: results/ghz3_new/cross_noise/cross_noise_20251213-065536
+2025-12-13 06:55:36,833 INFO: Number of qubits: 3
+2025-12-13 06:55:36,833 INFO: Number of seeds: 5
+2025-12-13 06:55:36,833 INFO: Base seed: 42
+2025-12-13 06:55:36,834 INFO: Loaded circuit results/ghz3_new/compare/run_0/circuit_vanilla.json with 15 operations
+2025-12-13 06:55:36,835 INFO: Loaded circuit results/ghz3_new/compare/run_1/circuit_vanilla.json with 5 operations
+2025-12-13 06:55:36,835 INFO: Loaded circuit results/ghz3_new/compare/run_2/circuit_vanilla.json with 4 operations
+2025-12-13 06:55:36,836 INFO: Loaded circuit results/ghz3_new/compare/run_3/circuit_vanilla.json with 3 operations
+2025-12-13 06:55:36,836 INFO: Loaded circuit results/ghz3_new/compare/run_4/circuit_vanilla.json with 10 operations
+2025-12-13 06:55:36,837 INFO: Loaded circuit results/ghz3_new/compare/run_0/circuit_robust.json with 4 operations
+2025-12-13 06:55:36,837 INFO: Loaded circuit results/ghz3_new/compare/run_1/circuit_robust.json with 7 operations
+2025-12-13 06:55:36,838 INFO: Loaded circuit results/ghz3_new/compare/run_2/circuit_robust.json with 6 operations
+2025-12-13 06:55:36,838 INFO: Loaded circuit results/ghz3_new/compare/run_3/circuit_robust.json with 5 operations
+2025-12-13 06:55:36,839 INFO: Loaded circuit results/ghz3_new/compare/run_4/circuit_robust.json with 6 operations
+2025-12-13 06:55:36,840 INFO: Loaded circuit results/ghz3_new/compare/run_0/circuit_quantumnas.json with 15 operations
+2025-12-13 06:55:36,840 INFO: Loaded circuit results/ghz3_new/compare/run_1/circuit_quantumnas.json with 15 operations
+2025-12-13 06:55:36,841 INFO: Loaded circuit results/ghz3_new/compare/run_2/circuit_quantumnas.json with 15 operations
+2025-12-13 06:55:36,842 INFO: Loaded circuit results/ghz3_new/compare/run_3/circuit_quantumnas.json with 15 operations
+2025-12-13 06:55:36,842 INFO: Loaded circuit results/ghz3_new/compare/run_4/circuit_quantumnas.json with 15 operations
+2025-12-13 06:55:36,862 INFO: Clean fidelities — baseline: 0.9962, robust: 0.9981, HEA baseline: 1.0000; using shared reference 1.0000
+2025-12-13 06:55:36,863 INFO: 
+--- Over-rotation sweep (ε ∈ [0.0, 0.2]) ---
+2025-12-13 06:55:37,021 INFO: RL baseline avg retention ratio (over-rotation): 0.7229
+2025-12-13 06:55:37,021 INFO: Robust avg retention ratio (over-rotation): 0.9700
+2025-12-13 06:55:37,021 INFO: 
+--- Asymmetric Pauli noise sweep (p_x in [0.05], p_y=0.0, p_z=0.0) ---
+2025-12-13 06:55:37,167 INFO: p_x=0.050 | RL baseline retention: 0.4754 | Robust retention: 0.7785 | HEA baseline retention: 0.4435
+2025-12-13 06:55:37,295 INFO: 
+Results saved to results/ghz3_new/cross_noise/cross_noise_20251213-065536/cross_noise_results.json
+2025-12-13 06:55:37,562 INFO: Plot saved to results/ghz3_new/cross_noise/cross_noise_20251213-065536/cross_noise_robustness.png
+2025-12-13 06:55:37,564 INFO: Summary saved to results/ghz3_new/cross_noise/cross_noise_20251213-065536/cross_noise_summary.txt
+2025-12-13 06:55:37,568 INFO: 
+=== Cross-Noise Robustness Experiment Complete ===
+2025-12-13 06:55:38,255 INFO: Running hardware-style eval on backends: ['fake_yorktown', 'fake_oslo', 'fake_lagos', 'fake_vigo']
+2025-12-13 06:55:38,259 ERROR: Hardware eval failed: Unknown backend 'fake_vigo'. Supported: ['fake_quito', 'fake_belem', 'fake_athens', 'fake_yorktown', 'fake_lagos', 'fake_oslo']
+2025-12-13 06:55:38,294 WARNING: No fidelity data found to summarize.
+2025-12-13 06:55:44,840 INFO: Robustness sweep written to results/ghz3_new/analysis/robustness_sweep.json/results/ghz3_new/analysis/robustness_sweep.csv (legacy compare uses family=amplitude_damping, budget=1)
+2025-12-13 06:55:47,990 INFO: Pipeline finished. Results in results/ghz3_new
+2025-12-13 09:13:34,770 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-13 09:13:34,771 INFO: Starting pipeline with metadata: {'timestamp': '20251213-091334', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 25600, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 1, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-13 09:13:34,771 INFO: Skipping baseline as requested
+2025-12-13 09:13:34,771 INFO: Running HEA baseline per seed
+2025-12-13 09:13:40,444 INFO: [GHZ] epoch 40/400 fidelity 0.980831
+[GHZ] epoch 80/400 fidelity 0.999451
+[GHZ] epoch 120/400 fidelity 0.999997
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz3_new/quantumnas/seed_0/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-13 09:13:40,446 INFO: Skipping lambda sweep as requested
+2025-12-13 09:13:40,447 INFO: Running saboteur-only (attacks baseline circuit)
+2025-12-13 09:13:40,447 ERROR: Vanilla circuit not found at results/ghz3_new/baseline/circuit_vanilla.json. Cannot run saboteur-only.
+2025-12-13 09:13:40,447 INFO: Skipping adversarial as requested
+2025-12-13 09:13:40,449 INFO: Discovered 5 existing adversarial run(s) with robust circuits
+2025-12-13 09:13:40,452 INFO: Robust circuit from results/ghz3_new/adversarial/seed_0 copied to results/ghz3_new/compare/run_0
+2025-12-13 09:13:40,455 INFO: Robust circuit from results/ghz3_new/adversarial/seed_1 copied to results/ghz3_new/compare/run_1
+2025-12-13 09:13:40,457 INFO: Robust circuit from results/ghz3_new/adversarial/seed_2 copied to results/ghz3_new/compare/run_2
+2025-12-13 09:13:40,459 INFO: Robust circuit from results/ghz3_new/adversarial/seed_3 copied to results/ghz3_new/compare/run_3
+2025-12-13 09:13:40,461 INFO: Robust circuit from results/ghz3_new/adversarial/seed_4 copied to results/ghz3_new/compare/run_4
+2025-12-13 09:13:40,468 INFO: HEA baseline circuits copied into compare runs for analysis.
+2025-12-13 09:13:40,468 INFO: Running comparison across runs
+2025-12-13 09:20:57,590 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-13 09:20:57,591 INFO: Starting pipeline with metadata: {'timestamp': '20251213-092057', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 25600, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-13 09:20:57,591 INFO: Skipping baseline as requested
+2025-12-13 09:20:57,594 INFO: Running HEA baseline per seed
+2025-12-13 09:21:10,579 INFO: [GHZ] epoch 40/400 fidelity 0.980831
+[GHZ] epoch 80/400 fidelity 0.999451
+[GHZ] epoch 120/400 fidelity 0.999997
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz_3_new/quantumnas/seed_0/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-13 09:21:21,744 INFO: [GHZ] epoch 40/400 fidelity 0.997973
+[GHZ] epoch 80/400 fidelity 0.999776
+[GHZ] epoch 120/400 fidelity 0.999957
+[GHZ] epoch 160/400 fidelity 0.999989
+[GHZ] epoch 200/400 fidelity 0.999998
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz_3_new/quantumnas/seed_1/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-13 09:21:30,998 INFO: [GHZ] epoch 40/400 fidelity 0.988280
+[GHZ] epoch 80/400 fidelity 0.999757
+[GHZ] epoch 120/400 fidelity 0.999917
+[GHZ] epoch 160/400 fidelity 0.999936
+[GHZ] epoch 200/400 fidelity 0.999949
+[GHZ] epoch 240/400 fidelity 0.999960
+[GHZ] epoch 280/400 fidelity 0.999968
+[GHZ] epoch 320/400 fidelity 0.999974
+[GHZ] epoch 360/400 fidelity 0.999979
+[GHZ] epoch 400/400 fidelity 0.999982
+[GHZ] Saved circuit to results/ghz_3_new/quantumnas/seed_2/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-13 09:21:44,780 INFO: [GHZ] epoch 40/400 fidelity 0.992662
+[GHZ] epoch 80/400 fidelity 0.999796
+[GHZ] epoch 120/400 fidelity 0.999998
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz_3_new/quantumnas/seed_3/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-13 09:21:58,875 INFO: [GHZ] epoch 40/400 fidelity 0.987302
+[GHZ] epoch 80/400 fidelity 0.999582
+[GHZ] epoch 120/400 fidelity 0.999936
+[GHZ] epoch 160/400 fidelity 0.999972
+[GHZ] epoch 200/400 fidelity 0.999986
+[GHZ] epoch 240/400 fidelity 0.999993
+[GHZ] epoch 280/400 fidelity 0.999997
+[GHZ] epoch 320/400 fidelity 0.999999
+[GHZ] epoch 360/400 fidelity 0.999999
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz_3_new/quantumnas/seed_4/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-13 09:21:58,877 INFO: Skipping lambda sweep as requested
+2025-12-13 09:21:58,877 INFO: Running saboteur-only (attacks baseline circuit)
+2025-12-13 09:21:58,877 ERROR: Vanilla circuit not found at results/ghz_3_new/baseline/circuit_vanilla.json. Cannot run saboteur-only.
+2025-12-13 09:21:58,877 INFO: Skipping adversarial as requested
+2025-12-13 09:21:58,879 INFO: Discovered 5 existing adversarial run(s) with robust circuits
+2025-12-13 09:21:58,881 INFO: Robust circuit from results/ghz_3_new/adversarial/seed_0 copied to results/ghz_3_new/compare/run_0
+2025-12-13 09:21:58,884 INFO: Robust circuit from results/ghz_3_new/adversarial/seed_1 copied to results/ghz_3_new/compare/run_1
+2025-12-13 09:21:58,886 INFO: Robust circuit from results/ghz_3_new/adversarial/seed_2 copied to results/ghz_3_new/compare/run_2
+2025-12-13 09:21:58,887 INFO: Robust circuit from results/ghz_3_new/adversarial/seed_3 copied to results/ghz_3_new/compare/run_3
+2025-12-13 09:21:58,889 INFO: Robust circuit from results/ghz_3_new/adversarial/seed_4 copied to results/ghz_3_new/compare/run_4
+2025-12-13 09:21:58,895 INFO: HEA baseline circuits copied into compare runs for analysis.
+2025-12-13 09:21:58,895 INFO: Running comparison across runs
+2025-12-13 09:31:51,599 INFO: Running cross-noise robustness experiment (aggregated across 5 seeds)
+2025-12-13 09:31:51,600 INFO: === Cross-Noise Robustness Experiment (ExpPlan Part 2, Exp 2.1) ===
+2025-12-13 09:31:51,600 INFO: RL baseline circuit: ['results/ghz_3_new/compare/run_0/circuit_vanilla.json', 'results/ghz_3_new/compare/run_1/circuit_vanilla.json', 'results/ghz_3_new/compare/run_2/circuit_vanilla.json', 'results/ghz_3_new/compare/run_3/circuit_vanilla.json', 'results/ghz_3_new/compare/run_4/circuit_vanilla.json']
+2025-12-13 09:31:51,600 INFO: Robust circuit: ['results/ghz_3_new/compare/run_0/circuit_robust.json', 'results/ghz_3_new/compare/run_1/circuit_robust.json', 'results/ghz_3_new/compare/run_2/circuit_robust.json', 'results/ghz_3_new/compare/run_3/circuit_robust.json', 'results/ghz_3_new/compare/run_4/circuit_robust.json']
+2025-12-13 09:31:51,600 INFO: Output directory: results/ghz_3_new/cross_noise/cross_noise_20251213-093151
+2025-12-13 09:31:51,600 INFO: Number of qubits: 3
+2025-12-13 09:31:51,600 INFO: Number of seeds: 5
+2025-12-13 09:31:51,600 INFO: Base seed: 42
+2025-12-13 09:31:51,601 INFO: Loaded circuit results/ghz_3_new/compare/run_0/circuit_vanilla.json with 15 operations
+2025-12-13 09:31:51,601 INFO: Loaded circuit results/ghz_3_new/compare/run_1/circuit_vanilla.json with 5 operations
+2025-12-13 09:31:51,602 INFO: Loaded circuit results/ghz_3_new/compare/run_2/circuit_vanilla.json with 4 operations
+2025-12-13 09:31:51,602 INFO: Loaded circuit results/ghz_3_new/compare/run_3/circuit_vanilla.json with 3 operations
+2025-12-13 09:31:51,603 INFO: Loaded circuit results/ghz_3_new/compare/run_4/circuit_vanilla.json with 10 operations
+2025-12-13 09:31:51,603 INFO: Loaded circuit results/ghz_3_new/compare/run_0/circuit_robust.json with 4 operations
+2025-12-13 09:31:51,604 INFO: Loaded circuit results/ghz_3_new/compare/run_1/circuit_robust.json with 7 operations
+2025-12-13 09:31:51,604 INFO: Loaded circuit results/ghz_3_new/compare/run_2/circuit_robust.json with 6 operations
+2025-12-13 09:31:51,605 INFO: Loaded circuit results/ghz_3_new/compare/run_3/circuit_robust.json with 5 operations
+2025-12-13 09:31:51,605 INFO: Loaded circuit results/ghz_3_new/compare/run_4/circuit_robust.json with 6 operations
+2025-12-13 09:31:51,606 INFO: Loaded circuit results/ghz_3_new/compare/run_0/circuit_quantumnas.json with 15 operations
+2025-12-13 09:31:51,606 INFO: Loaded circuit results/ghz_3_new/compare/run_1/circuit_quantumnas.json with 15 operations
+2025-12-13 09:31:51,607 INFO: Loaded circuit results/ghz_3_new/compare/run_2/circuit_quantumnas.json with 15 operations
+2025-12-13 09:31:51,607 INFO: Loaded circuit results/ghz_3_new/compare/run_3/circuit_quantumnas.json with 15 operations
+2025-12-13 09:31:51,608 INFO: Loaded circuit results/ghz_3_new/compare/run_4/circuit_quantumnas.json with 15 operations
+2025-12-13 09:31:51,628 INFO: Clean fidelities — baseline: 0.9962, robust: 0.9981, HEA baseline: 1.0000; using shared reference 1.0000
+2025-12-13 09:31:51,628 INFO: 
+--- Over-rotation sweep (ε ∈ [0.0, 0.2]) ---
+2025-12-13 09:31:51,786 INFO: RL baseline avg retention ratio (over-rotation): 0.7229
+2025-12-13 09:31:51,786 INFO: Robust avg retention ratio (over-rotation): 0.9700
+2025-12-13 09:31:51,786 INFO: 
+--- Asymmetric Pauli noise sweep (p_x in [0.05], p_y=0.0, p_z=0.0) ---
+2025-12-13 09:31:51,928 INFO: p_x=0.050 | RL baseline retention: 0.4754 | Robust retention: 0.7785 | HEA baseline retention: 0.4435
+2025-12-13 09:31:52,053 INFO: 
+Results saved to results/ghz_3_new/cross_noise/cross_noise_20251213-093151/cross_noise_results.json
+2025-12-13 09:31:52,319 INFO: Plot saved to results/ghz_3_new/cross_noise/cross_noise_20251213-093151/cross_noise_robustness.png
+2025-12-13 09:31:52,320 INFO: Summary saved to results/ghz_3_new/cross_noise/cross_noise_20251213-093151/cross_noise_summary.txt
+2025-12-13 09:31:52,325 INFO: 
+=== Cross-Noise Robustness Experiment Complete ===
+2025-12-13 09:31:52,991 INFO: Running hardware-style eval on backends: ['fake_yorktown', 'fake_oslo', 'fake_lagos', 'fake_vigo']
+2025-12-13 09:31:52,996 ERROR: Hardware eval failed: Unknown backend 'fake_vigo'. Supported: ['fake_quito', 'fake_belem', 'fake_athens', 'fake_yorktown', 'fake_lagos', 'fake_oslo']
+2025-12-13 09:31:53,027 WARNING: No fidelity data found to summarize.
+2025-12-13 09:32:03,469 INFO: Robustness sweep written to results/ghz_3_new/analysis/robustness_sweep.json/results/ghz_3_new/analysis/robustness_sweep.csv (legacy compare uses family=amplitude_damping, budget=1)
+2025-12-13 09:32:08,826 INFO: Pipeline finished. Results in results/ghz_3_new
+2025-12-13 09:55:22,872 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-13 09:55:22,874 INFO: Starting pipeline with metadata: {'timestamp': '20251213-095522', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 25600, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-13 09:55:22,874 INFO: Skipping baseline as requested
+2025-12-13 09:55:22,875 INFO: Running HEA baseline per seed
+2025-12-13 09:55:32,413 INFO: [GHZ] epoch 40/400 fidelity 0.980831
+[GHZ] epoch 80/400 fidelity 0.999451
+[GHZ] epoch 120/400 fidelity 0.999997
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz_3_new/quantumnas/seed_0/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-13 09:55:41,001 INFO: [GHZ] epoch 40/400 fidelity 0.997973
+[GHZ] epoch 80/400 fidelity 0.999776
+[GHZ] epoch 120/400 fidelity 0.999957
+[GHZ] epoch 160/400 fidelity 0.999989
+[GHZ] epoch 200/400 fidelity 0.999998
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz_3_new/quantumnas/seed_1/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-13 09:55:50,886 INFO: [GHZ] epoch 40/400 fidelity 0.988280
+[GHZ] epoch 80/400 fidelity 0.999757
+[GHZ] epoch 120/400 fidelity 0.999917
+[GHZ] epoch 160/400 fidelity 0.999936
+[GHZ] epoch 200/400 fidelity 0.999949
+[GHZ] epoch 240/400 fidelity 0.999960
+[GHZ] epoch 280/400 fidelity 0.999968
+[GHZ] epoch 320/400 fidelity 0.999974
+[GHZ] epoch 360/400 fidelity 0.999979
+[GHZ] epoch 400/400 fidelity 0.999982
+[GHZ] Saved circuit to results/ghz_3_new/quantumnas/seed_2/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-13 09:56:00,646 INFO: [GHZ] epoch 40/400 fidelity 0.992662
+[GHZ] epoch 80/400 fidelity 0.999796
+[GHZ] epoch 120/400 fidelity 0.999998
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz_3_new/quantumnas/seed_3/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-13 09:56:10,918 INFO: [GHZ] epoch 40/400 fidelity 0.987302
+[GHZ] epoch 80/400 fidelity 0.999582
+[GHZ] epoch 120/400 fidelity 0.999936
+[GHZ] epoch 160/400 fidelity 0.999972
+[GHZ] epoch 200/400 fidelity 0.999986
+[GHZ] epoch 240/400 fidelity 0.999993
+[GHZ] epoch 280/400 fidelity 0.999997
+[GHZ] epoch 320/400 fidelity 0.999999
+[GHZ] epoch 360/400 fidelity 0.999999
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz_3_new/quantumnas/seed_4/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-13 09:56:10,921 INFO: Skipping lambda sweep as requested
+2025-12-13 09:56:10,922 INFO: Running saboteur-only (attacks baseline circuit)
+2025-12-13 09:56:10,922 ERROR: Vanilla circuit not found at results/ghz_3_new/baseline/circuit_vanilla.json. Cannot run saboteur-only.
+2025-12-13 09:56:10,923 INFO: Skipping adversarial as requested
+2025-12-13 09:56:10,926 INFO: Discovered 5 existing adversarial run(s) with robust circuits
+2025-12-13 09:56:10,931 INFO: Robust circuit from results/ghz_3_new/adversarial/seed_0 copied to results/ghz_3_new/compare/run_0
+2025-12-13 09:56:10,935 INFO: Robust circuit from results/ghz_3_new/adversarial/seed_1 copied to results/ghz_3_new/compare/run_1
+2025-12-13 09:56:10,938 INFO: Robust circuit from results/ghz_3_new/adversarial/seed_2 copied to results/ghz_3_new/compare/run_2
+2025-12-13 09:56:10,940 INFO: Robust circuit from results/ghz_3_new/adversarial/seed_3 copied to results/ghz_3_new/compare/run_3
+2025-12-13 09:56:10,943 INFO: Robust circuit from results/ghz_3_new/adversarial/seed_4 copied to results/ghz_3_new/compare/run_4
+2025-12-13 09:56:10,952 INFO: HEA baseline circuits copied into compare runs for analysis.
+2025-12-13 09:56:10,952 INFO: Running comparison across runs
+2025-12-13 10:01:58,698 INFO: Running cross-noise robustness experiment (aggregated across 5 seeds)
+2025-12-13 10:01:58,699 INFO: === Cross-Noise Robustness Experiment (ExpPlan Part 2, Exp 2.1) ===
+2025-12-13 10:01:58,699 INFO: RL baseline circuit: ['results/ghz_3_new/compare/run_0/circuit_vanilla.json', 'results/ghz_3_new/compare/run_1/circuit_vanilla.json', 'results/ghz_3_new/compare/run_2/circuit_vanilla.json', 'results/ghz_3_new/compare/run_3/circuit_vanilla.json', 'results/ghz_3_new/compare/run_4/circuit_vanilla.json']
+2025-12-13 10:01:58,699 INFO: Robust circuit: ['results/ghz_3_new/compare/run_0/circuit_robust.json', 'results/ghz_3_new/compare/run_1/circuit_robust.json', 'results/ghz_3_new/compare/run_2/circuit_robust.json', 'results/ghz_3_new/compare/run_3/circuit_robust.json', 'results/ghz_3_new/compare/run_4/circuit_robust.json']
+2025-12-13 10:01:58,699 INFO: Output directory: results/ghz_3_new/cross_noise/cross_noise_20251213-100158
+2025-12-13 10:01:58,699 INFO: Number of qubits: 3
+2025-12-13 10:01:58,700 INFO: Number of seeds: 5
+2025-12-13 10:01:58,700 INFO: Base seed: 42
+2025-12-13 10:01:58,701 INFO: Loaded circuit results/ghz_3_new/compare/run_0/circuit_vanilla.json with 15 operations
+2025-12-13 10:01:58,701 INFO: Loaded circuit results/ghz_3_new/compare/run_1/circuit_vanilla.json with 5 operations
+2025-12-13 10:01:58,702 INFO: Loaded circuit results/ghz_3_new/compare/run_2/circuit_vanilla.json with 4 operations
+2025-12-13 10:01:58,702 INFO: Loaded circuit results/ghz_3_new/compare/run_3/circuit_vanilla.json with 3 operations
+2025-12-13 10:01:58,703 INFO: Loaded circuit results/ghz_3_new/compare/run_4/circuit_vanilla.json with 10 operations
+2025-12-13 10:01:58,704 INFO: Loaded circuit results/ghz_3_new/compare/run_0/circuit_robust.json with 4 operations
+2025-12-13 10:01:58,704 INFO: Loaded circuit results/ghz_3_new/compare/run_1/circuit_robust.json with 7 operations
+2025-12-13 10:01:58,705 INFO: Loaded circuit results/ghz_3_new/compare/run_2/circuit_robust.json with 6 operations
+2025-12-13 10:01:58,705 INFO: Loaded circuit results/ghz_3_new/compare/run_3/circuit_robust.json with 5 operations
+2025-12-13 10:01:58,706 INFO: Loaded circuit results/ghz_3_new/compare/run_4/circuit_robust.json with 6 operations
+2025-12-13 10:01:58,706 INFO: Loaded circuit results/ghz_3_new/compare/run_0/circuit_quantumnas.json with 15 operations
+2025-12-13 10:01:58,707 INFO: Loaded circuit results/ghz_3_new/compare/run_1/circuit_quantumnas.json with 15 operations
+2025-12-13 10:01:58,708 INFO: Loaded circuit results/ghz_3_new/compare/run_2/circuit_quantumnas.json with 15 operations
+2025-12-13 10:01:58,708 INFO: Loaded circuit results/ghz_3_new/compare/run_3/circuit_quantumnas.json with 15 operations
+2025-12-13 10:01:58,709 INFO: Loaded circuit results/ghz_3_new/compare/run_4/circuit_quantumnas.json with 15 operations
+2025-12-13 10:01:58,734 INFO: Clean fidelities — baseline: 0.9962, robust: 0.9981, HEA baseline: 1.0000; using shared reference 1.0000
+2025-12-13 10:01:58,734 INFO: 
+--- Over-rotation sweep (ε ∈ [0.0, 0.2]) ---
+2025-12-13 10:01:58,889 INFO: RL baseline avg retention ratio (over-rotation): 0.7229
+2025-12-13 10:01:58,889 INFO: Robust avg retention ratio (over-rotation): 0.9700
+2025-12-13 10:01:58,889 INFO: 
+--- Asymmetric Pauli noise sweep (p_x in [0.05], p_y=0.0, p_z=0.0) ---
+2025-12-13 10:01:59,030 INFO: p_x=0.050 | RL baseline retention: 0.4754 | Robust retention: 0.7785 | HEA baseline retention: 0.4435
+2025-12-13 10:01:59,154 INFO: 
+Results saved to results/ghz_3_new/cross_noise/cross_noise_20251213-100158/cross_noise_results.json
+2025-12-13 10:01:59,421 INFO: Plot saved to results/ghz_3_new/cross_noise/cross_noise_20251213-100158/cross_noise_robustness.png
+2025-12-13 10:01:59,422 INFO: Summary saved to results/ghz_3_new/cross_noise/cross_noise_20251213-100158/cross_noise_summary.txt
+2025-12-13 10:01:59,426 INFO: 
+=== Cross-Noise Robustness Experiment Complete ===
+2025-12-13 10:02:00,044 INFO: Running hardware-style eval on backends: ['fake_yorktown', 'fake_oslo', 'fake_lagos', 'fake_quito']
+2025-12-13 10:02:08,068 WARNING: No fidelity data found to summarize.
+2025-12-13 10:02:15,194 INFO: Robustness sweep written to results/ghz_3_new/analysis/robustness_sweep.json/results/ghz_3_new/analysis/robustness_sweep.csv (legacy compare uses family=amplitude_damping, budget=1)
+2025-12-13 10:02:20,325 INFO: Pipeline finished. Results in results/ghz_3_new

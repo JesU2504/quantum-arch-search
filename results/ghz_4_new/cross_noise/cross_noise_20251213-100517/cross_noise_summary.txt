@@ -1,0 +1,35 @@
+Cross-Noise Robustness Experiment Summary
+============================================================
+
+Timestamp: 20251213-100517
+
+Statistical Protocol:
+----------------------------------------
+  Number of epsilon points: 20
+  Base seed: 42
+  Note: Current implementation is deterministic
+
+Hyperparameters:
+----------------------------------------
+  Number of qubits: 4
+  RL baseline circuit: ['results/ghz_4_new/compare/run_0/circuit_vanilla.json', 'results/ghz_4_new/compare/run_1/circuit_vanilla.json', 'results/ghz_4_new/compare/run_2/circuit_vanilla.json', 'results/ghz_4_new/compare/run_3/circuit_vanilla.json', 'results/ghz_4_new/compare/run_4/circuit_vanilla.json']
+  Robust circuit: ['results/ghz_4_new/compare/run_0/circuit_robust.json', 'results/ghz_4_new/compare/run_1/circuit_robust.json', 'results/ghz_4_new/compare/run_2/circuit_robust.json', 'results/ghz_4_new/compare/run_3/circuit_robust.json', 'results/ghz_4_new/compare/run_4/circuit_robust.json']
+  HEA baseline circuit: ['results/ghz_4_new/compare/run_0/circuit_quantumnas.json', 'results/ghz_4_new/compare/run_1/circuit_quantumnas.json', 'results/ghz_4_new/compare/run_2/circuit_quantumnas.json', 'results/ghz_4_new/compare/run_3/circuit_quantumnas.json', 'results/ghz_4_new/compare/run_4/circuit_quantumnas.json']
+  Epsilon range: (0.0, 0.2)
+  Asymmetric p_x: [0.05]
+  Randomized compiling: disabled
+  Clean fidelity (baseline): 0.9620
+  Clean fidelity (robust):   0.9830
+  Clean fidelity (HEA baseline): 1.0000
+  Retention normalized by:   1.0000
+
+Over-rotation Test (ε ∈ [0, 0.1]):
+----------------------------------------
+  RL baseline avg retention: 0.7583
+  Robust avg retention: 0.8897
+  Improvement: 0.1314
+  HEA baseline avg retention: 0.8744
+
+Asymmetric Pauli Noise sweep (p_x in [0.05]):
+----------------------------------------
+  p_x=0.050 | RL baseline: 0.4046 | Robust: 0.5587 | Δ=0.1541

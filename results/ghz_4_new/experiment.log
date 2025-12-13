@@ -1,0 +1,869 @@
+2025-12-12 04:04:39,377 INFO: Loading experimental parameters for 4 qubits from config.py
+2025-12-12 04:04:39,378 INFO: Starting pipeline with metadata: {'timestamp': '20251212-040439', 'n_qubits': 4, 'baseline_steps': 140000, 'saboteur_steps': 73600, 'adversarial_gens': 10, 'adversarial_arch_steps': 14000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-12 04:04:39,378 INFO: Running baseline architect (noiseless) for 5 seed(s)
+2025-12-12 05:53:37,332 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-12 05:53:37,333 INFO: Starting pipeline with metadata: {'timestamp': '20251212-055337', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 25600, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-12 05:53:37,333 INFO: Skipping baseline as requested
+2025-12-12 05:53:37,334 INFO: Running HEA baseline per seed
+2025-12-12 05:53:45,514 INFO: [GHZ] epoch 40/400 fidelity 0.980831
+[GHZ] epoch 80/400 fidelity 0.999451
+[GHZ] epoch 120/400 fidelity 0.999997
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_0/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-12 05:53:53,798 INFO: [GHZ] epoch 40/400 fidelity 0.997973
+[GHZ] epoch 80/400 fidelity 0.999776
+[GHZ] epoch 120/400 fidelity 0.999957
+[GHZ] epoch 160/400 fidelity 0.999989
+[GHZ] epoch 200/400 fidelity 0.999998
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_1/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-12 05:54:01,285 INFO: [GHZ] epoch 40/400 fidelity 0.988280
+[GHZ] epoch 80/400 fidelity 0.999757
+[GHZ] epoch 120/400 fidelity 0.999917
+[GHZ] epoch 160/400 fidelity 0.999936
+[GHZ] epoch 200/400 fidelity 0.999949
+[GHZ] epoch 240/400 fidelity 0.999960
+[GHZ] epoch 280/400 fidelity 0.999968
+[GHZ] epoch 320/400 fidelity 0.999974
+[GHZ] epoch 360/400 fidelity 0.999979
+[GHZ] epoch 400/400 fidelity 0.999982
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_2/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-12 05:54:08,588 INFO: [GHZ] epoch 40/400 fidelity 0.992662
+[GHZ] epoch 80/400 fidelity 0.999796
+[GHZ] epoch 120/400 fidelity 0.999998
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_3/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-12 05:54:16,452 INFO: [GHZ] epoch 40/400 fidelity 0.987302
+[GHZ] epoch 80/400 fidelity 0.999582
+[GHZ] epoch 120/400 fidelity 0.999936
+[GHZ] epoch 160/400 fidelity 0.999972
+[GHZ] epoch 200/400 fidelity 0.999986
+[GHZ] epoch 240/400 fidelity 0.999993
+[GHZ] epoch 280/400 fidelity 0.999997
+[GHZ] epoch 320/400 fidelity 0.999999
+[GHZ] epoch 360/400 fidelity 0.999999
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_4/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-12 05:54:16,455 INFO: Skipping lambda sweep as requested
+2025-12-12 05:54:16,456 INFO: Running saboteur-only (attacks baseline circuit)
+2025-12-12 05:54:16,456 ERROR: Vanilla circuit not found at /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/baseline/circuit_vanilla.json. Cannot run saboteur-only.
+2025-12-12 05:54:16,457 INFO: Running adversarial co-evolution for 5 seeds (5 generations each)
+2025-12-12 05:54:16,457 INFO: Adversarial training: seed index 0 (global seed=2042)
+2025-12-12 05:54:16,457 INFO: Setting global seed = 2042
+2025-12-12 05:55:06,020 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-12 05:55:06,022 INFO: Starting pipeline with metadata: {'timestamp': '20251212-055506', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 25600, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-12 05:55:06,022 INFO: Skipping baseline as requested
+2025-12-12 05:55:06,022 INFO: Running HEA baseline per seed
+2025-12-12 05:55:13,950 INFO: [GHZ] epoch 40/400 fidelity 0.980831
+[GHZ] epoch 80/400 fidelity 0.999451
+[GHZ] epoch 120/400 fidelity 0.999997
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_0/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-12 05:55:21,710 INFO: [GHZ] epoch 40/400 fidelity 0.997973
+[GHZ] epoch 80/400 fidelity 0.999776
+[GHZ] epoch 120/400 fidelity 0.999957
+[GHZ] epoch 160/400 fidelity 0.999989
+[GHZ] epoch 200/400 fidelity 0.999998
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_1/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-12 05:55:27,243 INFO: [GHZ] epoch 40/400 fidelity 0.988280
+[GHZ] epoch 80/400 fidelity 0.999757
+[GHZ] epoch 120/400 fidelity 0.999917
+[GHZ] epoch 160/400 fidelity 0.999936
+[GHZ] epoch 200/400 fidelity 0.999949
+[GHZ] epoch 240/400 fidelity 0.999960
+[GHZ] epoch 280/400 fidelity 0.999968
+[GHZ] epoch 320/400 fidelity 0.999974
+[GHZ] epoch 360/400 fidelity 0.999979
+[GHZ] epoch 400/400 fidelity 0.999982
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_2/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-12 05:55:34,335 INFO: [GHZ] epoch 40/400 fidelity 0.992662
+[GHZ] epoch 80/400 fidelity 0.999796
+[GHZ] epoch 120/400 fidelity 0.999998
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_3/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-12 05:55:41,490 INFO: [GHZ] epoch 40/400 fidelity 0.987302
+[GHZ] epoch 80/400 fidelity 0.999582
+[GHZ] epoch 120/400 fidelity 0.999936
+[GHZ] epoch 160/400 fidelity 0.999972
+[GHZ] epoch 200/400 fidelity 0.999986
+[GHZ] epoch 240/400 fidelity 0.999993
+[GHZ] epoch 280/400 fidelity 0.999997
+[GHZ] epoch 320/400 fidelity 0.999999
+[GHZ] epoch 360/400 fidelity 0.999999
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_4/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-12 05:55:41,492 INFO: Skipping lambda sweep as requested
+2025-12-12 05:55:41,493 INFO: Running saboteur-only (attacks baseline circuit)
+2025-12-12 05:55:41,493 ERROR: Vanilla circuit not found at /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/baseline/circuit_vanilla.json. Cannot run saboteur-only.
+2025-12-12 05:55:41,493 INFO: Running adversarial co-evolution for 5 seeds (5 generations each)
+2025-12-12 05:55:41,493 INFO: Adversarial training: seed index 0 (global seed=2042)
+2025-12-12 05:55:41,494 INFO: Setting global seed = 2042
+2025-12-12 05:56:21,361 INFO: Loading experimental parameters for 4 qubits from config.py
+2025-12-12 05:56:21,363 INFO: Starting pipeline with metadata: {'timestamp': '20251212-055621', 'n_qubits': 4, 'baseline_steps': 140000, 'saboteur_steps': 73600, 'adversarial_gens': 10, 'adversarial_arch_steps': 14000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-12 05:56:21,363 INFO: Running baseline architect (noiseless) for 5 seed(s)
+2025-12-12 06:18:53,545 INFO: Adversarial training: seed index 1 (global seed=2043)
+2025-12-12 06:18:53,545 INFO: Setting global seed = 2043
+2025-12-12 06:28:09,539 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-12 06:28:09,541 INFO: Starting pipeline with metadata: {'timestamp': '20251212-062809', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 25600, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-12 06:28:09,541 INFO: Running baseline architect (noiseless) for 5 seed(s)
+2025-12-12 07:51:24,149 INFO: Running HEA baseline per seed
+2025-12-12 07:51:33,015 INFO: [GHZ] epoch 40/400 fidelity 0.980831
+[GHZ] epoch 80/400 fidelity 0.999451
+[GHZ] epoch 120/400 fidelity 0.999997
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_0/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-12 07:51:40,440 INFO: [GHZ] epoch 40/400 fidelity 0.997973
+[GHZ] epoch 80/400 fidelity 0.999776
+[GHZ] epoch 120/400 fidelity 0.999957
+[GHZ] epoch 160/400 fidelity 0.999989
+[GHZ] epoch 200/400 fidelity 0.999998
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_1/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-12 07:51:47,830 INFO: [GHZ] epoch 40/400 fidelity 0.988280
+[GHZ] epoch 80/400 fidelity 0.999757
+[GHZ] epoch 120/400 fidelity 0.999917
+[GHZ] epoch 160/400 fidelity 0.999936
+[GHZ] epoch 200/400 fidelity 0.999949
+[GHZ] epoch 240/400 fidelity 0.999960
+[GHZ] epoch 280/400 fidelity 0.999968
+[GHZ] epoch 320/400 fidelity 0.999974
+[GHZ] epoch 360/400 fidelity 0.999979
+[GHZ] epoch 400/400 fidelity 0.999982
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_2/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-12 07:51:55,094 INFO: [GHZ] epoch 40/400 fidelity 0.992662
+[GHZ] epoch 80/400 fidelity 0.999796
+[GHZ] epoch 120/400 fidelity 0.999998
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_3/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-12 07:52:02,375 INFO: [GHZ] epoch 40/400 fidelity 0.987302
+[GHZ] epoch 80/400 fidelity 0.999582
+[GHZ] epoch 120/400 fidelity 0.999936
+[GHZ] epoch 160/400 fidelity 0.999972
+[GHZ] epoch 200/400 fidelity 0.999986
+[GHZ] epoch 240/400 fidelity 0.999993
+[GHZ] epoch 280/400 fidelity 0.999997
+[GHZ] epoch 320/400 fidelity 0.999999
+[GHZ] epoch 360/400 fidelity 0.999999
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_4/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-12 07:52:02,377 INFO: Skipping lambda sweep as requested
+2025-12-12 07:52:02,377 INFO: Running saboteur-only (attacks baseline circuit)
+2025-12-12 07:57:38,527 INFO: Running adversarial co-evolution for 5 seeds (5 generations each)
+2025-12-12 07:57:38,527 INFO: Adversarial training: seed index 0 (global seed=2042)
+2025-12-12 07:57:38,527 INFO: Setting global seed = 2042
+2025-12-12 08:21:11,093 INFO: Adversarial training: seed index 1 (global seed=2043)
+2025-12-12 08:21:11,093 INFO: Setting global seed = 2043
+2025-12-12 08:44:37,989 INFO: Adversarial training: seed index 2 (global seed=2044)
+2025-12-12 08:44:37,989 INFO: Setting global seed = 2044
+2025-12-12 09:07:52,293 INFO: Adversarial training: seed index 3 (global seed=2045)
+2025-12-12 09:07:52,293 INFO: Setting global seed = 2045
+2025-12-12 09:30:53,097 INFO: Adversarial training: seed index 4 (global seed=2046)
+2025-12-12 09:30:53,097 INFO: Setting global seed = 2046
+2025-12-12 09:52:20,525 INFO: Running HEA baseline per seed
+2025-12-12 09:52:28,402 INFO: [GHZ] epoch 40/400 fidelity 0.992629
+[GHZ] epoch 80/400 fidelity 0.999304
+[GHZ] epoch 120/400 fidelity 0.999954
+[GHZ] epoch 160/400 fidelity 0.999993
+[GHZ] epoch 200/400 fidelity 0.999999
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_0/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-12 09:52:36,238 INFO: [GHZ] epoch 40/400 fidelity 0.972675
+[GHZ] epoch 80/400 fidelity 0.999188
+[GHZ] epoch 120/400 fidelity 0.999988
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_1/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-12 09:52:41,594 INFO: [GHZ] epoch 40/400 fidelity 0.961998
+[GHZ] epoch 80/400 fidelity 0.999560
+[GHZ] epoch 120/400 fidelity 0.999988
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_2/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-12 09:52:49,142 INFO: [GHZ] epoch 40/400 fidelity 0.976490
+[GHZ] epoch 80/400 fidelity 0.999561
+[GHZ] epoch 120/400 fidelity 0.999995
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_3/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-12 09:52:55,621 INFO: [GHZ] epoch 40/400 fidelity 0.963231
+[GHZ] epoch 80/400 fidelity 0.999314
+[GHZ] epoch 120/400 fidelity 0.999990
+[GHZ] epoch 160/400 fidelity 0.999999
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_4/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-12 09:52:55,624 INFO: Skipping lambda sweep as requested
+2025-12-12 09:52:55,624 INFO: Running saboteur-only (attacks baseline circuit)
+2025-12-12 09:53:50,261 INFO: Canonical adversarial run (for comparison): /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_0
+2025-12-12 09:53:50,261 INFO: Plotting multi-seed coevolution from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial
+2025-12-12 09:53:53,608 INFO: [plot_coevolution_multiseed] Found runs:
+  - /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_0
+  - /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_1
+  - /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_2
+  - /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_3
+  - /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_4
+[plot_coevolution_multiseed] Saved multi-seed figure to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/coevolution_multiseed.png
+
+2025-12-12 09:53:57,421 INFO: --- Generating Co-Evolution Plot for /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_0 ---
+[plot_coevolution] Robust circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_0/circuit_robust.json has 3 gates
+[plot_coevolution] Saved plot to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/coevolution_seed_0.png
+2025-12-12 09:53:59,980 INFO: --- Generating Co-Evolution Plot for /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_1 ---
+[plot_coevolution] Robust circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_1/circuit_robust.json has 10 gates
+[plot_coevolution] Saved plot to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/coevolution_seed_1.png
+2025-12-12 09:54:02,397 INFO: --- Generating Co-Evolution Plot for /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_2 ---
+[plot_coevolution] Robust circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_2/circuit_robust.json has 3 gates
+[plot_coevolution] Saved plot to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/coevolution_seed_2.png
+2025-12-12 09:54:04,927 INFO: --- Generating Co-Evolution Plot for /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_3 ---
+[plot_coevolution] Robust circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_3/circuit_robust.json has 5 gates
+[plot_coevolution] Saved plot to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/coevolution_seed_3.png
+2025-12-12 09:54:07,476 INFO: --- Generating Co-Evolution Plot for /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_4 ---
+[plot_coevolution] Robust circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_4/circuit_robust.json has 5 gates
+[plot_coevolution] Saved plot to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/coevolution_seed_4.png
+2025-12-12 09:54:07,481 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_0 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/compare/run_0
+2025-12-12 09:54:07,486 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_1 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/compare/run_1
+2025-12-12 09:54:07,490 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_2 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/compare/run_2
+2025-12-12 09:54:07,494 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_3 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/compare/run_3
+2025-12-12 09:54:07,497 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_4 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/compare/run_4
+2025-12-12 09:54:07,506 INFO: HEA baseline circuits copied into compare runs for analysis.
+2025-12-12 09:54:07,506 INFO: Running comparison across runs
+2025-12-12 10:09:16,231 INFO: Running adversarial co-evolution for 5 seeds (10 generations each)
+2025-12-12 10:09:16,231 INFO: Adversarial training: seed index 0 (global seed=2042)
+2025-12-12 10:09:16,231 INFO: Setting global seed = 2042
+2025-12-12 11:16:03,023 INFO: Adversarial training: seed index 1 (global seed=2043)
+2025-12-12 11:16:03,023 INFO: Setting global seed = 2043
+2025-12-12 12:22:03,977 INFO: Adversarial training: seed index 2 (global seed=2044)
+2025-12-12 12:22:03,977 INFO: Setting global seed = 2044
+2025-12-12 13:27:57,143 INFO: Adversarial training: seed index 3 (global seed=2045)
+2025-12-12 13:27:57,143 INFO: Setting global seed = 2045
+2025-12-12 14:36:09,681 INFO: Adversarial training: seed index 4 (global seed=2046)
+2025-12-12 14:36:09,682 INFO: Setting global seed = 2046
+2025-12-12 15:41:47,772 INFO: Canonical adversarial run (for comparison): /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_0
+2025-12-12 15:41:47,772 INFO: Plotting multi-seed coevolution from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial
+2025-12-12 15:41:52,370 INFO: [plot_coevolution_multiseed] Found runs:
+  - /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_0
+  - /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_1
+  - /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_2
+  - /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_3
+  - /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_4
+[plot_coevolution_multiseed] Saved multi-seed figure to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/coevolution_multiseed.png
+
+2025-12-12 15:41:55,785 INFO: --- Generating Co-Evolution Plot for /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_0 ---
+[plot_coevolution] Robust circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_0/circuit_robust.json has 4 gates
+[plot_coevolution] Saved plot to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/coevolution_seed_0.png
+2025-12-12 15:41:58,305 INFO: --- Generating Co-Evolution Plot for /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_1 ---
+[plot_coevolution] Robust circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_1/circuit_robust.json has 6 gates
+[plot_coevolution] Saved plot to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/coevolution_seed_1.png
+2025-12-12 15:42:00,797 INFO: --- Generating Co-Evolution Plot for /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_2 ---
+[plot_coevolution] Robust circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_2/circuit_robust.json has 9 gates
+[plot_coevolution] Saved plot to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/coevolution_seed_2.png
+2025-12-12 15:42:03,322 INFO: --- Generating Co-Evolution Plot for /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_3 ---
+[plot_coevolution] Robust circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_3/circuit_robust.json has 10 gates
+[plot_coevolution] Saved plot to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/coevolution_seed_3.png
+2025-12-12 15:42:05,865 INFO: --- Generating Co-Evolution Plot for /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_4 ---
+[plot_coevolution] Robust circuit /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_4/circuit_robust.json has 11 gates
+[plot_coevolution] Saved plot to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/coevolution_seed_4.png
+2025-12-12 15:42:05,871 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_0 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/compare/run_0
+2025-12-12 15:42:05,877 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_1 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/compare/run_1
+2025-12-12 15:42:05,881 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_2 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/compare/run_2
+2025-12-12 15:42:05,885 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_3 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/compare/run_3
+2025-12-12 15:42:05,889 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_4 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/compare/run_4
+2025-12-12 15:42:05,899 INFO: HEA baseline circuits copied into compare runs for analysis.
+2025-12-12 15:42:05,899 INFO: Running comparison across runs
+2025-12-13 03:10:33,402 INFO: Loading experimental parameters for 3 qubits from config.py
+2025-12-13 03:10:33,405 INFO: Starting pipeline with metadata: {'timestamp': '20251213-031033', 'n_qubits': 3, 'baseline_steps': 60000, 'saboteur_steps': 25600, 'adversarial_gens': 5, 'adversarial_arch_steps': 12000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-13 03:10:33,405 INFO: Skipping baseline as requested
+2025-12-13 03:10:33,406 INFO: Running HEA baseline per seed
+2025-12-13 03:10:43,311 INFO: [GHZ] epoch 40/400 fidelity 0.980831
+[GHZ] epoch 80/400 fidelity 0.999451
+[GHZ] epoch 120/400 fidelity 0.999997
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_0/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-13 03:10:53,455 INFO: [GHZ] epoch 40/400 fidelity 0.997973
+[GHZ] epoch 80/400 fidelity 0.999776
+[GHZ] epoch 120/400 fidelity 0.999957
+[GHZ] epoch 160/400 fidelity 0.999989
+[GHZ] epoch 200/400 fidelity 0.999998
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_1/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-13 03:11:03,442 INFO: [GHZ] epoch 40/400 fidelity 0.988280
+[GHZ] epoch 80/400 fidelity 0.999757
+[GHZ] epoch 120/400 fidelity 0.999917
+[GHZ] epoch 160/400 fidelity 0.999936
+[GHZ] epoch 200/400 fidelity 0.999949
+[GHZ] epoch 240/400 fidelity 0.999960
+[GHZ] epoch 280/400 fidelity 0.999968
+[GHZ] epoch 320/400 fidelity 0.999974
+[GHZ] epoch 360/400 fidelity 0.999979
+[GHZ] epoch 400/400 fidelity 0.999982
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_2/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-13 03:11:13,233 INFO: [GHZ] epoch 40/400 fidelity 0.992662
+[GHZ] epoch 80/400 fidelity 0.999796
+[GHZ] epoch 120/400 fidelity 0.999998
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_3/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-13 03:11:21,773 INFO: [GHZ] epoch 40/400 fidelity 0.987302
+[GHZ] epoch 80/400 fidelity 0.999582
+[GHZ] epoch 120/400 fidelity 0.999936
+[GHZ] epoch 160/400 fidelity 0.999972
+[GHZ] epoch 200/400 fidelity 0.999986
+[GHZ] epoch 240/400 fidelity 0.999993
+[GHZ] epoch 280/400 fidelity 0.999997
+[GHZ] epoch 320/400 fidelity 0.999999
+[GHZ] epoch 360/400 fidelity 0.999999
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_4/circuit_quantumnas.json (n=3, depth=3, max_gates=15)
+2025-12-13 03:11:21,777 INFO: Skipping lambda sweep as requested
+2025-12-13 03:11:21,777 INFO: Running saboteur-only (attacks baseline circuit)
+2025-12-13 03:11:21,777 ERROR: Vanilla circuit not found at /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/baseline/circuit_vanilla.json. Cannot run saboteur-only.
+2025-12-13 03:11:21,778 INFO: Skipping adversarial as requested
+2025-12-13 03:11:21,781 INFO: Discovered 5 existing adversarial run(s) with robust circuits
+2025-12-13 03:11:21,787 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_0 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/compare/run_0
+2025-12-13 03:11:21,792 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_1 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/compare/run_1
+2025-12-13 03:11:21,794 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_2 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/compare/run_2
+2025-12-13 03:11:21,797 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_3 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/compare/run_3
+2025-12-13 03:11:21,799 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_4 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/compare/run_4
+2025-12-13 03:11:21,810 INFO: HEA baseline circuits copied into compare runs for analysis.
+2025-12-13 03:11:21,810 INFO: Running comparison across runs
+2025-12-13 03:13:22,893 INFO: Loading experimental parameters for 4 qubits from config.py
+2025-12-13 03:13:22,896 INFO: Starting pipeline with metadata: {'timestamp': '20251213-031322', 'n_qubits': 4, 'baseline_steps': 140000, 'saboteur_steps': 73600, 'adversarial_gens': 10, 'adversarial_arch_steps': 14000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-13 03:13:22,897 INFO: Skipping baseline as requested
+2025-12-13 03:13:22,897 INFO: Running HEA baseline per seed
+2025-12-13 03:13:34,006 INFO: [GHZ] epoch 40/400 fidelity 0.992629
+[GHZ] epoch 80/400 fidelity 0.999304
+[GHZ] epoch 120/400 fidelity 0.999954
+[GHZ] epoch 160/400 fidelity 0.999993
+[GHZ] epoch 200/400 fidelity 0.999999
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_0/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-13 03:13:42,964 INFO: [GHZ] epoch 40/400 fidelity 0.972675
+[GHZ] epoch 80/400 fidelity 0.999188
+[GHZ] epoch 120/400 fidelity 0.999988
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_1/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-13 03:13:50,471 INFO: [GHZ] epoch 40/400 fidelity 0.961998
+[GHZ] epoch 80/400 fidelity 0.999560
+[GHZ] epoch 120/400 fidelity 0.999988
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_2/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-13 03:13:59,120 INFO: [GHZ] epoch 40/400 fidelity 0.976490
+[GHZ] epoch 80/400 fidelity 0.999561
+[GHZ] epoch 120/400 fidelity 0.999995
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_3/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-13 03:14:06,798 INFO: [GHZ] epoch 40/400 fidelity 0.963231
+[GHZ] epoch 80/400 fidelity 0.999314
+[GHZ] epoch 120/400 fidelity 0.999990
+[GHZ] epoch 160/400 fidelity 0.999999
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/quantumnas/seed_4/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-13 03:14:06,801 INFO: Skipping lambda sweep as requested
+2025-12-13 03:14:06,801 INFO: Running saboteur-only (attacks baseline circuit)
+2025-12-13 03:14:06,801 ERROR: Vanilla circuit not found at /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/baseline/circuit_vanilla.json. Cannot run saboteur-only.
+2025-12-13 03:14:06,802 INFO: Skipping adversarial as requested
+2025-12-13 03:14:06,805 INFO: Discovered 5 existing adversarial run(s) with robust circuits
+2025-12-13 03:14:06,808 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_0 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/compare/run_0
+2025-12-13 03:14:06,811 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_1 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/compare/run_1
+2025-12-13 03:14:06,813 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_2 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/compare/run_2
+2025-12-13 03:14:06,815 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_3 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/compare/run_3
+2025-12-13 03:14:06,817 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/adversarial/seed_4 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/run_20251212-040439/compare/run_4
+2025-12-13 03:14:06,824 INFO: HEA baseline circuits copied into compare runs for analysis.
+2025-12-13 03:14:06,824 INFO: Running comparison across runs
+2025-12-13 03:27:18,072 INFO: Loading experimental parameters for 4 qubits from config.py
+2025-12-13 03:27:18,073 INFO: Starting pipeline with metadata: {'timestamp': '20251213-032718', 'n_qubits': 4, 'baseline_steps': 140000, 'saboteur_steps': 73600, 'adversarial_gens': 10, 'adversarial_arch_steps': 14000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-13 03:27:18,074 INFO: Skipping baseline as requested
+2025-12-13 03:27:18,074 INFO: Running HEA baseline per seed
+2025-12-13 03:27:25,008 INFO: [GHZ] epoch 40/400 fidelity 0.992629
+[GHZ] epoch 80/400 fidelity 0.999304
+[GHZ] epoch 120/400 fidelity 0.999954
+[GHZ] epoch 160/400 fidelity 0.999993
+[GHZ] epoch 200/400 fidelity 0.999999
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_4_new/quantumnas/seed_0/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-13 03:27:30,658 INFO: [GHZ] epoch 40/400 fidelity 0.972675
+[GHZ] epoch 80/400 fidelity 0.999188
+[GHZ] epoch 120/400 fidelity 0.999988
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_4_new/quantumnas/seed_1/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-13 03:27:36,109 INFO: [GHZ] epoch 40/400 fidelity 0.961998
+[GHZ] epoch 80/400 fidelity 0.999560
+[GHZ] epoch 120/400 fidelity 0.999988
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_4_new/quantumnas/seed_2/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-13 03:27:43,141 INFO: [GHZ] epoch 40/400 fidelity 0.976490
+[GHZ] epoch 80/400 fidelity 0.999561
+[GHZ] epoch 120/400 fidelity 0.999995
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_4_new/quantumnas/seed_3/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-13 03:27:49,570 INFO: [GHZ] epoch 40/400 fidelity 0.963231
+[GHZ] epoch 80/400 fidelity 0.999314
+[GHZ] epoch 120/400 fidelity 0.999990
+[GHZ] epoch 160/400 fidelity 0.999999
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_4_new/quantumnas/seed_4/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-13 03:27:49,573 INFO: Skipping lambda sweep as requested
+2025-12-13 03:27:49,573 INFO: Running saboteur-only (attacks baseline circuit)
+2025-12-13 03:27:49,573 ERROR: Vanilla circuit not found at /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_4_new/baseline/circuit_vanilla.json. Cannot run saboteur-only.
+2025-12-13 03:27:49,574 INFO: Skipping adversarial as requested
+2025-12-13 03:27:49,577 INFO: Discovered 5 existing adversarial run(s) with robust circuits
+2025-12-13 03:27:49,581 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_4_new/adversarial/seed_0 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_4_new/compare/run_0
+2025-12-13 03:27:49,585 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_4_new/adversarial/seed_1 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_4_new/compare/run_1
+2025-12-13 03:27:49,587 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_4_new/adversarial/seed_2 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_4_new/compare/run_2
+2025-12-13 03:27:49,589 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_4_new/adversarial/seed_3 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_4_new/compare/run_3
+2025-12-13 03:27:49,592 INFO: Robust circuit from /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_4_new/adversarial/seed_4 copied to /home/gp.sc.cc.tohoku.ac.jp/jesus/AA/work_dir/quantum-arch-search/results/ghz_4_new/compare/run_4
+2025-12-13 03:27:49,600 INFO: HEA baseline circuits copied into compare runs for analysis.
+2025-12-13 03:27:49,601 INFO: Running comparison across runs
+2025-12-13 03:34:31,480 INFO: Loading experimental parameters for 4 qubits from config.py
+2025-12-13 03:34:31,482 INFO: Starting pipeline with metadata: {'timestamp': '20251213-033431', 'n_qubits': 4, 'baseline_steps': 140000, 'saboteur_steps': 73600, 'adversarial_gens': 10, 'adversarial_arch_steps': 14000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-13 03:34:31,483 INFO: Running baseline architect (noiseless) for 5 seed(s)
+2025-12-13 04:22:50,531 INFO: Loading experimental parameters for 4 qubits from config.py
+2025-12-13 04:22:50,532 INFO: Starting pipeline with metadata: {'timestamp': '20251213-042250', 'n_qubits': 4, 'baseline_steps': 140000, 'saboteur_steps': 73600, 'adversarial_gens': 10, 'adversarial_arch_steps': 14000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-13 04:22:50,532 INFO: Running baseline architect (noiseless) for 5 seed(s)
+2025-12-13 04:23:27,549 INFO: Loading experimental parameters for 4 qubits from config.py
+2025-12-13 04:23:27,550 INFO: Starting pipeline with metadata: {'timestamp': '20251213-042327', 'n_qubits': 4, 'baseline_steps': 140000, 'saboteur_steps': 73600, 'adversarial_gens': 10, 'adversarial_arch_steps': 14000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-13 04:23:27,550 INFO: Running baseline architect (noiseless) for 5 seed(s)
+2025-12-13 04:26:36,360 INFO: Loading experimental parameters for 4 qubits from config.py
+2025-12-13 04:26:36,361 INFO: Starting pipeline with metadata: {'timestamp': '20251213-042636', 'n_qubits': 4, 'baseline_steps': 140000, 'saboteur_steps': 73600, 'adversarial_gens': 10, 'adversarial_arch_steps': 14000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-13 04:26:36,362 INFO: Running baseline architect (noiseless) for 5 seed(s)
+2025-12-13 05:05:43,963 INFO: Loading experimental parameters for 4 qubits from config.py
+2025-12-13 05:05:43,964 INFO: Starting pipeline with metadata: {'timestamp': '20251213-050543', 'n_qubits': 4, 'baseline_steps': 140000, 'saboteur_steps': 73600, 'adversarial_gens': 10, 'adversarial_arch_steps': 14000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-13 05:05:43,965 INFO: Running baseline architect (noiseless) for 5 seed(s)
+2025-12-13 06:19:47,733 INFO: Running HEA baseline per seed
+2025-12-13 06:19:57,072 INFO: [GHZ] epoch 40/400 fidelity 0.992629
+[GHZ] epoch 80/400 fidelity 0.999304
+[GHZ] epoch 120/400 fidelity 0.999954
+[GHZ] epoch 160/400 fidelity 0.999993
+[GHZ] epoch 200/400 fidelity 0.999999
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz_4_new/quantumnas/seed_0/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-13 06:20:06,043 INFO: [GHZ] epoch 40/400 fidelity 0.972675
+[GHZ] epoch 80/400 fidelity 0.999188
+[GHZ] epoch 120/400 fidelity 0.999988
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz_4_new/quantumnas/seed_1/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-13 06:20:13,998 INFO: [GHZ] epoch 40/400 fidelity 0.961998
+[GHZ] epoch 80/400 fidelity 0.999560
+[GHZ] epoch 120/400 fidelity 0.999988
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz_4_new/quantumnas/seed_2/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-13 06:20:22,131 INFO: [GHZ] epoch 40/400 fidelity 0.976490
+[GHZ] epoch 80/400 fidelity 0.999561
+[GHZ] epoch 120/400 fidelity 0.999995
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz_4_new/quantumnas/seed_3/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-13 06:20:30,406 INFO: [GHZ] epoch 40/400 fidelity 0.963231
+[GHZ] epoch 80/400 fidelity 0.999314
+[GHZ] epoch 120/400 fidelity 0.999990
+[GHZ] epoch 160/400 fidelity 0.999999
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz_4_new/quantumnas/seed_4/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-13 06:20:30,409 INFO: Skipping lambda sweep as requested
+2025-12-13 06:20:30,409 INFO: Running saboteur-only (attacks baseline circuit)
+2025-12-13 06:37:03,159 INFO: Running adversarial co-evolution for 5 seeds (10 generations each)
+2025-12-13 06:37:03,159 INFO: Adversarial training: seed index 0 (global seed=2042)
+2025-12-13 06:37:03,159 INFO: Setting global seed = 2042
+2025-12-13 07:10:39,948 INFO: Adversarial training: seed index 1 (global seed=2043)
+2025-12-13 07:10:39,949 INFO: Setting global seed = 2043
+2025-12-13 07:47:13,464 INFO: Adversarial training: seed index 2 (global seed=2044)
+2025-12-13 07:47:13,464 INFO: Setting global seed = 2044
+2025-12-13 08:20:09,518 INFO: Adversarial training: seed index 3 (global seed=2045)
+2025-12-13 08:20:09,519 INFO: Setting global seed = 2045
+2025-12-13 08:53:10,729 INFO: Adversarial training: seed index 4 (global seed=2046)
+2025-12-13 08:53:10,730 INFO: Setting global seed = 2046
+2025-12-13 09:41:52,970 INFO: Canonical adversarial run (for comparison): results/ghz_4_new/adversarial/seed_0
+2025-12-13 09:41:52,974 INFO: Plotting multi-seed coevolution from results/ghz_4_new/adversarial
+2025-12-13 09:41:58,869 INFO: [plot_coevolution_multiseed] Found runs:
+  - results/ghz_4_new/adversarial/seed_0
+  - results/ghz_4_new/adversarial/seed_1
+  - results/ghz_4_new/adversarial/seed_2
+  - results/ghz_4_new/adversarial/seed_3
+  - results/ghz_4_new/adversarial/seed_4
+[plot_coevolution_multiseed] Saved multi-seed figure to results/ghz_4_new/adversarial/coevolution_multiseed.png
+
+2025-12-13 09:42:03,244 INFO: --- Generating Co-Evolution Plot for results/ghz_4_new/adversarial/seed_0 ---
+[plot_coevolution] Robust circuit /import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/results/ghz_4_new/adversarial/seed_0/circuit_robust.json has 9 gates
+[plot_coevolution] Saved plot to results/ghz_4_new/adversarial/coevolution_seed_0.png
+2025-12-13 09:42:07,436 INFO: --- Generating Co-Evolution Plot for results/ghz_4_new/adversarial/seed_1 ---
+[plot_coevolution] Robust circuit /import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/results/ghz_4_new/adversarial/seed_1/circuit_robust.json has 14 gates
+[plot_coevolution] Saved plot to results/ghz_4_new/adversarial/coevolution_seed_1.png
+2025-12-13 09:42:11,726 INFO: --- Generating Co-Evolution Plot for results/ghz_4_new/adversarial/seed_2 ---
+[plot_coevolution] Robust circuit /import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/results/ghz_4_new/adversarial/seed_2/circuit_robust.json has 9 gates
+[plot_coevolution] Saved plot to results/ghz_4_new/adversarial/coevolution_seed_2.png
+2025-12-13 09:42:15,062 INFO: --- Generating Co-Evolution Plot for results/ghz_4_new/adversarial/seed_3 ---
+[plot_coevolution] Robust circuit /import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/results/ghz_4_new/adversarial/seed_3/circuit_robust.json has 6 gates
+[plot_coevolution] Saved plot to results/ghz_4_new/adversarial/coevolution_seed_3.png
+2025-12-13 09:42:19,049 INFO: --- Generating Co-Evolution Plot for results/ghz_4_new/adversarial/seed_4 ---
+[plot_coevolution] Robust circuit /import/gp-home.cal/jesus/AA/work_dir/quantum-arch-search/results/ghz_4_new/adversarial/seed_4/circuit_robust.json has 13 gates
+[plot_coevolution] Saved plot to results/ghz_4_new/adversarial/coevolution_seed_4.png
+2025-12-13 09:42:19,053 INFO: Robust circuit from results/ghz_4_new/adversarial/seed_0 copied to results/ghz_4_new/compare/run_0
+2025-12-13 09:42:19,057 INFO: Robust circuit from results/ghz_4_new/adversarial/seed_1 copied to results/ghz_4_new/compare/run_1
+2025-12-13 09:42:19,061 INFO: Robust circuit from results/ghz_4_new/adversarial/seed_2 copied to results/ghz_4_new/compare/run_2
+2025-12-13 09:42:19,064 INFO: Robust circuit from results/ghz_4_new/adversarial/seed_3 copied to results/ghz_4_new/compare/run_3
+2025-12-13 09:42:19,068 INFO: Robust circuit from results/ghz_4_new/adversarial/seed_4 copied to results/ghz_4_new/compare/run_4
+2025-12-13 09:42:19,077 INFO: HEA baseline circuits copied into compare runs for analysis.
+2025-12-13 09:42:19,077 INFO: Running comparison across runs
+2025-12-13 09:51:00,068 INFO: Running parameter recovery experiment
+2025-12-13 09:51:00,069 INFO: === Parameter Recovery Experiment ===
+2025-12-13 09:51:00,069 INFO: Qubits: 4
+2025-12-13 09:51:00,069 INFO: Noise parameters to test: [0.02, 0.05, 0.08, 0.12, 0.16, 0.2, 0.25]
+2025-12-13 09:51:00,069 INFO: Shots per trial: 150
+2025-12-13 09:51:00,069 INFO: Repetitions per p (seeds): 5
+2025-12-13 09:51:00,069 INFO: Base seed: 42
+2025-12-13 09:51:00,069 INFO: Results directory: results/ghz_4_new/parameter_recovery
+2025-12-13 09:51:00,070 INFO: Loaded baseline circuit from results/ghz_4_new/baseline/seed_4/circuit_vanilla.json
+2025-12-13 09:51:00,071 INFO: Loaded robust circuit from results/ghz_4_new/compare/run_0/circuit_robust.json
+2025-12-13 09:51:00,071 INFO: 
+  Testing baseline circuit (n_repetitions=5):
+2025-12-13 09:51:00,845 INFO:     p=0.020: recovered=0.0199±0.0004 (n=5), fidelity=0.6469±0.0054
+2025-12-13 09:51:01,666 INFO:     p=0.050: recovered=0.0498±0.0002 (n=5), fidelity=0.3777±0.0010
+2025-12-13 09:51:02,453 INFO:     p=0.080: recovered=0.0799±0.0004 (n=5), fidelity=0.2318±0.0014
+2025-12-13 09:51:03,179 INFO:     p=0.120: recovered=0.1214±0.0002 (n=5), fidelity=0.1350±0.0004
+2025-12-13 09:51:03,995 INFO:     p=0.160: recovered=0.1591±0.0023 (n=5), fidelity=0.0964±0.0016
+2025-12-13 09:51:04,840 INFO:     p=0.200: recovered=0.2024±0.0050 (n=5), fidelity=0.0768±0.0014
+2025-12-13 09:51:05,552 INFO:     p=0.250: recovered=0.2430±0.0079 (n=5), fidelity=0.0688±0.0010
+2025-12-13 09:51:05,554 INFO: 
+  Testing robust circuit (n_repetitions=5):
+2025-12-13 09:51:06,005 INFO:     p=0.020: recovered=0.0200±0.0002 (n=5), fidelity=0.7908±0.0020
+2025-12-13 09:51:06,465 INFO:     p=0.050: recovered=0.0503±0.0004 (n=5), fidelity=0.5576±0.0022
+2025-12-13 09:51:06,940 INFO:     p=0.080: recovered=0.0803±0.0007 (n=5), fidelity=0.4004±0.0028
+2025-12-13 09:51:07,419 INFO:     p=0.120: recovered=0.1194±0.0009 (n=5), fidelity=0.2677±0.0025
+2025-12-13 09:51:07,922 INFO:     p=0.160: recovered=0.1604±0.0010 (n=5), fidelity=0.1841±0.0016
+2025-12-13 09:51:08,411 INFO:     p=0.200: recovered=0.2030±0.0027 (n=5), fidelity=0.1331±0.0025
+2025-12-13 09:51:08,842 INFO:     p=0.250: recovered=0.2504±0.0037 (n=5), fidelity=0.1009±0.0018
+2025-12-13 09:51:08,844 INFO: 
+  Testing quantumnas circuit (n_repetitions=5):
+2025-12-13 09:51:09,552 INFO:     p=0.020: recovered=0.0199±0.0002 (n=5), fidelity=0.7271±0.0024
+2025-12-13 09:51:10,269 INFO:     p=0.050: recovered=0.0500±0.0004 (n=5), fidelity=0.4582±0.0024
+2025-12-13 09:51:11,013 INFO:     p=0.080: recovered=0.0799±0.0007 (n=5), fidelity=0.3006±0.0027
+2025-12-13 09:51:11,697 INFO:     p=0.120: recovered=0.1206±0.0010 (n=5), fidelity=0.1841±0.0020
+2025-12-13 09:51:12,472 INFO:     p=0.160: recovered=0.1609±0.0016 (n=5), fidelity=0.1271±0.0015
+2025-12-13 09:51:13,213 INFO:     p=0.200: recovered=0.2015±0.0061 (n=5), fidelity=0.0980±0.0032
+2025-12-13 09:51:13,874 INFO:     p=0.250: recovered=0.2499±0.0082 (n=5), fidelity=0.0807±0.0021
+2025-12-13 09:51:13,877 INFO: 
+Results saved to results/ghz_4_new/parameter_recovery/parameter_recovery_results.json
+2025-12-13 09:51:14,217 INFO: Plot saved to results/ghz_4_new/parameter_recovery/parameter_recovery_plot.png
+2025-12-13 09:51:14,226 INFO: Summary saved to results/ghz_4_new/parameter_recovery/parameter_recovery_summary.txt
+2025-12-13 09:51:14,226 INFO: 
+=== Parameter Recovery Experiment Complete ===
+2025-12-13 09:51:14,229 INFO: Running cross-noise robustness experiment (aggregated across 5 seeds)
+2025-12-13 09:51:14,229 INFO: === Cross-Noise Robustness Experiment (ExpPlan Part 2, Exp 2.1) ===
+2025-12-13 09:51:14,229 INFO: RL baseline circuit: ['results/ghz_4_new/compare/run_0/circuit_vanilla.json', 'results/ghz_4_new/compare/run_1/circuit_vanilla.json', 'results/ghz_4_new/compare/run_2/circuit_vanilla.json', 'results/ghz_4_new/compare/run_3/circuit_vanilla.json', 'results/ghz_4_new/compare/run_4/circuit_vanilla.json']
+2025-12-13 09:51:14,229 INFO: Robust circuit: ['results/ghz_4_new/compare/run_0/circuit_robust.json', 'results/ghz_4_new/compare/run_1/circuit_robust.json', 'results/ghz_4_new/compare/run_2/circuit_robust.json', 'results/ghz_4_new/compare/run_3/circuit_robust.json', 'results/ghz_4_new/compare/run_4/circuit_robust.json']
+2025-12-13 09:51:14,229 INFO: Output directory: results/ghz_4_new/cross_noise/cross_noise_20251213-095114
+2025-12-13 09:51:14,229 INFO: Number of qubits: 4
+2025-12-13 09:51:14,229 INFO: Number of seeds: 5
+2025-12-13 09:51:14,229 INFO: Base seed: 42
+2025-12-13 09:51:14,230 INFO: Loaded circuit results/ghz_4_new/compare/run_0/circuit_vanilla.json with 15 operations
+2025-12-13 09:51:14,231 INFO: Loaded circuit results/ghz_4_new/compare/run_1/circuit_vanilla.json with 14 operations
+2025-12-13 09:51:14,231 INFO: Loaded circuit results/ghz_4_new/compare/run_2/circuit_vanilla.json with 15 operations
+2025-12-13 09:51:14,232 INFO: Loaded circuit results/ghz_4_new/compare/run_3/circuit_vanilla.json with 15 operations
+2025-12-13 09:51:14,232 INFO: Loaded circuit results/ghz_4_new/compare/run_4/circuit_vanilla.json with 15 operations
+2025-12-13 09:51:14,233 INFO: Loaded circuit results/ghz_4_new/compare/run_0/circuit_robust.json with 9 operations
+2025-12-13 09:51:14,233 INFO: Loaded circuit results/ghz_4_new/compare/run_1/circuit_robust.json with 14 operations
+2025-12-13 09:51:14,234 INFO: Loaded circuit results/ghz_4_new/compare/run_2/circuit_robust.json with 9 operations
+2025-12-13 09:51:14,234 INFO: Loaded circuit results/ghz_4_new/compare/run_3/circuit_robust.json with 6 operations
+2025-12-13 09:51:14,235 INFO: Loaded circuit results/ghz_4_new/compare/run_4/circuit_robust.json with 13 operations
+2025-12-13 09:51:14,235 INFO: Loaded circuit results/ghz_4_new/compare/run_0/circuit_quantumnas.json with 14 operations
+2025-12-13 09:51:14,236 INFO: Loaded circuit results/ghz_4_new/compare/run_1/circuit_quantumnas.json with 14 operations
+2025-12-13 09:51:14,236 INFO: Loaded circuit results/ghz_4_new/compare/run_2/circuit_quantumnas.json with 14 operations
+2025-12-13 09:51:14,237 INFO: Loaded circuit results/ghz_4_new/compare/run_3/circuit_quantumnas.json with 14 operations
+2025-12-13 09:51:14,237 INFO: Loaded circuit results/ghz_4_new/compare/run_4/circuit_quantumnas.json with 14 operations
+2025-12-13 09:51:14,264 INFO: Clean fidelities — baseline: 0.9620, robust: 0.9830, HEA baseline: 1.0000; using shared reference 1.0000
+2025-12-13 09:51:14,264 INFO: 
+--- Over-rotation sweep (ε ∈ [0.0, 0.2]) ---
+2025-12-13 09:51:14,474 INFO: RL baseline avg retention ratio (over-rotation): 0.7583
+2025-12-13 09:51:14,475 INFO: Robust avg retention ratio (over-rotation): 0.8897
+2025-12-13 09:51:14,475 INFO: 
+--- Asymmetric Pauli noise sweep (p_x in [0.05], p_y=0.0, p_z=0.0) ---
+2025-12-13 09:51:14,648 INFO: p_x=0.050 | RL baseline retention: 0.4046 | Robust retention: 0.5587 | HEA baseline retention: 0.4453
+2025-12-13 09:51:14,773 INFO: 
+Results saved to results/ghz_4_new/cross_noise/cross_noise_20251213-095114/cross_noise_results.json
+2025-12-13 09:51:15,037 INFO: Plot saved to results/ghz_4_new/cross_noise/cross_noise_20251213-095114/cross_noise_robustness.png
+2025-12-13 09:51:15,038 INFO: Summary saved to results/ghz_4_new/cross_noise/cross_noise_20251213-095114/cross_noise_summary.txt
+2025-12-13 09:51:15,042 INFO: 
+=== Cross-Noise Robustness Experiment Complete ===
+2025-12-13 09:51:15,810 INFO: Running hardware-style eval on backends: ['fake_yorktown', 'fake_oslo', 'fake_lagos', 'fake_vigo']
+2025-12-13 09:51:15,817 ERROR: Hardware eval failed: Unknown backend 'fake_vigo'. Supported: ['fake_quito', 'fake_belem', 'fake_athens', 'fake_yorktown', 'fake_lagos', 'fake_oslo']
+2025-12-13 09:51:15,848 WARNING: No fidelity data found to summarize.
+2025-12-13 09:51:33,781 INFO: Robustness sweep written to results/ghz_4_new/analysis/robustness_sweep.json/results/ghz_4_new/analysis/robustness_sweep.csv (legacy compare uses family=amplitude_damping, budget=1)
+2025-12-13 09:51:36,537 INFO: Pipeline finished. Results in results/ghz_4_new
+2025-12-13 09:56:42,802 INFO: Loading experimental parameters for 4 qubits from config.py
+2025-12-13 09:56:42,803 INFO: Starting pipeline with metadata: {'timestamp': '20251213-095642', 'n_qubits': 4, 'baseline_steps': 140000, 'saboteur_steps': 73600, 'adversarial_gens': 10, 'adversarial_arch_steps': 14000, 'seed': None, 'n_seeds': 5, 'source': 'experiments.config', 'champion_save_last_steps': None, 'hall_of_fame_size': 5}
+2025-12-13 09:56:42,803 INFO: Skipping baseline as requested
+2025-12-13 09:56:42,804 INFO: Running HEA baseline per seed
+2025-12-13 09:56:51,523 INFO: [GHZ] epoch 40/400 fidelity 0.992629
+[GHZ] epoch 80/400 fidelity 0.999304
+[GHZ] epoch 120/400 fidelity 0.999954
+[GHZ] epoch 160/400 fidelity 0.999993
+[GHZ] epoch 200/400 fidelity 0.999999
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz_4_new/quantumnas/seed_0/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-13 09:56:58,067 INFO: [GHZ] epoch 40/400 fidelity 0.972675
+[GHZ] epoch 80/400 fidelity 0.999188
+[GHZ] epoch 120/400 fidelity 0.999988
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz_4_new/quantumnas/seed_1/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-13 09:57:03,616 INFO: [GHZ] epoch 40/400 fidelity 0.961998
+[GHZ] epoch 80/400 fidelity 0.999560
+[GHZ] epoch 120/400 fidelity 0.999988
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz_4_new/quantumnas/seed_2/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-13 09:57:10,467 INFO: [GHZ] epoch 40/400 fidelity 0.976490
+[GHZ] epoch 80/400 fidelity 0.999561
+[GHZ] epoch 120/400 fidelity 0.999995
+[GHZ] epoch 160/400 fidelity 1.000000
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz_4_new/quantumnas/seed_3/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-13 09:57:18,065 INFO: [GHZ] epoch 40/400 fidelity 0.963231
+[GHZ] epoch 80/400 fidelity 0.999314
+[GHZ] epoch 120/400 fidelity 0.999990
+[GHZ] epoch 160/400 fidelity 0.999999
+[GHZ] epoch 200/400 fidelity 1.000000
+[GHZ] epoch 240/400 fidelity 1.000000
+[GHZ] epoch 280/400 fidelity 1.000000
+[GHZ] epoch 320/400 fidelity 1.000000
+[GHZ] epoch 360/400 fidelity 1.000000
+[GHZ] epoch 400/400 fidelity 1.000000
+[GHZ] Saved circuit to results/ghz_4_new/quantumnas/seed_4/circuit_quantumnas.json (n=4, depth=2, max_gates=15)
+2025-12-13 09:57:18,067 INFO: Skipping lambda sweep as requested
+2025-12-13 09:57:18,068 INFO: Running saboteur-only (attacks baseline circuit)
+2025-12-13 09:57:18,068 ERROR: Vanilla circuit not found at results/ghz_4_new/baseline/circuit_vanilla.json. Cannot run saboteur-only.
+2025-12-13 09:57:18,068 INFO: Skipping adversarial as requested
+2025-12-13 09:57:18,071 INFO: Discovered 5 existing adversarial run(s) with robust circuits
+2025-12-13 09:57:18,074 INFO: Robust circuit from results/ghz_4_new/adversarial/seed_0 copied to results/ghz_4_new/compare/run_0
+2025-12-13 09:57:18,078 INFO: Robust circuit from results/ghz_4_new/adversarial/seed_1 copied to results/ghz_4_new/compare/run_1
+2025-12-13 09:57:18,080 INFO: Robust circuit from results/ghz_4_new/adversarial/seed_2 copied to results/ghz_4_new/compare/run_2
+2025-12-13 09:57:18,082 INFO: Robust circuit from results/ghz_4_new/adversarial/seed_3 copied to results/ghz_4_new/compare/run_3
+2025-12-13 09:57:18,084 INFO: Robust circuit from results/ghz_4_new/adversarial/seed_4 copied to results/ghz_4_new/compare/run_4
+2025-12-13 09:57:18,092 INFO: HEA baseline circuits copied into compare runs for analysis.
+2025-12-13 09:57:18,092 INFO: Running comparison across runs
+2025-12-13 10:05:17,610 INFO: Running cross-noise robustness experiment (aggregated across 5 seeds)
+2025-12-13 10:05:17,610 INFO: === Cross-Noise Robustness Experiment (ExpPlan Part 2, Exp 2.1) ===
+2025-12-13 10:05:17,610 INFO: RL baseline circuit: ['results/ghz_4_new/compare/run_0/circuit_vanilla.json', 'results/ghz_4_new/compare/run_1/circuit_vanilla.json', 'results/ghz_4_new/compare/run_2/circuit_vanilla.json', 'results/ghz_4_new/compare/run_3/circuit_vanilla.json', 'results/ghz_4_new/compare/run_4/circuit_vanilla.json']
+2025-12-13 10:05:17,610 INFO: Robust circuit: ['results/ghz_4_new/compare/run_0/circuit_robust.json', 'results/ghz_4_new/compare/run_1/circuit_robust.json', 'results/ghz_4_new/compare/run_2/circuit_robust.json', 'results/ghz_4_new/compare/run_3/circuit_robust.json', 'results/ghz_4_new/compare/run_4/circuit_robust.json']
+2025-12-13 10:05:17,610 INFO: Output directory: results/ghz_4_new/cross_noise/cross_noise_20251213-100517
+2025-12-13 10:05:17,610 INFO: Number of qubits: 4
+2025-12-13 10:05:17,610 INFO: Number of seeds: 5
+2025-12-13 10:05:17,610 INFO: Base seed: 42
+2025-12-13 10:05:17,611 INFO: Loaded circuit results/ghz_4_new/compare/run_0/circuit_vanilla.json with 15 operations
+2025-12-13 10:05:17,612 INFO: Loaded circuit results/ghz_4_new/compare/run_1/circuit_vanilla.json with 14 operations
+2025-12-13 10:05:17,612 INFO: Loaded circuit results/ghz_4_new/compare/run_2/circuit_vanilla.json with 15 operations
+2025-12-13 10:05:17,613 INFO: Loaded circuit results/ghz_4_new/compare/run_3/circuit_vanilla.json with 15 operations
+2025-12-13 10:05:17,613 INFO: Loaded circuit results/ghz_4_new/compare/run_4/circuit_vanilla.json with 15 operations
+2025-12-13 10:05:17,614 INFO: Loaded circuit results/ghz_4_new/compare/run_0/circuit_robust.json with 9 operations
+2025-12-13 10:05:17,614 INFO: Loaded circuit results/ghz_4_new/compare/run_1/circuit_robust.json with 14 operations
+2025-12-13 10:05:17,615 INFO: Loaded circuit results/ghz_4_new/compare/run_2/circuit_robust.json with 9 operations
+2025-12-13 10:05:17,615 INFO: Loaded circuit results/ghz_4_new/compare/run_3/circuit_robust.json with 6 operations
+2025-12-13 10:05:17,616 INFO: Loaded circuit results/ghz_4_new/compare/run_4/circuit_robust.json with 13 operations
+2025-12-13 10:05:17,617 INFO: Loaded circuit results/ghz_4_new/compare/run_0/circuit_quantumnas.json with 14 operations
+2025-12-13 10:05:17,617 INFO: Loaded circuit results/ghz_4_new/compare/run_1/circuit_quantumnas.json with 14 operations
+2025-12-13 10:05:17,618 INFO: Loaded circuit results/ghz_4_new/compare/run_2/circuit_quantumnas.json with 14 operations
+2025-12-13 10:05:17,618 INFO: Loaded circuit results/ghz_4_new/compare/run_3/circuit_quantumnas.json with 14 operations
+2025-12-13 10:05:17,619 INFO: Loaded circuit results/ghz_4_new/compare/run_4/circuit_quantumnas.json with 14 operations
+2025-12-13 10:05:17,646 INFO: Clean fidelities — baseline: 0.9620, robust: 0.9830, HEA baseline: 1.0000; using shared reference 1.0000
+2025-12-13 10:05:17,646 INFO: 
+--- Over-rotation sweep (ε ∈ [0.0, 0.2]) ---
+2025-12-13 10:05:17,855 INFO: RL baseline avg retention ratio (over-rotation): 0.7583
+2025-12-13 10:05:17,855 INFO: Robust avg retention ratio (over-rotation): 0.8897
+2025-12-13 10:05:17,855 INFO: 
+--- Asymmetric Pauli noise sweep (p_x in [0.05], p_y=0.0, p_z=0.0) ---
+2025-12-13 10:05:18,029 INFO: p_x=0.050 | RL baseline retention: 0.4046 | Robust retention: 0.5587 | HEA baseline retention: 0.4453
+2025-12-13 10:05:18,154 INFO: 
+Results saved to results/ghz_4_new/cross_noise/cross_noise_20251213-100517/cross_noise_results.json
+2025-12-13 10:05:18,421 INFO: Plot saved to results/ghz_4_new/cross_noise/cross_noise_20251213-100517/cross_noise_robustness.png
+2025-12-13 10:05:18,422 INFO: Summary saved to results/ghz_4_new/cross_noise/cross_noise_20251213-100517/cross_noise_summary.txt
+2025-12-13 10:05:18,427 INFO: 
+=== Cross-Noise Robustness Experiment Complete ===
+2025-12-13 10:05:19,203 INFO: Running hardware-style eval on backends: ['fake_yorktown', 'fake_oslo', 'fake_lagos', 'fake_quito']
+2025-12-13 10:05:27,904 WARNING: No fidelity data found to summarize.
+2025-12-13 10:05:47,538 INFO: Robustness sweep written to results/ghz_4_new/analysis/robustness_sweep.json/results/ghz_4_new/analysis/robustness_sweep.csv (legacy compare uses family=amplitude_damping, budget=1)
+2025-12-13 10:05:53,808 INFO: Pipeline finished. Results in results/ghz_4_new

@@ -1,0 +1,11 @@
+{
+  "molecule": "HeH+",
+  "n_qubits": 2,
+  "seed": 42,
+  "best_attacked_energy": -1.0000000000000004,
+  "best_clean_energy": -1.0000000000000004,
+  "best_gate_count": 6,
+  "hf_energy": -1.0,
+  "fci_energy": -1.0,
+  "hall_of_fame_size": 5
+}

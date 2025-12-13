@@ -103,6 +103,8 @@ class AdversarialArchitectEnv(ArchitectEnv):
         saboteur_budget: int = 3,
         saboteur_budget_fraction: float | None = 0.2,
         saboteur_start_budget_scale: float = 0.3,
+        saboteur_attack_candidate_fraction: float = 1.0,
+        saboteur_seed: int | None = None,
         saboteur_error_rates=None,
         saboteur_noise_family: str = "depolarizing",
         saboteur_noise_kwargs: dict | None = None,
@@ -137,6 +139,13 @@ class AdversarialArchitectEnv(ArchitectEnv):
         self.saboteur_error_rates = rates
         self.saboteur_noise_family = saboteur_noise_family
         self.saboteur_noise_kwargs = saboteur_noise_kwargs.copy() if saboteur_noise_kwargs is not None else {}
+        # Candidate fraction for saboteur sampling and RNG for deterministic sampling
+        self.saboteur_attack_candidate_fraction = float(saboteur_attack_candidate_fraction)
+        try:
+            import numpy as _np
+            self._saboteur_rng = _np.random.RandomState(int(saboteur_seed)) if saboteur_seed is not None else _np.random.RandomState()
+        except Exception:
+            self._saboteur_rng = None
 
     def step(self, action):
         # 1. Execute Architect Step (Get Clean Fidelity & curriculum reward)
@@ -201,9 +210,32 @@ class AdversarialArchitectEnv(ArchitectEnv):
                     noise_family=self.saboteur_noise_family,
                     max_concurrent_attacks=budget,
                     max_gates=self.max_timesteps,
+                    attack_candidate_fraction=self.saboteur_attack_candidate_fraction,
+                    rng=self._saboteur_rng,
                     noise_kwargs=self.saboteur_noise_kwargs,
                 )
                 info["mean_error_rate"] = float(_np.mean(applied_rates)) if applied_rates else 0.0
+
+                # Record which gate indices were actually attacked for analysis.
+                # build_noisy_circuit returns an effective_action array where
+                # non-zero entries indicate attacked gates.
+                try:
+                    _, _, effective_action = SaboteurMultiGateEnv.build_noisy_circuit(
+                        circuit=final_circuit,
+                        action=raw_action,
+                        error_rates=self.saboteur_error_rates,
+                        noise_family=self.saboteur_noise_family,
+                        max_concurrent_attacks=budget,
+                        max_gates=self.max_timesteps,
+                        attack_candidate_fraction=self.saboteur_attack_candidate_fraction,
+                        rng=self._saboteur_rng,
+                        noise_kwargs=self.saboteur_noise_kwargs,
+                    )
+                    attacked_indices = list(_np.nonzero(effective_action)[0])
+                    info['attacked_indices'] = attacked_indices
+                except Exception:
+                    # Don't fail the episode if logging fails; keep silent fallback
+                    info['attacked_indices'] = []
 
                 # D. Measure Robustness (state fidelity)
                 fidelity_under_attack = self.get_fidelity(noisy_circuit)

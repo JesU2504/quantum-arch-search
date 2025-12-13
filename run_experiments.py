@@ -596,9 +596,10 @@ def run_pipeline(args):
             logger.error("QuantumNAS import failed: %s", exc)
 
     # Enforce gate budget on QuantumNAS circuit (if produced)
-    qnas_json = Path(quantumnas_dir) / "circuit_quantumnas.json"
-    if qnas_json.exists():
-        truncate_circuit_json(str(qnas_json), max_ops=args.max_circuit_gates, logger=logger)
+    # DISABLED: Allow HEA to use its full circuit without truncation
+    # qnas_json = Path(quantumnas_dir) / "circuit_quantumnas.json"
+    # if qnas_json.exists():
+    #     truncate_circuit_json(str(qnas_json), max_ops=args.max_circuit_gates, logger=logger)
 
     # 1.5) Lambda Sweep
     lambda_sweep_dir = os.path.join(base, 'lambda_sweep')
@@ -684,6 +685,11 @@ def run_pipeline(args):
                 saboteur_budget=args.saboteur_budget,
                 saboteur_budget_fraction=args.saboteur_budget_fraction,
                 saboteur_start_budget_scale=args.saboteur_start_budget_scale,
+                saboteur_attack_candidate_fraction=args.saboteur_attack_candidate_fraction,
+                saboteur_seed=seed_val,
+                stop_success_bonus=args.stop_success_bonus,
+                stop_failure_penalty=args.stop_failure_penalty,
+                per_step_penalty=args.per_step_penalty,
                 alpha_start=args.alpha_start,
                 alpha_end=args.alpha_end,
             )
@@ -804,7 +810,8 @@ def run_pipeline(args):
                     target_path = Path(run_dir) / "circuit_quantumnas.json"
                     target_path.parent.mkdir(parents=True, exist_ok=True)
                     target_path.write_text(src.read_text())
-                    truncate_circuit_json(str(target_path), max_ops=args.max_circuit_gates, logger=logger)
+                    # DISABLED: Allow HEA to use its full circuit without truncation
+                    # truncate_circuit_json(str(target_path), max_ops=args.max_circuit_gates, logger=logger)
                 logger.info("HEA baseline circuits copied into compare runs for analysis.")
             except Exception as exc:
                 logger.error("Failed to copy HEA circuits into compare runs: %s", exc)
@@ -1007,6 +1014,14 @@ def parse_args():
                    help='Fractional attack budget relative to circuit length (set None to disable).')
     p.add_argument('--saboteur-start-budget-scale', type=float, default=0.3,
                    help='Initial scale for the saboteur budget ramp (1.0 disables ramp-up).')
+    p.add_argument('--saboteur-attack-candidate-fraction', type=float, default=1.0,
+                   help='Fraction of circuit gates to sample as candidates for attack (default=1.0 -> all).')
+    p.add_argument('--stop-success-bonus', type=float, default=0.1,
+                   help='Terminal bonus given when agent chooses STOP and fidelity >= threshold')
+    p.add_argument('--stop-failure-penalty', type=float, default=-0.05,
+                   help='Terminal penalty given when agent chooses STOP and fidelity < threshold')
+    p.add_argument('--per-step-penalty', type=float, default=-0.01,
+                   help='Per-step penalty applied when the agent appends a gate')
     p.add_argument('--alpha-start', type=float, default=0.6,
                    help='Starting alpha for clean vs attacked reward mixing.')
     p.add_argument('--alpha-end', type=float, default=0.0,

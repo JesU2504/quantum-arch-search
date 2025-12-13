@@ -33,6 +33,7 @@ from qas_gym.envs.architect_env import ArchitectEnv
 from utils.standard_hamiltonians import get_standard_hamiltonian
 from utils.torchquantum_adapter import convert_qasm_file_to_cirq
 from src.utils.metrics import state_energy
+from experiments import config as exp_config
 
 
 _MOLECULE_QUBITS = {
@@ -100,12 +101,16 @@ def make_env(molecule: str, max_gates: int, complexity_penalty: float):
         fci_energy = float(np.min(np.linalg.eigvalsh(h_mat)))
     target = np.zeros(2**n_qubits, dtype=complex)
     target[0] = 1.0  # |0...0>
+    qubits = [cirq.LineQubit(i) for i in range(n_qubits)]
+    action_gates = exp_config.get_action_gates(qubits, include_rotations=True)
     env = ArchitectEnv(
         target=target,
         fidelity_threshold=2.0,  # effectively never terminate early on fidelity
         reward_penalty=0.0,
         max_timesteps=max_gates,
         include_rotations=True,
+        qubits=qubits,
+        action_gates=action_gates,
         task_mode="vqe",
         hamiltonian_matrix=h_mat,
         complexity_penalty_weight=complexity_penalty,
@@ -145,7 +150,7 @@ def parse_args():
     ap = argparse.ArgumentParser(description="PPO on ArchitectEnv with VQE reward.")
     ap.add_argument("--molecule", default="H2", choices=["H2", "HeH+", "LiH", "BeH2"])
     ap.add_argument("--max-gates", type=int, default=12)
-    ap.add_argument("--total-timesteps", type=int, default=10000)
+    ap.add_argument("--total-timesteps", type=int, default=50000)
     ap.add_argument("--complexity-penalty", type=float, default=0.01)
     ap.add_argument("--lr", type=float, default=3e-4)
     ap.add_argument("--out-dir", required=True)

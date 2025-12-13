@@ -5,9 +5,9 @@
   "champion_save_last_steps": null,
   "hall_of_fame_size": 5,
   "n_qubits": 5,
-  "n_seeds": 5,
+  "n_seeds": 1,
   "saboteur_steps": 92160,
   "seed": null,
   "source": "experiments.config",
-  "timestamp": "20251211-024008"
+  "timestamp": "20251211-042319"
 }
